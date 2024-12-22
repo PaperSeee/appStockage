@@ -16,19 +16,28 @@
     <ion-searchbar placeholder="Rechercher par localisation, taille, type..."></ion-searchbar>
     
     <div class="filters">
-      <ion-select placeholder="Taille" class="filter-select">
+      <ion-select interface="popover" placeholder="Taille" class="filter-select">
+        <ion-label class="select-label">
+          <ion-icon name="resize-outline"></ion-icon>
+        </ion-label>
         <ion-select-option value="small">Petite</ion-select-option>
         <ion-select-option value="medium">Moyenne</ion-select-option>
         <ion-select-option value="large">Grande</ion-select-option>
       </ion-select>
 
-      <ion-select placeholder="Prix" class="filter-select">
+      <ion-select interface="popover" placeholder="Prix" class="filter-select">
+        <ion-label class="select-label">
+          <ion-icon name="card-outline"></ion-icon>
+        </ion-label>
         <ion-select-option value="0-10">0-10€</ion-select-option>
         <ion-select-option value="10-20">10-20€</ion-select-option>
         <ion-select-option value="20-30">20-30€</ion-select-option>
       </ion-select>
 
-      <ion-select placeholder="Capacité" class="filter-select">
+      <ion-select interface="popover" placeholder="Capacité" class="filter-select">
+        <ion-label class="select-label">
+          <ion-icon name="cube-outline"></ion-icon>
+        </ion-label>
         <ion-select-option value="1-10">1-10m³</ion-select-option>
         <ion-select-option value="10-20">10-20m³</ion-select-option>
         <ion-select-option value="20-30">20-30m³</ion-select-option>
