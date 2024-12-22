@@ -1,17 +1,54 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Accueil
-    </ion-title>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Bunked</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="notifications-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Accueil</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <div class="main-container">
+    <h2 class="title">Trouvez l'espace de stockage qui vous convient</h2>
+    
+    <ion-searchbar placeholder="Rechercher par localisation, taille, type..."></ion-searchbar>
+    
+    <div class="filters">
+      <ion-select placeholder="Taille" class="filter-select">
+        <ion-select-option value="small">Petite</ion-select-option>
+        <ion-select-option value="medium">Moyenne</ion-select-option>
+        <ion-select-option value="large">Grande</ion-select-option>
+      </ion-select>
 
-  <app-explore-container name="Page Accueil"></app-explore-container>
+      <ion-select placeholder="Prix" class="filter-select">
+        <ion-select-option value="0-10">0-10€</ion-select-option>
+        <ion-select-option value="10-20">10-20€</ion-select-option>
+        <ion-select-option value="20-30">20-30€</ion-select-option>
+      </ion-select>
+
+      <ion-select placeholder="Capacité" class="filter-select">
+        <ion-select-option value="1-10">1-10m³</ion-select-option>
+        <ion-select-option value="10-20">10-20m³</ion-select-option>
+        <ion-select-option value="20-30">20-30m³</ion-select-option>
+      </ion-select>
+    </div>
+
+    <ion-list>
+      <ion-card>
+        <img src="https://picsum.photos/400/200" alt="Random storage space"/>
+        <ion-card-header>
+          <ion-card-title>Espace de stockage 1</ion-card-title>
+          <ion-card-subtitle>Paris</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <p>Un espace de stockage sécurisé à Paris.</p>
+          <p class="price">10€/jour</p>
+          <ion-button expand="block" color="warning">Voir l'offre</ion-button>
+        </ion-card-content>
+      </ion-card>
+    </ion-list>
+  </div>
 </ion-content>
+
