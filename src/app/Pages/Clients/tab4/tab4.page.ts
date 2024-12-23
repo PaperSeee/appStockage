@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { ExploreContainerComponentModule } from '../explore-container/explore-container.module';
+import { ExploreContainerComponentModule } from '../../../explore-container/explore-container.module';
 
 @Component({
   selector: 'app-tab4',
