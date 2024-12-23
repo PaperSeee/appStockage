@@ -7,7 +7,7 @@ import { Component } from '@angular/core';
   standalone: false,
 })
 export class Tab1Page {
-
-  constructor() {}
-
+  constructor() {
+    // Firebase initialization moved to app.module.ts
+  }
 }
