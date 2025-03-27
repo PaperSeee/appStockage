@@ -34,7 +34,6 @@ const auth = getAuth(app);
     { provide: 'FIREBASE_APP', useValue: app },
     { provide: 'FIRESTORE', useValue: firestore },
     { provide: 'AUTH', useValue: auth },
-    { provide: 'ni', useClass: YourServiceClass }, // Replace `YourServiceClass` with the actual service class or token
   ],
   bootstrap: [AppComponent],
 })
