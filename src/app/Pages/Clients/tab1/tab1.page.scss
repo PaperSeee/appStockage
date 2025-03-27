@@ -22,6 +22,7 @@
 ion-content {
   --background: #f0f0f0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+  scroll-behavior: smooth;
 }
 
 ion-header {
@@ -44,27 +45,6 @@ ion-header {
         font-size: 20px;
       }
     }
-  }
-}
-
-.header-banner {
-  padding: 16px 20px 20px;
-  background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
-  color: black;
-  margin-bottom: 0;
-  
-  h1 {
-    margin: 0;
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-  }
-  
-  p {
-    margin: 6px 0 0;
-    font-size: 14px;
-    font-weight: 500;
-    opacity: 0.9;
   }
 }
 
@@ -500,33 +480,6 @@ ion-header {
 
 .partner-item:active .avatar-container .avatar {
   animation: pulse 0.3s forwards;
-}
-
-ion-content {
-  scroll-behavior: smooth;
-}
-
-.nearby-partners::-webkit-scrollbar {
-  height: 4px;
-}
-
-.nearby-partners::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.nearby-partners::-webkit-scrollbar-thumb {
-  background: var(--ion-color-medium);
-  border-radius: 4px;
-}
-
-.nearby-partners::-webkit-scrollbar-thumb:hover {
-  background: var(--ion-color-medium-shade);
-}
-
-.filter-chips::-webkit-scrollbar {
-  height: 0;
-  display: none;
 }
 
 .weekly-summary {
