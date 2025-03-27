@@ -1,28 +1,26 @@
 :root {
-  // Palette de couleurs avec jaune comme accent et fond clair
-  --ion-color-primary: #ffb800; // Jaune intense comme accent
+  --ion-color-primary: #ffb800;
   --ion-color-primary-rgb: 255, 184, 0;
-  --ion-color-primary-contrast: #000000; // Texte noir sur fond jaune
-  --ion-color-primary-shade: #e6a600; // Jaune plus foncé
-  --ion-color-primary-tint: #ffc21a; // Jaune plus clair
+  --ion-color-primary-contrast: #000000;
+  --ion-color-primary-shade: #e6a600;
+  --ion-color-primary-tint: #ffc21a;
   
-  // Thème clair avec nuances de gris
-  --ion-color-secondary: #404040; // Gris foncé pour le texte principal
-  --ion-color-tertiary: #ff4500; // Orange vif comme accent secondaire
-  --ion-color-light: #f8f8f8; // Gris très clair pour les fonds de section
-  --ion-color-medium: #757575; // Gris moyen pour le texte secondaire
-  --ion-color-dark: #303030; // Gris foncé pour les titres
-  --ion-color-success: #00c853; // Vert pour les actions positives
+  --ion-color-secondary: #404040;
+  --ion-color-tertiary: #ff4500;
+  --ion-color-light: #f8f8f8;
+  --ion-color-medium: #757575;
+  --ion-color-dark: #303030;
+  --ion-color-success: #00c853;
   
-  --ion-background-color: #f0f0f0; // Fond gris très clair par défaut
-  --ion-text-color: #303030; // Texte gris foncé par défaut
+  --ion-background-color: #f0f0f0;
+  --ion-text-color: #303030;
   
   --ion-safe-area-top: env(safe-area-inset-top);
   --ion-safe-area-bottom: env(safe-area-inset-bottom);
 }
 
 ion-content {
-  --background: #f0f0f0; // Gris très clair
+  --background: #f0f0f0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
 }
 
@@ -35,12 +33,12 @@ ion-header {
     ion-title {
       font-weight: 700;
       font-size: 18px;
-      color: #000000; // Noir pour le titre "Home"
+      color: #000000;
       text-align: center;
     }
     
     ion-button {
-      --color: #000000; // Noir pour les icônes
+      --color: #000000;
       
       ion-icon {
         font-size: 20px;
@@ -49,12 +47,11 @@ ion-header {
   }
 }
 
-// Style Strava: entête avec dégradé et typographie épurée
 .header-banner {
   padding: 16px 20px 20px;
   background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
-  color: black; // Texte noir sur fond jaune pour meilleur contraste
-  margin-bottom: 0; // Strava a un design sans marges
+  color: black;
+  margin-bottom: 0;
   
   h1 {
     margin: 0;
@@ -71,18 +68,17 @@ ion-header {
   }
 }
 
-// Style Strava: barre de recherche intégrée
 .search-container {
   padding: 0 16px 16px;
-  background: white; // Strava a des sections en blanc
+  background: white;
   border-radius: 0 0 8px 8px;
   margin-bottom: 8px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   
   ion-searchbar {
-    --background: #f4f4f4; // Gris plus clair
+    --background: #f4f4f4;
     --box-shadow: none;
-    --border-radius: 4px; // Strava utilise des bordures moins arrondies
+    --border-radius: 4px;
     --placeholder-color: #999;
     --icon-color: #999;
     --color: var(--ion-color-secondary);
@@ -92,7 +88,6 @@ ion-header {
   }
 }
 
-// Style Strava: filtres horizontaux en pilules
 .discipline-filter {
   padding: 12px 16px;
   margin: 0 0 8px 0;
@@ -112,12 +107,12 @@ ion-header {
     padding: 6px 16px;
     border-radius: 100px;
     font-size: 13px;
-    font-weight: 600; // Strava utilise du texte semi-gras
-    background: #f4f4f4; // Gris très clair
+    font-weight: 600;
+    background: #f4f4f4;
     color: var(--ion-color-secondary);
     white-space: nowrap;
     transition: all 0.2s ease;
-    box-shadow: none; // Strava a un design plus plat
+    box-shadow: none;
     
     &.active {
       background: var(--ion-color-primary);
@@ -126,7 +121,6 @@ ion-header {
   }
 }
 
-// Style Strava: titres de section avec une police plus légère
 .section-title {
   font-size: 14px;
   font-weight: 600;
@@ -134,7 +128,7 @@ ion-header {
   color: var(--ion-color-secondary);
   display: flex;
   align-items: center;
-  text-transform: uppercase; // Strava utilise souvent des titres en majuscules
+  text-transform: uppercase;
   letter-spacing: 0.5px;
   
   ion-icon {
@@ -143,11 +137,10 @@ ion-header {
   }
 }
 
-// Style Strava: section partenaires
 .partners-container {
   margin: 0 8px;
   padding: 12px 16px;
-  background: white; // Strava utilise beaucoup de fonds blancs
+  background: white;
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   
@@ -172,12 +165,12 @@ ion-header {
         margin-bottom: 8px;
         
         .avatar {
-          width: 56px; // Plus petit comme Strava
+          width: 56px;
           height: 56px;
           border-radius: 50%;
           object-fit: cover;
           border: 2px solid white;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1); // Ombre plus subtile
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .status-indicator {
@@ -212,15 +205,14 @@ ion-header {
   }
 }
 
-// Style Strava: fil d'activités
 .activity-feed {
   margin: 0 8px;
   
   .feed-item {
     background: white;
-    margin-bottom: 8px; // Espacement réduit comme Strava
+    margin-bottom: 8px;
     overflow: hidden;
-    border-bottom: 1px solid #eee; // Séparation subtile comme Strava
+    border-bottom: 1px solid #eee;
     border-radius: 8px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     
@@ -230,7 +222,7 @@ ion-header {
       padding: 12px 16px;
       
       .user-avatar {
-        width: 32px; // Plus petit comme Strava
+        width: 32px;
         height: 32px;
         border-radius: 50%;
         object-fit: cover;
@@ -248,7 +240,7 @@ ion-header {
         }
         
         .activity-meta {
-          font-size: 11px; // Plus petit comme Strava
+          font-size: 11px;
           color: var(--ion-color-medium);
           margin: 0;
           display: flex;
@@ -279,7 +271,7 @@ ion-header {
     
     .activity-image {
       width: 100%;
-      height: 180px; // Plus petit comme Strava
+      height: 180px;
       object-fit: cover;
     }
     
@@ -300,22 +292,21 @@ ion-header {
         margin: 0 0 12px;
       }
       
-      // Style Strava: statistiques en ligne
       .activity-stats {
         display: flex;
         margin-bottom: 16px;
         padding: 8px 0;
         border-top: 1px solid #f0f0f0;
         border-bottom: 1px solid #f0f0f0;
-        justify-content: flex-end; // Aligner à droite
-        gap: 16px; // Espacement entre les statistiques
+        justify-content: flex-end;
+        gap: 16px;
         
         .stat {
           display: flex;
           flex-direction: column;
           align-items: center;
           padding: 0;
-          border-right: none; // Suppression des bordures
+          border-right: none;
           
           &:last-child {
             margin-right: 0;
@@ -337,10 +328,9 @@ ion-header {
         }
       }
       
-      // Style Strava: boutons d'action
       .activity-actions {
         display: flex;
-        padding-top: 0; // Pas de bordure supérieure
+        padding-top: 0;
         
         ion-button {
           --padding-start: 0;
@@ -349,8 +339,8 @@ ion-header {
           margin: 0;
           height: 36px;
           font-weight: 500;
-          font-size: 13px; // Plus petit comme Strava
-          --color: var(--ion-color-medium); // Gris
+          font-size: 13px;
+          --color: var(--ion-color-medium);
           
           ion-icon {
             margin-right: 4px;
@@ -366,7 +356,6 @@ ion-header {
   }
 }
 
-// Style Strava: section événements
 .events-container {
   background: white;
   padding: 12px 16px;
@@ -427,12 +416,12 @@ ion-header {
             align-items: center;
             margin-bottom: 6px;
             font-size: 12px;
-            color: var(--ion-color-medium);
+            color: var (--ion-color-medium);
             
             ion-icon {
               font-size: 14px;
               margin-right: 6px;
-              color: var(--ion-color-medium);
+              color: var (--ion-color-medium);
             }
           }
         }
@@ -453,7 +442,6 @@ ion-header {
         }
       }
       
-      // Style tablette - design responsive
       @media (min-width: 768px) {
         flex-direction: row;
         
@@ -481,13 +469,12 @@ ion-header {
   }
 }
 
-// Style Strava: bouton FAB
 .fab-button {
   --background: var(--ion-color-primary);
   --background-activated: var(--ion-color-primary-shade);
   --background-hover: var(--ion-color-primary-tint);
-  --color: var(--ion-color-primary-contrast); // Noir sur jaune
-  --box-shadow: 0 2px 10px rgba(255, 184, 0, 0.4); // Ombre plus subtile
+  --color: var(--ion-color-primary-contrast);
+  --box-shadow: 0 2px 10px rgba(255, 184, 0, 0.4);
   --border-radius: 50%;
   margin-bottom: 16px;
   margin-right: 16px;
@@ -499,7 +486,6 @@ ion-header {
   }
 }
 
-/* Animation au toucher */
 @keyframes pulse {
   0% {
     transform: scale(1);
@@ -516,12 +502,10 @@ ion-header {
   animation: pulse 0.3s forwards;
 }
 
-/* Transitions fluides */
 ion-content {
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar for the horizontal lists */
 .nearby-partners::-webkit-scrollbar {
   height: 4px;
 }
@@ -545,7 +529,6 @@ ion-content {
   display: none;
 }
 
-// Style Strava: résumé hebdomadaire
 .weekly-summary {
   padding: 16px 20px;
   background: white;
