@@ -1,7 +1,17 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>Bunked</ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button>
+        <ion-icon name="person-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    
+    <ion-title>Home</ion-title>
+    
     <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="chatbubble-outline"></ion-icon>
+      </ion-button>
       <ion-button>
         <ion-icon name="notifications-outline"></ion-icon>
       </ion-button>
@@ -9,196 +19,196 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <div class="main-container">
-    <h2 class="title">Trouvez l'espace de stockage qui vous convient</h2>
-    
-    <ion-searchbar placeholder="Rechercher par localisation, taille, type..."></ion-searchbar>
-    
-    <div class="filters">
-      <ion-select interface="popover" placeholder="Taille" class="filter-select">
-        <ion-label class="select-label">
-          <ion-icon name="resize-outline"></ion-icon>
-        </ion-label>
-        <ion-select-option value="small">Petite</ion-select-option>
-        <ion-select-option value="medium">Moyenne</ion-select-option>
-        <ion-select-option value="large">Grande</ion-select-option>
-      </ion-select>
-
-      <ion-select interface="popover" placeholder="Prix" class="filter-select">
-        <ion-label class="select-label">
-          <ion-icon name="card-outline"></ion-icon>
-        </ion-label>
-        <ion-select-option value="0-10">0-10€</ion-select-option>
-        <ion-select-option value="10-20">10-20€</ion-select-option>
-        <ion-select-option value="20-30">20-30€</ion-select-option>
-      </ion-select>
-
-      <ion-select interface="popover" placeholder="Capacité" class="filter-select">
-        <ion-label class="select-label">
-          <ion-icon name="cube-outline"></ion-icon>
-        </ion-label>
-        <ion-select-option value="1-10">1-10m³</ion-select-option>
-        <ion-select-option value="10-20">10-20m³</ion-select-option>
-        <ion-select-option value="20-30">20-30m³</ion-select-option>
-      </ion-select>
+<ion-content [fullscreen]="true">
+  <div class="weekly-summary">
+    <div class="summary-header">
+      <h2>Cette semaine</h2>
+      <ion-button fill="clear" size="small" class="share-button">
+        <ion-icon name="share-social-outline"></ion-icon>
+        Partager
+      </ion-button>
     </div>
-
-    <ion-list>
-      <ion-card>
-        <img src="https://picsum.photos/400/200" alt="Random storage space"/>
-        <ion-card-header>
-          <ion-card-title>Espace de stockage 1</ion-card-title>
-          <ion-card-subtitle>Paris</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Un espace de stockage sécurisé à Paris.</p>
-          <p class="price">10€/jour</p>
-          <ion-button expand="block" color="warning">Voir l'offre</ion-button>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card>
-        <img src="https://picsum.photos/400/200" alt="Random storage space"/>
-        <ion-card-header>
-          <ion-card-title>Espace de stockage 1</ion-card-title>
-          <ion-card-subtitle>Paris</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Un espace de stockage sécurisé à Paris.</p>
-          <p class="price">10€/jour</p>
-          <ion-button expand="block" color="warning">Voir l'offre</ion-button>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card>
-        <img src="https://picsum.photos/400/200" alt="Random storage space"/>
-        <ion-card-header>
-          <ion-card-title>Espace de stockage 1</ion-card-title>
-          <ion-card-subtitle>Paris</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Un espace de stockage sécurisé à Paris.</p>
-          <p class="price">10€/jour</p>
-          <ion-button expand="block" color="warning">Voir l'offre</ion-button>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card>
-        <img src="https://picsum.photos/400/200" alt="Random storage space"/>
-        <ion-card-header>
-          <ion-card-title>Espace de stockage 1</ion-card-title>
-          <ion-card-subtitle>Paris</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Un espace de stockage sécurisé à Paris.</p>
-          <p class="price">10€/jour</p>
-          <ion-button expand="block" color="warning">Voir l'offre</ion-button>
-        </ion-card-content>
-      </ion-card>
-      
-      <ion-card>
-        <img src="https://picsum.photos/400/200" alt="Random storage space"/>
-        <ion-card-header>
-          <ion-card-title>Espace de stockage 1</ion-card-title>
-          <ion-card-subtitle>Paris</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Un espace de stockage sécurisé à Paris.</p>
-          <p class="price">10€/jour</p>
-          <ion-button expand="block" color="warning">Voir l'offre</ion-button>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card>
-        <img src="https://picsum.photos/400/200" alt="Random storage space"/>
-        <ion-card-header>
-          <ion-card-title>Espace de stockage 1</ion-card-title>
-          <ion-card-subtitle>Paris</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Un espace de stockage sécurisé à Paris.</p>
-          <p class="price">10€/jour</p>
-          <ion-button expand="block" color="warning">Voir l'offre</ion-button>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card>
-        <img src="https://picsum.photos/400/200" alt="Random storage space"/>
-        <ion-card-header>
-          <ion-card-title>Espace de stockage 1</ion-card-title>
-          <ion-card-subtitle>Paris</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Un espace de stockage sécurisé à Paris.</p>
-          <p class="price">10€/jour</p>
-          <ion-button expand="block" color="warning">Voir l'offre</ion-button>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card>
-        <img src="https://picsum.photos/400/200" alt="Random storage space"/>
-        <ion-card-header>
-          <ion-card-title>Espace de stockage 1</ion-card-title>
-          <ion-card-subtitle>Paris</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Un espace de stockage sécurisé à Paris.</p>
-          <p class="price">10€/jour</p>
-          <ion-button expand="block" color="warning">Voir l'offre</ion-button>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card>
-        <img src="https://picsum.photos/400/200" alt="Random storage space"/>
-        <ion-card-header>
-          <ion-card-title>Espace de stockage 1</ion-card-title>
-          <ion-card-subtitle>Paris</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Un espace de stockage sécurisé à Paris.</p>
-          <p class="price">10€/jour</p>
-          <ion-button expand="block" color="warning">Voir l'offre</ion-button>
-        </ion-card-content>
-      </ion-card>
-
-      <ion-card>
-        <img src="https://picsum.photos/400/200" alt="Random storage space"/>
-        <ion-card-header>
-          <ion-card-title>Espace de stockage 1</ion-card-title>
-          <ion-card-subtitle>Paris</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Un espace de stockage sécurisé à Paris.</p>
-          <p class="price">10€/jour</p>
-          <ion-button expand="block" color="warning">Voir l'offre</ion-button>
-        </ion-card-content>
-      </ion-card>
-      <ion-card>
-        <img src="https://picsum.photos/400/200" alt="Random storage space"/>
-        <ion-card-header>
-          <ion-card-title>Espace de stockage 1</ion-card-title>
-          <ion-card-subtitle>Paris</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Un espace de stockage sécurisé à Paris.</p>
-          <p class="price">10€/jour</p>
-          <ion-button expand="block" color="warning">Voir l'offre</ion-button>
-        </ion-card-content>
-      </ion-card>
-      <ion-card>
-        <img src="https://picsum.photos/400/200" alt="Random storage space"/>
-        <ion-card-header>
-          <ion-card-title>Espace de stockage 1</ion-card-title>
-          <ion-card-subtitle>Paris</ion-card-subtitle>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Un espace de stockage sécurisé à Paris.</p>
-          <p class="price">10€/jour</p>
-          <ion-button expand="block" color="warning">Voir l'offre</ion-button>
-        </ion-card-content>
-      </ion-card>
-    </ion-list>
+    
+    <div class="stats-container">
+      <div class="stat-item">
+        <div class="stat-value">3</div>
+        <div class="stat-label">Entraînements</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">210</div>
+        <div class="stat-label">Minutes</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">4.5</div>
+        <div class="stat-label">Intensité</div>
+      </div>
+    </div>
+    
+    <div class="progress-bar">
+      <div class="progress" style="width: 65%;"></div>
+    </div>
+    <div class="progress-label">65% de votre objectif hebdomadaire</div>
   </div>
+  
+  <div class="search-container">
+    <ion-searchbar placeholder="Rechercher des partenaires, des activités..." animated></ion-searchbar>
+  </div>
+  
+  <div class="discipline-filter">
+    <div 
+      class="filter-item" 
+      [class.active]="disciplineFilter === 'all'" 
+      (click)="disciplineFilter = 'all'"
+    >Tous</div>
+    <div 
+      class="filter-item" 
+      [class.active]="disciplineFilter === 'mma'" 
+      (click)="disciplineFilter = 'mma'"
+    >MMA</div>
+    <div 
+      class="filter-item" 
+      [class.active]="disciplineFilter === 'boxe'" 
+      (click)="disciplineFilter = 'boxe'"
+    >Boxe</div>
+    <div 
+      class="filter-item" 
+      [class.active]="disciplineFilter === 'jiu-jitsu'" 
+      (click)="disciplineFilter = 'jiu-jitsu'"
+    >Jiu-Jitsu</div>
+    <div 
+      class="filter-item" 
+      [class.active]="disciplineFilter === 'muay-thai'" 
+      (click)="disciplineFilter = 'muay-thai'"
+    >Muay Thai</div>
+    <div 
+      class="filter-item" 
+      [class.active]="disciplineFilter === 'lutte'" 
+      (click)="disciplineFilter = 'lutte'"
+    >Lutte</div>
+  </div>
+  
+  <h3 class="section-title">
+    <ion-icon name="calendar-outline"></ion-icon>
+    Événements à proximité
+  </h3>
+  
+  <div class="events-container">
+    <div class="events-list">
+      <div class="event-card" *ngFor="let event of upcomingEvents">
+        <div class="event-image-container">
+          <img [src]="event.image" [alt]="event.title" class="event-image">
+          <div class="event-type-badge">{{event.type}}</div>
+        </div>
+        <div class="event-content">
+          <h4 class="event-title">{{event.title}}</h4>
+          <div class="event-details">
+            <div class="event-detail-item">
+              <ion-icon name="time-outline"></ion-icon>
+              <span>{{formatEventDate(event.date)}}</span>
+            </div>
+            <div class="event-detail-item">
+              <ion-icon name="location-outline"></ion-icon>
+              <span>{{event.location}} • {{event.distance}} km</span>
+            </div>
+            <div class="event-detail-item">
+              <ion-icon name="people-outline"></ion-icon>
+              <span>{{event.participantsCount}} participants</span>
+            </div>
+          </div>
+          <ion-button expand="block" fill="clear" class="event-cta-button">
+            S'inscrire
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <h3 class="section-title">
+    <ion-icon name="people-outline"></ion-icon>
+    Partenaires à proximité
+  </h3>
+  
+  <div class="partners-container">
+    <div class="partners-list">
+      <div class="partner-item" *ngFor="let partner of nearbyPartners">
+        <div class="avatar-container">
+          <img [src]="partner.avatar" [alt]="partner.name" class="avatar">
+          <div class="status-indicator"></div>
+        </div>
+        <div class="partner-info">
+          <p class="name">{{partner.name}}</p>
+          <p class="details">{{partner.discipline}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <h3 class="section-title">
+    <ion-icon name="pulse-outline"></ion-icon>
+    Feed d'activités
+  </h3>
+  
+  <div class="activity-feed">
+    <div class="feed-item" *ngFor="let training of trainings">
+      <div class="feed-header">
+        <img [src]="training.user.avatar" [alt]="training.user.name" class="user-avatar">
+        <div class="user-info">
+          <p class="username">{{training.user.name}}</p>
+          <p class="activity-meta">
+            <ion-icon name="location-outline"></ion-icon>
+            <span>{{training.location}}</span>
+            <ion-icon name="time-outline"></ion-icon>
+            <span>{{formatDate(training.date)}}</span>
+          </p>
+        </div>
+        <span class="activity-type">{{training.type}}</span>
+      </div>
+      
+      <img [src]="training.image" [alt]="training.title" class="activity-image">
+      
+      <div class="activity-content">
+        <h3 class="activity-title">{{training.title}}</h3>
+        <p class="activity-description">{{training.description}}</p>
+        
+        <div class="activity-stats">
+          <div class="stat">
+            <span class="value">{{training.duration}}</span>
+            <span class="label">Minutes</span>
+          </div>
+          <div class="stat">
+            <span class="value">{{training.likes}}</span>
+            <span class="label">J'aime</span>
+          </div>
+          <div class="stat">
+            <span class="value">{{training.comments}}</span>
+            <span class="label">Comments</span>
+          </div>
+        </div>
+        
+        <div class="activity-actions">
+          <ion-button fill="clear" color="medium" (click)="likeTraining(training)">
+            <ion-icon name="heart-outline"></ion-icon>
+            J'aime
+          </ion-button>
+          
+          <ion-button fill="clear" color="medium">
+            <ion-icon name="chatbubble-outline"></ion-icon>
+            Commenter
+          </ion-button>
+          
+          <ion-button fill="clear" color="medium">
+            <ion-icon name="share-social-outline"></ion-icon>
+            Partager
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button class="fab-button">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>
 
