@@ -1,61 +1,581 @@
-// Common mixins and variables
-$primary-color: #3880ff;
-$secondary-color: #5260ff;
-$text-color: #333;
-$light-gray: #f5f5f5;
-$border-radius: 12px;
-$standard-padding: 16px;
-
-@mixin flex-center {
-  display: flex;
-  align-items: center;
-}
-
-@mixin card-style {
-  background: white;
-  border-radius: $border-radius;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  padding: $standard-padding;
-  margin-bottom: 16px;
-}
-
-// Global styles
-ion-content {
-  --background: #f8f8f8;
-}
-
-.section-title {
-  margin: 20px $standard-padding 10px;
-  font-size: 18px;
-  font-weight: 600;
-  color: $text-color;
-  @include flex-center;
+:root {
+  // Palette de couleurs avec jaune comme accent et fond clair
+  --ion-color-primary: #ffb800; // Jaune intense comme accent
+  --ion-color-primary-rgb: 255, 184, 0;
+  --ion-color-primary-contrast: #000000; // Texte noir sur fond jaune
+  --ion-color-primary-shade: #e6a600; // Jaune plus foncé
+  --ion-color-primary-tint: #ffc21a; // Jaune plus clair
   
-  ion-icon {
-    margin-right: 8px;
-    color: $primary-color;
+  // Thème clair avec nuances de gris
+  --ion-color-secondary: #404040; // Gris foncé pour le texte principal
+  --ion-color-tertiary: #ff4500; // Orange vif comme accent secondaire
+  --ion-color-light: #f8f8f8; // Gris très clair pour les fonds de section
+  --ion-color-medium: #757575; // Gris moyen pour le texte secondaire
+  --ion-color-dark: #303030; // Gris foncé pour les titres
+  --ion-color-success: #00c853; // Vert pour les actions positives
+  
+  --ion-background-color: #f0f0f0; // Fond gris très clair par défaut
+  --ion-text-color: #303030; // Texte gris foncé par défaut
+  
+  --ion-safe-area-top: env(safe-area-inset-top);
+  --ion-safe-area-bottom: env(safe-area-inset-bottom);
+}
+
+ion-content {
+  --background: #f0f0f0; // Gris très clair
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+}
+
+ion-header {
+  ion-toolbar {
+    --background: white;
+    --border-style: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    
+    ion-title {
+      font-weight: 700;
+      font-size: 18px;
+      color: #000000; // Noir pour le titre "Home"
+      text-align: center;
+    }
+    
+    ion-button {
+      --color: #000000; // Noir pour les icônes
+      
+      ion-icon {
+        font-size: 20px;
+      }
+    }
   }
 }
 
-// Weekly summary section
+// Style Strava: entête avec dégradé et typographie épurée
+.header-banner {
+  padding: 16px 20px 20px;
+  background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+  color: black; // Texte noir sur fond jaune pour meilleur contraste
+  margin-bottom: 0; // Strava a un design sans marges
+  
+  h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  
+  p {
+    margin: 6px 0 0;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0.9;
+  }
+}
+
+// Style Strava: barre de recherche intégrée
+.search-container {
+  padding: 0 16px 16px;
+  background: white; // Strava a des sections en blanc
+  border-radius: 0 0 8px 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  
+  ion-searchbar {
+    --background: #f4f4f4; // Gris plus clair
+    --box-shadow: none;
+    --border-radius: 4px; // Strava utilise des bordures moins arrondies
+    --placeholder-color: #999;
+    --icon-color: #999;
+    --color: var(--ion-color-secondary);
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+  }
+}
+
+// Style Strava: filtres horizontaux en pilules
+.discipline-filter {
+  padding: 12px 16px;
+  margin: 0 0 8px 0;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .filter-item {
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600; // Strava utilise du texte semi-gras
+    background: #f4f4f4; // Gris très clair
+    color: var(--ion-color-secondary);
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    box-shadow: none; // Strava a un design plus plat
+    
+    &.active {
+      background: var(--ion-color-primary);
+      color: var(--ion-color-primary-contrast);
+    }
+  }
+}
+
+// Style Strava: titres de section avec une police plus légère
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 24px 16px 8px;
+  color: var(--ion-color-secondary);
+  display: flex;
+  align-items: center;
+  text-transform: uppercase; // Strava utilise souvent des titres en majuscules
+  letter-spacing: 0.5px;
+  
+  ion-icon {
+    margin-right: 6px;
+    color: var(--ion-color-primary);
+  }
+}
+
+// Style Strava: section partenaires
+.partners-container {
+  margin: 0 8px;
+  padding: 12px 16px;
+  background: white; // Strava utilise beaucoup de fonds blancs
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  
+  .partners-list {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 16px 0;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .partner-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      
+      .avatar-container {
+        position: relative;
+        margin-bottom: 8px;
+        
+        .avatar {
+          width: 56px; // Plus petit comme Strava
+          height: 56px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1); // Ombre plus subtile
+        }
+        
+        .status-indicator {
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: var(--ion-color-success);
+          border: 1.5px solid white;
+        }
+      }
+      
+      .partner-info {
+        text-align: center;
+        
+        .name {
+          font-weight: 600;
+          font-size: 12px;
+          margin: 0 0 2px;
+          color: var(--ion-color-secondary);
+        }
+        
+        .details {
+          font-size: 11px;
+          color: var(--ion-color-medium);
+          margin: 0;
+        }
+      }
+    }
+  }
+}
+
+// Style Strava: fil d'activités
+.activity-feed {
+  margin: 0 8px;
+  
+  .feed-item {
+    background: white;
+    margin-bottom: 8px; // Espacement réduit comme Strava
+    overflow: hidden;
+    border-bottom: 1px solid #eee; // Séparation subtile comme Strava
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    
+    .feed-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      
+      .user-avatar {
+        width: 32px; // Plus petit comme Strava
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      
+      .user-info {
+        margin-left: 12px;
+        flex: 1;
+        
+        .username {
+          font-weight: 600;
+          font-size: 13px;
+          margin: 0;
+          color: var(--ion-color-secondary);
+        }
+        
+        .activity-meta {
+          font-size: 11px; // Plus petit comme Strava
+          color: var(--ion-color-medium);
+          margin: 0;
+          display: flex;
+          align-items: center;
+          
+          ion-icon {
+            font-size: 12px;
+            margin-right: 3px;
+          }
+          
+          span + span {
+            margin-left: 8px;
+          }
+        }
+      }
+      
+      .activity-type {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--ion-color-primary-contrast);
+        background: var(--ion-color-primary);
+        padding: 2px 6px;
+        border-radius: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+    
+    .activity-image {
+      width: 100%;
+      height: 180px; // Plus petit comme Strava
+      object-fit: cover;
+    }
+    
+    .activity-content {
+      padding: 12px 16px;
+      
+      .activity-title {
+        font-weight: 600;
+        font-size: 15px;
+        margin: 0 0 6px;
+        color: var(--ion-color-secondary);
+      }
+      
+      .activity-description {
+        font-size: 13px;
+        line-height: 1.4;
+        color: var(--ion-color-secondary);
+        margin: 0 0 12px;
+      }
+      
+      // Style Strava: statistiques en ligne
+      .activity-stats {
+        display: flex;
+        margin-bottom: 16px;
+        padding: 8px 0;
+        border-top: 1px solid #f0f0f0;
+        border-bottom: 1px solid #f0f0f0;
+        justify-content: flex-end; // Aligner à droite
+        gap: 16px; // Espacement entre les statistiques
+        
+        .stat {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 0;
+          border-right: none; // Suppression des bordures
+          
+          &:last-child {
+            margin-right: 0;
+          }
+          
+          .value {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--ion-color-secondary);
+            margin-bottom: 2px;
+          }
+          
+          .label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--ion-color-medium);
+            letter-spacing: 0.5px;
+          }
+        }
+      }
+      
+      // Style Strava: boutons d'action
+      .activity-actions {
+        display: flex;
+        padding-top: 0; // Pas de bordure supérieure
+        
+        ion-button {
+          --padding-start: 0;
+          --padding-end: 0;
+          flex: 1;
+          margin: 0;
+          height: 36px;
+          font-weight: 500;
+          font-size: 13px; // Plus petit comme Strava
+          --color: var(--ion-color-medium); // Gris
+          
+          ion-icon {
+            margin-right: 4px;
+            font-size: 16px;
+          }
+          
+          &:active {
+            --color: var(--ion-color-primary);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Style Strava: section événements
+.events-container {
+  background: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 0 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  
+  .events-list {
+    padding: 4px 0;
+    
+    .event-card {
+      margin-bottom: 16px;
+      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      
+      .event-image-container {
+        position: relative;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        overflow: hidden;
+        
+        .event-image {
+          width: 100%;
+          height: 120px;
+          object-fit: cover;
+        }
+        
+        .event-type-badge {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          background: var(--ion-color-primary);
+          color: var(--ion-color-primary-contrast);
+          font-size: 10px;
+          font-weight: 600;
+          padding: 3px 8px;
+          border-radius: 3px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+      }
+      
+      .event-content {
+        .event-title {
+          font-size: 15px;
+          font-weight: 600;
+          margin: 0 0 8px;
+          color: var(--ion-color-secondary);
+        }
+        
+        .event-details {
+          margin-bottom: 12px;
+          
+          .event-detail-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: var(--ion-color-medium);
+            
+            ion-icon {
+              font-size: 14px;
+              margin-right: 6px;
+              color: var(--ion-color-medium);
+            }
+          }
+        }
+        
+        .event-cta-button {
+          margin: 0;
+          height: 36px;
+          --color: var(--ion-color-primary);
+          font-weight: 600;
+          font-size: 13px;
+          text-transform: none;
+          --background: #f4f4f4;
+          --border-radius: 4px;
+          
+          &:active {
+            --background: #f0f0f0;
+          }
+        }
+      }
+      
+      // Style tablette - design responsive
+      @media (min-width: 768px) {
+        flex-direction: row;
+        
+        .event-image-container {
+          width: 200px;
+          margin-right: 16px;
+          margin-bottom: 0;
+          
+          .event-image {
+            height: 100%;
+          }
+        }
+        
+        .event-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          
+          .event-cta-button {
+            margin-top: auto;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Style Strava: bouton FAB
+.fab-button {
+  --background: var(--ion-color-primary);
+  --background-activated: var(--ion-color-primary-shade);
+  --background-hover: var(--ion-color-primary-tint);
+  --color: var(--ion-color-primary-contrast); // Noir sur jaune
+  --box-shadow: 0 2px 10px rgba(255, 184, 0, 0.4); // Ombre plus subtile
+  --border-radius: 50%;
+  margin-bottom: 16px;
+  margin-right: 16px;
+  transition: all 0.2s ease;
+  
+  &:active {
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transform: scale(0.95);
+  }
+}
+
+/* Animation au toucher */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.partner-item:active .avatar-container .avatar {
+  animation: pulse 0.3s forwards;
+}
+
+/* Transitions fluides */
+ion-content {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for the horizontal lists */
+.nearby-partners::-webkit-scrollbar {
+  height: 4px;
+}
+
+.nearby-partners::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.nearby-partners::-webkit-scrollbar-thumb {
+  background: var(--ion-color-medium);
+  border-radius: 4px;
+}
+
+.nearby-partners::-webkit-scrollbar-thumb:hover {
+  background: var(--ion-color-medium-shade);
+}
+
+.filter-chips::-webkit-scrollbar {
+  height: 0;
+  display: none;
+}
+
+// Style Strava: résumé hebdomadaire
 .weekly-summary {
-  @include card-style;
-  margin: $standard-padding;
+  padding: 16px 20px;
+  background: white;
+  border-bottom: 1px solid #eeeeee;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   
   .summary-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 16px;
     
     h2 {
       margin: 0;
-      font-size: 18px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ion-color-dark);
     }
     
     .share-button {
-      color: $primary-color;
-      font-size: 14px;
+      --color: var(--ion-color-primary);
+      height: 32px;
+      font-size: 12px;
+      font-weight: 600;
+      
+      ion-icon {
+        margin-right: 4px;
+      }
     }
   }
   
@@ -69,306 +589,38 @@ ion-content {
       flex: 1;
       
       .stat-value {
-        font-size: 24px;
+        font-size: 22px;
         font-weight: 700;
-        color: $primary-color;
+        color: var(--ion-color-dark);
+        margin-bottom: 2px;
       }
       
       .stat-label {
-        font-size: 14px;
-        color: #666;
+        font-size: 12px;
+        color: var(--ion-color-medium);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
     }
   }
   
   .progress-bar {
-    height: 6px;
-    background: $light-gray;
-    border-radius: 3px;
-    margin-bottom: 5px;
+    height: 4px;
+    background-color: #f0f0f0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 6px;
     
     .progress {
       height: 100%;
-      background: linear-gradient(to right, $primary-color, $secondary-color);
-      border-radius: 3px;
+      background-color: var(--ion-color-primary);
+      border-radius: 2px;
     }
   }
   
   .progress-label {
-    font-size: 13px;
-    color: #666;
+    font-size: 11px;
+    color: var (--ion-color-medium);
     text-align: center;
   }
-}
-
-// Search and filters
-.search-container {
-  padding: 0 $standard-padding;
-  margin-bottom: 15px;
-  
-  ion-searchbar {
-    --box-shadow: none;
-    --background: white;
-    --border-radius: 10px;
-  }
-}
-
-.discipline-filter {
-  @include flex-center;
-  overflow-x: auto;
-  padding: 0 $standard-padding;
-  margin-bottom: 15px;
-  
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .filter-item {
-    flex: 0 0 auto;
-    padding: 8px 16px;
-    margin-right: 10px;
-    background: white;
-    border-radius: 20px;
-    font-size: 14px;
-    border: 1px solid $light-gray;
-    transition: all 0.3s ease;
-    
-    &.active {
-      background: $primary-color;
-      color: white;
-      border-color: $primary-color;
-    }
-  }
-}
-
-// Events section
-.events-container {
-  .event-card {
-    @include card-style;
-    margin: 0 $standard-padding 16px;
-    padding: 0;
-    overflow: hidden;
-    
-    .event-image-container {
-      position: relative;
-      height: 140px;
-      
-      .event-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      
-      .event-type-badge {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: rgba(0, 0, 0, 0.6);
-        color: white;
-        padding: 5px 10px;
-        border-radius: 15px;
-        font-size: 12px;
-      }
-    }
-    
-    .event-content {
-      padding: $standard-padding;
-      
-      .event-title {
-        margin: 0 0 10px;
-        font-size: 16px;
-        font-weight: 600;
-      }
-      
-      .event-details {
-        margin-bottom: 15px;
-        
-        .event-detail-item {
-          @include flex-center;
-          margin-bottom: 8px;
-          font-size: 14px;
-          color: #666;
-          
-          ion-icon {
-            margin-right: 8px;
-            font-size: 16px;
-          }
-        }
-      }
-      
-      .event-cta-button {
-        margin: 0;
-        --color: #{$primary-color};
-        font-weight: 600;
-      }
-    }
-  }
-}
-
-// Partners section
-.partners-container {
-  padding: 0 $standard-padding;
-  
-  .partners-list {
-    display: flex;
-    overflow-x: auto;
-    
-    &::-webkit-scrollbar {
-      display: none;
-    }
-    
-    .partner-item {
-      flex: 0 0 auto;
-      margin-right: 20px;
-      text-align: center;
-      width: 80px;
-      
-      .avatar-container {
-        position: relative;
-        margin-bottom: 5px;
-        
-        .avatar {
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 2px solid white;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .status-indicator {
-          position: absolute;
-          bottom: 3px;
-          right: 3px;
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: #4CAF50;
-          border: 2px solid white;
-        }
-      }
-      
-      .partner-info {
-        .name {
-          margin: 0;
-          font-size: 14px;
-          font-weight: 600;
-        }
-        
-        .details {
-          margin: 0;
-          font-size: 12px;
-          color: #666;
-        }
-      }
-    }
-  }
-}
-
-// Activity feed
-.activity-feed {
-  .feed-item {
-    @include card-style;
-    margin: 0 $standard-padding 20px;
-    
-    .feed-header {
-      @include flex-center;
-      margin-bottom: 12px;
-      
-      .user-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        margin-right: 10px;
-      }
-      
-      .user-info {
-        flex: 1;
-        
-        .username {
-          margin: 0;
-          font-weight: 600;
-          font-size: 16px;
-        }
-        
-        .activity-meta {
-          margin: 0;
-          font-size: 12px;
-          color: #666;
-          @include flex-center;
-          
-          ion-icon {
-            margin: 0 5px 0 10px;
-            
-            &:first-child {
-              margin-left: 0;
-            }
-          }
-        }
-      }
-      
-      .activity-type {
-        font-size: 12px;
-        color: $primary-color;
-        font-weight: 500;
-      }
-    }
-    
-    .activity-image {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 12px;
-    }
-    
-    .activity-content {
-      .activity-title {
-        margin: 0 0 8px;
-        font-size: 18px;
-        font-weight: 600;
-      }
-      
-      .activity-description {
-        font-size: 14px;
-        color: #555;
-        margin-bottom: 15px;
-      }
-      
-      .activity-stats {
-        display: flex;
-        justify-content: space-around;
-        margin-bottom: 15px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid $light-gray;
-        
-        .stat {
-          text-align: center;
-          
-          .value {
-            display: block;
-            font-size: 18px;
-            font-weight: 700;
-            color: $text-color;
-          }
-          
-          .label {
-            font-size: 12px;
-            color: #666;
-          }
-        }
-      }
-      
-      .activity-actions {
-        display: flex;
-        justify-content: space-between;
-      }
-    }
-  }
-}
-
-// FAB button
-.fab-button {
-  --background: #{$primary-color};
-  --background-activated: #{$secondary-color};
 }
