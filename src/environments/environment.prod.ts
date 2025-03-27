@@ -1,11 +1,12 @@
 export const environment = {
   production: true,
   firebaseConfig: {
-    apiKey: "AIzaSyAyXBWDln1vsBrX8UCrnX-QslZ3_-CoPL4",
-    authDomain: "bunked-final.firebaseapp.com",
-    projectId: "bunked-final",
-    storageBucket: "bunked-final.appspot.com",
-    messagingSenderId: "104830414423",
-    appId: "1:104830414423:web:4e6e05fd5a56d4b661fd12"
+    apiKey: "AIzaSyBI5jUI_TPkrRuW7LwvC6FTIvKB8ibNo5o",
+    authDomain: "appfight-70472.firebaseapp.com",
+    projectId: "appfight-70472",
+    storageBucket: "appfight-70472.firebasestorage.app",
+    messagingSenderId: "700144156242",
+    appId: "1:700144156242:web:04a133f91b0220594aa98b",
+    measurementId: "G-0R90ENJSNF"
   }
 };

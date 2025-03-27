@@ -14,6 +14,9 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { environment } from '../environments/environment';
 
+// Import FirebaseService
+import { FirebaseService } from './services/firebase.service';
+
 // Initialize Firebase
 const app = initializeApp(environment.firebaseConfig);
 // Get Firebase service instances
@@ -34,6 +37,7 @@ const auth = getAuth(app);
     { provide: 'FIREBASE_APP', useValue: app },
     { provide: 'FIRESTORE', useValue: firestore },
     { provide: 'AUTH', useValue: auth },
+    FirebaseService,
   ],
   bootstrap: [AppComponent],
 })
