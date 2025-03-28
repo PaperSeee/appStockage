@@ -16,10 +16,264 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <div class="placeholder-container">
-    <ion-icon name="analytics-outline"></ion-icon>
-    <h2>Suivre ton évolution</h2>
-    <p>Visualise tes progrès et statistiques d'entraînement</p>
+<ion-content [fullscreen]="true" class="evolution-content">
+  <!-- Stats Summary Cards -->
+  <div class="stats-overview">
+    <div class="stat-card">
+      <div class="stat-value">24</div>
+      <div class="stat-label">Entraînements</div>
+      <div class="stat-trend positive">
+        <ion-icon name="arrow-up"></ion-icon>
+        <span>12%</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">5</div>
+      <div class="stat-label">Compétitions</div>
+      <div class="stat-trend neutral">
+        <ion-icon name="remove"></ion-icon>
+        <span>0%</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">18h</div>
+      <div class="stat-label">Temps total</div>
+      <div class="stat-trend positive">
+        <ion-icon name="arrow-up"></ion-icon>
+        <span>8%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weekly Progress Chart -->
+  <div class="chart-section">
+    <div class="section-header">
+      <h2>Progression hebdomadaire</h2>
+      <ion-button fill="clear" size="small">
+        <ion-icon name="filter-outline"></ion-icon>
+      </ion-button>
+    </div>
+    <div class="chart-container">
+      <!-- Y-axis scale -->
+      <div class="chart-y-axis">
+        <div class="y-axis-label">100%</div>
+        <div class="y-axis-label">75%</div>
+        <div class="y-axis-label">50%</div>
+        <div class="y-axis-label">25%</div>
+        <div class="y-axis-label">0%</div>
+      </div>
+      <!-- Chart with grid -->
+      <div class="chart-placeholder">
+        <div class="chart-grid"></div>
+        <div class="chart-bars">
+          <div class="chart-bar" style="height: 30%"><span>L</span></div>
+          <div class="chart-bar" style="height: 60%"><span>M</span></div>
+          <div class="chart-bar" style="height: 45%"><span>M</span></div>
+          <div class="chart-bar" style="height: 75%"><span>J</span></div>
+          <div class="chart-bar" style="height: 25%"><span>V</span></div>
+          <div class="chart-bar" style="height: 90%"><span>S</span></div>
+          <div class="chart-bar" style="height: 15%"><span>D</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Training Calendar -->
+  <div class="calendar-section">
+    <div class="section-header">
+      <h2>Calendrier d'entraînement</h2>
+      <div class="month-selector">
+        <ion-button fill="clear" size="small" class="month-nav-btn">
+          <ion-icon name="chevron-back"></ion-icon>
+        </ion-button>
+        <ion-select interface="popover" value="6" class="month-select">
+          <ion-select-option value="1">Janvier 2023</ion-select-option>
+          <ion-select-option value="2">Février 2023</ion-select-option>
+          <ion-select-option value="3">Mars 2023</ion-select-option>
+          <ion-select-option value="4">Avril 2023</ion-select-option>
+          <ion-select-option value="5">Mai 2023</ion-select-option>
+          <ion-select-option value="6">Juin 2023</ion-select-option>
+          <ion-select-option value="7">Juillet 2023</ion-select-option>
+          <ion-select-option value="8">Août 2023</ion-select-option>
+          <ion-select-option value="9">Septembre 2023</ion-select-option>
+          <ion-select-option value="10">Octobre 2023</ion-select-option>
+          <ion-select-option value="11">Novembre 2023</ion-select-option>
+          <ion-select-option value="12">Décembre 2023</ion-select-option>
+        </ion-select>
+        <ion-button fill="clear" size="small" class="month-nav-btn">
+          <ion-icon name="chevron-forward"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+    <div class="calendar-grid">
+      <div class="calendar-day-header">L</div>
+      <div class="calendar-day-header">M</div>
+      <div class="calendar-day-header">M</div>
+      <div class="calendar-day-header">J</div>
+      <div class="calendar-day-header">V</div>
+      <div class="calendar-day-header">S</div>
+      <div class="calendar-day-header">D</div>
+
+      <!-- Days would be generated dynamically -->
+      <div class="calendar-day inactive">29</div>
+      <div class="calendar-day inactive">30</div>
+      <div class="calendar-day inactive">31</div>
+      <div class="calendar-day">1</div>
+      <div class="calendar-day">2</div>
+      <div class="calendar-day trained">3</div>
+      <div class="calendar-day">4</div>
+      
+      <div class="calendar-day trained">5</div>
+      <div class="calendar-day">6</div>
+      <div class="calendar-day trained">7</div>
+      <div class="calendar-day">8</div>
+      <div class="calendar-day trained">9</div>
+      <div class="calendar-day competition">10</div>
+      <div class="calendar-day">11</div>
+      
+      <div class="calendar-day">12</div>
+      <div class="calendar-day trained">13</div>
+      <div class="calendar-day">14</div>
+      <div class="calendar-day trained">15</div>
+      <div class="calendar-day">16</div>
+      <div class="calendar-day trained">17</div>
+      <div class="calendar-day">18</div>
+      
+      <div class="calendar-day trained">19</div>
+      <div class="calendar-day">20</div>
+      <div class="calendar-day trained">21</div>
+      <div class="calendar-day">22</div>
+      <div class="calendar-day trained">23</div>
+      <div class="calendar-day competition">24</div>
+      <div class="calendar-day">25</div>
+      
+      <div class="calendar-day">26</div>
+      <div class="calendar-day trained">27</div>
+      <div class="calendar-day">28</div>
+      <div class="calendar-day trained">29</div>
+      <div class="calendar-day">30</div>
+      <div class="calendar-day inactive">1</div>
+      <div class="calendar-day inactive">2</div>
+    </div>
+    
+    <div class="calendar-legend">
+      <div class="legend-item">
+        <div class="legend-color trained"></div>
+        <span>Entraînement</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color competition"></div>
+        <span>Compétition</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Competitions -->
+  <div class="competitions-section">
+    <div class="section-header">
+      <h2>Compétitions récentes</h2>
+      <ion-button fill="clear" size="small">
+        Voir tout
+        <ion-icon name="chevron-forward"></ion-icon>
+      </ion-button>
+    </div>
+    
+    <div class="competition-card">
+      <div class="competition-medal gold">
+        <ion-icon name="trophy"></ion-icon>
+      </div>
+      <div class="competition-details">
+        <h3>Championnat Régional MMA</h3>
+        <p class="competition-date">24 juin 2023</p>
+        <p class="competition-location">
+          <ion-icon name="location-outline"></ion-icon>
+          Paris, France
+        </p>
+      </div>
+      <div class="competition-position">1er</div>
+    </div>
+    
+    <div class="competition-card">
+      <div class="competition-medal silver">
+        <ion-icon name="trophy"></ion-icon>
+      </div>
+      <div class="competition-details">
+        <h3>Tournoi Open de Boxe</h3>
+        <p class="competition-date">10 juin 2023</p>
+        <p class="competition-location">
+          <ion-icon name="location-outline"></ion-icon>
+          Lyon, France
+        </p>
+      </div>
+      <div class="competition-position">2ème</div>
+    </div>
+  </div>
+
+  <!-- Replacing Metrics with Goals & Achievements Section -->
+  <div class="goals-section">
+    <div class="section-header">
+      <h2>Objectifs & Récompenses</h2>
+      <ion-button fill="clear" size="small">
+        <ion-icon name="add-outline"></ion-icon>
+      </ion-button>
+    </div>
+    
+    <div class="goal-timeline">
+      <!-- Completed goal -->
+      <div class="goal-item completed">
+        <div class="goal-icon">
+          <ion-icon name="checkmark-circle"></ion-icon>
+        </div>
+        <div class="goal-content">
+          <div class="goal-title">10 séances consécutives</div>
+          <div class="goal-date">Accompli le 15 mai 2023</div>
+          <div class="goal-badge">
+            <ion-icon name="medal"></ion-icon>
+            <span>Persévérance</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- In progress goal -->
+      <div class="goal-item in-progress">
+        <div class="goal-icon">
+          <ion-icon name="time"></ion-icon>
+        </div>
+        <div class="goal-content">
+          <div class="goal-title">Participer à 3 compétitions</div>
+          <div class="goal-progress">
+            <div class="progress-bar">
+              <div class="progress" style="width: 66%"></div>
+            </div>
+            <span>2/3</span>
+          </div>
+          <div class="goal-badge">
+            <ion-icon name="trophy"></ion-icon>
+            <span>Compétiteur</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Upcoming goal -->
+      <div class="goal-item upcoming">
+        <div class="goal-icon">
+          <ion-icon name="flag"></ion-icon>
+        </div>
+        <div class="goal-content">
+          <div class="goal-title">Atteindre 20 heures d'entraînement mensuel</div>
+          <div class="goal-progress">
+            <div class="progress-bar">
+              <div class="progress" style="width: 90%"></div>
+            </div>
+            <span>18/20 heures</span>
+          </div>
+          <div class="goal-date">Échéance: 30 juin 2023</div>
+        </div>
+      </div>
+    </div>
+    
+    <ion-button expand="block" fill="outline" class="view-all-btn">
+      Voir tous les objectifs
+    </ion-button>
   </div>
 </ion-content>
