@@ -37,4 +37,11 @@ const auth = getAuth(app);
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule {
+  constructor() {
+    console.log('AppModule providers:', [
+      { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+      FirebaseService,
+    ]);
+  }
+}
