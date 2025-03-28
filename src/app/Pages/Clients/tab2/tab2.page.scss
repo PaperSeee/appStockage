@@ -1,0 +1,145 @@
+ion-content {
+  --background: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-container {
+  position: relative;
+  height: 75vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.card {
+  position: absolute;
+  width: 90%;
+  max-width: 400px;
+  height: 95%;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  display: none;
+  overflow: hidden;
+  transition: transform 0.3s ease-out;
+}
+
+.card.visible {
+  display: block;
+}
+
+.card-image {
+  height: 60%;
+  background-size: cover !important;
+  background-position: center !important;
+  position: relative;
+  background-color: #ddd; /* Fallback color if image fails to load */
+  background-image: url('https://ionicframework.com/docs/img/demos/card-media.png'); /* Default image */
+}
+
+.card-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+  color: white;
+}
+
+.card-info h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.card-info p {
+  margin: 5px 0;
+  font-size: 1rem;
+}
+
+.card-body {
+  padding: 15px;
+  height: 40%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-body p {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 15px;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.card-actions ion-button {
+  flex: 1;
+}
+
+.disciplines {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+ion-chip {
+  --background: rgba(255, 255, 255, 0.2);
+  --color: white;
+  margin: 2px;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  padding: 20px 0;
+}
+
+ion-button[shape="circle"] {
+  --border-radius: 50%;
+  --padding-start: 0;
+  --padding-end: 0;
+  width: 60px;
+  height: 60px;
+}
+
+.empty-state {
+  height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0 20px;
+  margin: auto 0;
+}
+
+.empty-state ion-icon {
+  font-size: 60px;
+  color: var(--ion-color-medium);
+  margin-bottom: 20px;
+}
+
+.empty-state h3 {
+  font-size: 1.2rem;
+  color: var(--ion-color-dark);
+  margin-bottom: 10px;
+}
+
+.empty-state p {
+  color: var(--ion-color-medium);
+  margin-bottom: 20px;
+}

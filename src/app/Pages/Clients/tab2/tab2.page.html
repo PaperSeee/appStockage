@@ -1,17 +1,114 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Favoris
+      Sparring Partners
     </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openFilters()" color="dark">
+        <ion-icon name="options-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Favoris</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <!-- Filter modal that appears when filter button is clicked -->
+  <ion-modal [isOpen]="isFilterModalOpen" (didDismiss)="closeFilters()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Filtres</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeFilters()">Fermer</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-list>
+          <ion-item>
+            <ion-select label="Discipline" [(ngModel)]="filters.discipline" multiple="true" placeholder="Sélectionner disciplines">
+              <ion-select-option value="boxe">Boxe</ion-select-option>
+              <ion-select-option value="mma">MMA</ion-select-option>
+              <ion-select-option value="jiu-jitsu">Jiu-jitsu</ion-select-option>
+              <ion-select-option value="muay-thai">Muay Thai</ion-select-option>
+              <ion-select-option value="karate">Karaté</ion-select-option>
+              <ion-select-option value="judo">Judo</ion-select-option>
+            </ion-select>
+          </ion-item>
+          
+          <ion-item>
+            <ion-select label="Niveau" [(ngModel)]="filters.level" placeholder="Sélectionner niveau">
+              <ion-select-option value="debutant">Débutant</ion-select-option>
+              <ion-select-option value="intermediaire">Intermédiaire</ion-select-option>
+              <ion-select-option value="avance">Avancé</ion-select-option>
+              <ion-select-option value="professionnel">Professionnel</ion-select-option>
+            </ion-select>
+          </ion-item>
+          
+          <ion-item>
+            <ion-select label="Genre" [(ngModel)]="filters.gender" placeholder="Sélectionner genre">
+              <ion-select-option value="tous">Tous</ion-select-option>
+              <ion-select-option value="homme">Homme</ion-select-option>
+              <ion-select-option value="femme">Femme</ion-select-option>
+            </ion-select>
+          </ion-item>
+          
+          <ion-item>
+            <ion-range [(ngModel)]="filters.distance" min="1" max="100" step="1" label="Distance maximum">
+              <div slot="label">Distance maximum: {{filters.distance}} km</div>
+            </ion-range>
+          </ion-item>
+        </ion-list>
+        
+        <div class="ion-padding">
+          <ion-button expand="block" (click)="applyFilters()">Appliquer les filtres</ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 
-  <app-explore-container name="Tab 2 page"></app-explore-container>
+  <!-- Cards container for the swipeable profiles -->
+  <div class="card-container" *ngIf="filteredPartners.length > 0">
+    <div class="card" *ngFor="let partner of filteredPartners; let i = index" 
+         [class.visible]="i === currentPartnerIndex"
+         (swipeleft)="swipeLeft()"
+         (swiperight)="sendMessage(partner)">
+      <div class="card-image" [style.background]="getSafeBackground(partner.photo)">
+        <div class="card-info">
+          <h2>{{partner.name}}, {{partner.age}}</h2>
+          <p>{{partner.level}} · {{partner.mainDiscipline}}</p>
+          <p>{{partner.distance}} km · {{partner.city}}</p>
+          
+          <div class="disciplines">
+            <ion-chip *ngFor="let discipline of partner.disciplines">
+              {{discipline}}
+            </ion-chip>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>{{partner.bio}}</p>
+        
+        <!-- Card action buttons -->
+        <div class="card-actions">
+          <ion-button color="medium" (click)="swipeLeft()">
+            <ion-icon slot="start" name="close-outline"></ion-icon>
+            Passer
+          </ion-button>
+          <ion-button color="primary" (click)="sendMessage(partner)">
+            <ion-icon slot="start" name="chatbubble-outline"></ion-icon>
+            Message
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state when no profiles are available -->
+  <div class="empty-state" *ngIf="filteredPartners.length === 0">
+    <ion-icon name="sad-outline" size="large"></ion-icon>
+    <h3>Aucun partenaire disponible</h3>
+    <p>Modifiez vos filtres pour trouver plus de partenaires</p>
+    <ion-button (click)="openFilters()">Modifier les filtres</ion-button>
+  </div>
 </ion-content>
