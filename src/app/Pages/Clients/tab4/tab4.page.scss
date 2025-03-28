@@ -1,0 +1,39 @@
+// Event card styling
+ion-card {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  
+  img {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+  }
+}
+
+// Filter section
+ion-card-header ion-card-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+// Event status chips
+ion-chip {
+  margin-bottom: 8px;
+}
+
+// Spacing in the modal
+form ion-item {
+  margin-bottom: 8px;
+}
+
+// Custom style for the event list when empty
+.ion-text-center {
+  padding: 20px;
+  
+  ion-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+}

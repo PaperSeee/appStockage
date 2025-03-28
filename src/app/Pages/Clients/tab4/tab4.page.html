@@ -1,15 +1,226 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Profil</ion-title>
+    <ion-title>Événements</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Profil</ion-title>
+      <ion-title size="large">Événements</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <app-explore-container name="Page Profil"></app-explore-container>
+  <!-- Filters Section -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Filtres</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="4">
+            <ion-item>
+              <ion-label>Type de tournoi</ion-label>
+              <ion-select [(ngModel)]="tournamentType" interface="popover">
+                <ion-select-option value="all">Tous</ion-select-option>
+                <ion-select-option value="open">Ouvert à tous</ion-select-option>
+                <ion-select-option value="selection">Sur sélection</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-md="4">
+            <ion-item>
+              <ion-label>Cash Prize</ion-label>
+              <ion-select [(ngModel)]="cashPrize" interface="popover">
+                <ion-select-option value="all">Tous</ion-select-option>
+                <ion-select-option value="yes">Avec Cash Prize</ion-select-option>
+                <ion-select-option value="no">Sans Cash Prize</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+          <ion-col size="12" size-md="4">
+            <ion-item>
+              <ion-label>Discipline</ion-label>
+              <ion-select [(ngModel)]="discipline" interface="popover">
+                <ion-select-option value="all">Toutes</ion-select-option>
+                <ion-select-option value="boxing">Boxe</ion-select-option>
+                <ion-select-option value="mma">MMA</ion-select-option>
+                <ion-select-option value="jiujitsu">Jiu-Jitsu</ion-select-option>
+                <ion-select-option value="kickboxing">Kick-boxing</ion-select-option>
+                <ion-select-option value="muaythai">Muay Thai</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+            <ion-button expand="block" (click)="applyFilters()">Appliquer les filtres</ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Events List -->
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Chargement des événements...</p>
+  </div>
+
+  <div *ngIf="!loading && filteredEvents.length === 0" class="ion-text-center ion-padding">
+    <ion-icon name="calendar-outline" size="large"></ion-icon>
+    <p>Aucun événement ne correspond à vos critères.</p>
+  </div>
+
+  <ion-list *ngIf="!loading && filteredEvents.length > 0">
+    <ion-card *ngFor="let event of filteredEvents">
+      <img *ngIf="event.image" [src]="event.image" alt="{{ event.name }}">
+      <ion-card-header>
+        <ion-card-subtitle>
+          {{ event.date | date:'dd/MM/yyyy' }} | {{ event.discipline }}
+        </ion-card-subtitle>
+        <ion-card-title>{{ event.name }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>{{ event.description }}</p>
+
+        <ion-chip *ngIf="event.isOpen" color="success">
+          <ion-icon name="people-outline"></ion-icon>
+          <ion-label>Ouvert à tous</ion-label>
+        </ion-chip>
+        <ion-chip *ngIf="!event.isOpen" color="primary">
+          <ion-icon name="medal-outline"></ion-icon>
+          <ion-label>Sur sélection</ion-label>
+        </ion-chip>
+        <ion-chip *ngIf="event.hasCashPrize" color="warning">
+          <ion-icon name="cash-outline"></ion-icon>
+          <ion-label>Cash Prize</ion-label>
+        </ion-chip>
+
+        <ion-item lines="none">
+          <ion-icon name="location-outline" slot="start"></ion-icon>
+          <ion-label>{{ event.location }}</ion-label>
+        </ion-item>
+        
+        <ion-button expand="block" (click)="openRegistration(event)" [disabled]="event.isFull">
+          <ion-icon name="create-outline" slot="start"></ion-icon>
+          S'inscrire
+        </ion-button>
+        <p *ngIf="event.isFull" class="ion-text-center">
+          <ion-text color="danger">Complet</ion-text>
+        </p>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
 </ion-content>
+
+<!-- Registration Modal -->
+<ion-modal [isOpen]="isModalOpen" [backdropDismiss]="false">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Inscription à l'événement</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeModal()">Fermer</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <ion-item *ngIf="selectedEvent">
+        <ion-label>
+          <h2>{{ selectedEvent.name }}</h2>
+          <p>{{ selectedEvent.date | date:'dd/MM/yyyy' }} | {{ selectedEvent.location }}</p>
+        </ion-label>
+      </ion-item>
+
+      <form (ngSubmit)="submitRegistration()" [formGroup]="registrationForm">
+        <ion-item>
+          <ion-label position="floating">Nom</ion-label>
+          <ion-input formControlName="lastName" type="text" required></ion-input>
+          <ion-note slot="error" *ngIf="registrationForm.get('lastName')?.invalid && registrationForm.get('lastName')?.touched">
+            Le nom est requis
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Prénom</ion-label>
+          <ion-input formControlName="firstName" type="text" required></ion-input>
+          <ion-note slot="error" *ngIf="registrationForm.get('firstName')?.invalid && registrationForm.get('firstName')?.touched">
+            Le prénom est requis
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Date de naissance</ion-label>
+          <ion-datetime-button datetime="datetime"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime id="datetime" formControlName="birthDate" presentation="date"></ion-datetime>
+            </ng-template>
+          </ion-modal>
+          <ion-note slot="error" *ngIf="registrationForm.get('birthDate')?.invalid && registrationForm.get('birthDate')?.touched">
+            La date de naissance est requise
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Catégorie de poids (kg)</ion-label>
+          <ion-select formControlName="weightClass" interface="popover">
+            <ion-select-option value="bantamweight">Bantamweight (-61kg)</ion-select-option>
+            <ion-select-option value="featherweight">Featherweight (-66kg)</ion-select-option>
+            <ion-select-option value="lightweight">Lightweight (-70kg)</ion-select-option>
+            <ion-select-option value="welterweight">Welterweight (-77kg)</ion-select-option>
+            <ion-select-option value="middleweight">Middleweight (-84kg)</ion-select-option>
+            <ion-select-option value="lightheavyweight">Light Heavyweight (-93kg)</ion-select-option>
+            <ion-select-option value="heavyweight">Heavyweight (+93kg)</ion-select-option>
+          </ion-select>
+          <ion-note slot="error" *ngIf="registrationForm.get('weightClass')?.invalid && registrationForm.get('weightClass')?.touched">
+            La catégorie de poids est requise
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Niveau d'expérience</ion-label>
+          <ion-select formControlName="experienceLevel" interface="popover">
+            <ion-select-option value="beginner">Débutant (0-1 an)</ion-select-option>
+            <ion-select-option value="intermediate">Intermédiaire (1-3 ans)</ion-select-option>
+            <ion-select-option value="advanced">Avancé (3-5 ans)</ion-select-option>
+            <ion-select-option value="expert">Expert (5+ ans)</ion-select-option>
+            <ion-select-option value="professional">Professionnel</ion-select-option>
+          </ion-select>
+          <ion-note slot="error" *ngIf="registrationForm.get('experienceLevel')?.invalid && registrationForm.get('experienceLevel')?.touched">
+            Le niveau d'expérience est requis
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Email</ion-label>
+          <ion-input formControlName="email" type="email" required></ion-input>
+          <ion-note slot="error" *ngIf="registrationForm.get('email')?.invalid && registrationForm.get('email')?.touched">
+            Un email valide est requis
+          </ion-note>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Téléphone</ion-label>
+          <ion-input formControlName="phone" type="tel"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-checkbox formControlName="termsAccepted"></ion-checkbox>
+          <ion-label class="ion-padding-start">J'accepte les conditions générales et je certifie être apte physiquement à participer à cette compétition</ion-label>
+        </ion-item>
+        <ion-note *ngIf="registrationForm.get('termsAccepted')?.invalid && registrationForm.get('termsAccepted')?.touched" color="danger">
+          Vous devez accepter les conditions générales
+        </ion-note>
+
+        <div class="ion-padding">
+          <ion-button expand="block" type="submit" [disabled]="registrationForm.invalid">
+            Confirmer l'inscription
+          </ion-button>
+        </div>
+      </form>
+    </ion-content>
+  </ng-template>
+</ion-modal>
