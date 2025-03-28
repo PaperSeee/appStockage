@@ -7,7 +7,6 @@ import { FirebaseService } from './services/firebase.service';
 })
 export class ExampleComponent {
   constructor(private firebaseService: FirebaseService) {
-    // Your Firebase instance is now accessible via this.firebaseService
     console.log('Firebase service initialized');
   }
 

@@ -33,10 +33,7 @@ const auth = getAuth(app);
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    // Provide the Firebase instances if needed as injectable services
-    { provide: 'FIREBASE_APP', useValue: app },
-    { provide: 'FIRESTORE', useValue: firestore },
-    { provide: 'AUTH', useValue: auth },
+    // Removed any references to 'fr'
     FirebaseService,
   ],
   bootstrap: [AppComponent],
