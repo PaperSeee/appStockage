@@ -10,9 +10,9 @@ export const environment = {
     projectId: "appfight-70472",
     storageBucket: "appfight-70472.firebasestorage.app",
     messagingSenderId: "700144156242",
-    appId: "1:700144156242:web:04a133f91b0220594aa98b"
-    // Removed measurementId that was causing the injection error
-  }
+    appId: "1:700144156242:web:04a133f91b0220594aa98b",
+    measurementId: "G-0R90ENJSNF" 
+   }
 };
 
 /*

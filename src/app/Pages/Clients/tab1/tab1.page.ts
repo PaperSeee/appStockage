@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { FirebaseService } from '../../../services/firebase.service';
+import { AlertController } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 interface Training {
   id: number;
@@ -60,7 +63,11 @@ export class Tab1Page implements OnInit {
     progress: 65
   };
   
-  constructor() {}
+  constructor(
+    private firebaseService: FirebaseService,
+    private alertController: AlertController,
+    private router: Router // Ajout du service Router
+  ) {}
 
   ngOnInit() {
     this.loadMockData();
@@ -225,5 +232,63 @@ export class Tab1Page implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  async onAddButtonClick() {
+    const isLoggedIn = await this.firebaseService.isUserLoggedIn();
+    if (!isLoggedIn) {
+      const alert = await this.alertController.create({
+        header: 'Pas encore inscrit',
+        message: 'Vous devez être connecté pour ajouter un élément.',
+        buttons: [
+          {
+            text: 'Annuler',
+            role: 'cancel'
+          },
+          {
+            text: 'S\'inscrire',
+            handler: () => {
+              window.location.href = '/register'; // Redirige vers la page d'inscription
+            }
+          }
+        ]
+      });
+      await alert.present();
+      return;
+    }
+
+    // Logique pour ajouter un élément si l'utilisateur est connecté
+    console.log('Ajouter un élément');
+  }
+
+  async onEventRegister(event: Event) {
+    const isLoggedIn = await this.firebaseService.isUserLoggedIn();
+    if (!isLoggedIn) {
+      const alert = await this.alertController.create({
+        header: 'Pas encore inscrit',
+        message: 'Vous devez être connecté pour vous inscrire à un événement.',
+        buttons: [
+          {
+            text: 'Annuler',
+            role: 'cancel'
+          },
+          {
+            text: 'S\'inscrire',
+            handler: () => {
+              window.location.href = '/register'; // Redirige vers la page d'inscription
+            }
+          }
+        ]
+      });
+      await alert.present();
+      return;
+    }
+
+    // Logique pour s'inscrire à l'événement si l'utilisateur est connecté
+    console.log('Inscription à l\'événement:', event);
+  }
+
+  openProfile() {
+    this.router.navigate(['/profile']);
   }
 }

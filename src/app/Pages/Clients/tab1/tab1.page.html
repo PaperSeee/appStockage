@@ -1,7 +1,7 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button>
+      <ion-button (click)="openProfile()">
         <ion-icon name="person-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -115,7 +115,7 @@
               <span>{{event.participantsCount}} participants</span>
             </div>
           </div>
-          <ion-button expand="block" fill="clear" class="event-cta-button">
+          <ion-button expand="block" fill="clear" class="event-cta-button" (click)="onEventRegister(event)">
             S'inscrire
           </ion-button>
         </div>
@@ -206,7 +206,7 @@
   </div>
   
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button class="fab-button">
+    <ion-fab-button class="fab-button" (click)="onAddButtonClick()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>

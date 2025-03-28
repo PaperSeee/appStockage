@@ -4,6 +4,8 @@ import { ExploreContainerComponentModule } from '../../../explore-container/expl
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ToastController } from '@ionic/angular';
+import { FirebaseService } from '../../../services/firebase.service';
+import { AlertController } from '@ionic/angular';
 
 interface Event {
   id: number;
@@ -48,7 +50,9 @@ export class Tab4Page implements OnInit {
 
   constructor(
     private formBuilder: FormBuilder,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private firebaseService: FirebaseService,
+    private alertController: AlertController
   ) {
     this.registrationForm = this.formBuilder.group({
       firstName: ['', Validators.required],
@@ -167,7 +171,29 @@ export class Tab4Page implements OnInit {
     }, 500);
   }
 
-  openRegistration(event: Event) {
+  async openRegistration(event: Event) {
+    const isLoggedIn = await this.firebaseService.isUserLoggedIn();
+    if (!isLoggedIn) {
+      const alert = await this.alertController.create({
+        header: 'Pas encore inscrit',
+        message: 'Vous devez être connecté pour vous inscrire à un événement.',
+        buttons: [
+          {
+            text: 'Annuler',
+            role: 'cancel'
+          },
+          {
+            text: 'S\'inscrire',
+            handler: () => {
+              window.location.href = '/register'; // Redirige vers la page d'inscription
+            }
+          }
+        ]
+      });
+      await alert.present();
+      return;
+    }
+
     this.selectedEvent = event;
     this.isModalOpen = true;
     this.registrationForm.reset({

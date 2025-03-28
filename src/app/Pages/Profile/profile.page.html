@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Mon Profil</ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="danger" (click)="logout()">Déconnexion</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+    <ion-item>
+      <ion-label position="floating">Prénom</ion-label>
+      <ion-input formControlName="firstName"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="floating">Nom</ion-label>
+      <ion-input formControlName="lastName"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="floating">Email</ion-label>
+      <ion-input formControlName="email" type="email"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="floating">Photo</ion-label>
+      <ion-input formControlName="photo" type="url"></ion-input>
+    </ion-item>
+    <ion-button expand="block" type="submit" [disabled]="profileForm.invalid">Enregistrer</ion-button>
+  </form>
+</ion-content>

@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@angular/core';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import { environment } from '../../environments/environment';
 
@@ -48,6 +48,26 @@ export class FirebaseService {
     }
   }
 
+  isUserLoggedIn(): Promise<boolean> {
+    return new Promise((resolve) => {
+      onAuthStateChanged(this.auth, (user) => {
+        resolve(!!user);
+      });
+    });
+  }
+
+  async getCurrentUser() {
+    return new Promise((resolve, reject) => {
+      onAuthStateChanged(this.auth, (user) => {
+        if (user) {
+          resolve(user);
+        } else {
+          resolve(null);
+        }
+      });
+    });
+  }
+
   // Firestore methods
   async getDocument(collectionName: string, docId: string) {
     try {
@@ -84,6 +104,12 @@ export class FirebaseService {
       return docRef.id;
     } catch (error) {
       console.error('Error adding document:', error);
+
+      // Ajout d'une assertion de type pour résoudre l'erreur TS18046
+      if ((error as { code: string }).code === 'permission-denied') {
+        alert('Vous n\'avez pas les permissions nécessaires pour effectuer cette action.');
+      }
+
       throw error;
     }
   }
