@@ -1,30 +1,98 @@
-<ion-header>
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Mon Profil</ion-title>
-    <ion-buttons slot="end">
-      <ion-button color="danger" (click)="logout()">Déconnexion</ion-button>
+    <ion-buttons slot="start">
+      <ion-button routerLink="/tabs/tab1">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
+    <ion-title>Mon Profil</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
-    <ion-item>
-      <ion-label position="floating">Prénom</ion-label>
-      <ion-input formControlName="firstName"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label position="floating">Nom</ion-label>
-      <ion-input formControlName="lastName"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label position="floating">Email</ion-label>
-      <ion-input formControlName="email" type="email"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label position="floating">Photo</ion-label>
-      <ion-input formControlName="photo" type="url"></ion-input>
-    </ion-item>
-    <ion-button expand="block" type="submit" [disabled]="profileForm.invalid">Enregistrer</ion-button>
-  </form>
+  <div class="profile-container">
+    <div class="profile-header">
+      <div class="photo-container">
+        <img [src]="selectedImage || profileForm.get('photo')?.value || 'assets/default-avatar.png'" alt="Photo de profil" class="profile-photo">
+        <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" hidden>
+        <ion-fab-button class="edit-photo-btn" (click)="fileInput.click()">
+          <ion-icon name="camera"></ion-icon>
+        </ion-fab-button>
+      </div>
+      <h2>{{ profileForm.get('firstName')?.value }} {{ profileForm.get('lastName')?.value }}</h2>
+      <p>{{ profileForm.get('email')?.value }}</p>
+    </div>
+
+    <div class="form-section">
+      <h3>
+        <ion-icon name="person-outline"></ion-icon>
+        Informations personnelles
+      </h3>
+      
+      <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+        <ion-item class="form-item">
+          <ion-icon name="person-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Prénom</ion-label>
+          <ion-input formControlName="firstName"></ion-input>
+        </ion-item>
+        
+        <ion-item class="form-item">
+          <ion-icon name="people-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Nom</ion-label>
+          <ion-input formControlName="lastName"></ion-input>
+        </ion-item>
+        
+        <ion-item class="form-item">
+          <ion-icon name="mail-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Email</ion-label>
+          <ion-input formControlName="email" type="email"></ion-input>
+        </ion-item>
+
+        <h3>
+          <ion-icon name="barbell-outline"></ion-icon>
+          Profil sportif
+        </h3>
+
+        <ion-item class="form-item">
+          <ion-icon name="fitness-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Discipline principale</ion-label>
+          <ion-select formControlName="discipline" interface="popover">
+            <ion-select-option value="boxing">Boxe</ion-select-option>
+            <ion-select-option value="mma">MMA</ion-select-option>
+            <ion-select-option value="jiujitsu">Jiu-Jitsu</ion-select-option>
+            <ion-select-option value="muaythai">Muay Thai</ion-select-option>
+            <ion-select-option value="kickboxing">Kick-boxing</ion-select-option>
+            <ion-select-option value="wrestling">Lutte</ion-select-option>
+          </ion-select>
+        </ion-item>
+        
+        <ion-item class="form-item">
+          <ion-icon name="trophy-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Niveau</ion-label>
+          <ion-select formControlName="level" interface="popover">
+            <ion-select-option value="beginner">Débutant</ion-select-option>
+            <ion-select-option value="intermediate">Intermédiaire</ion-select-option>
+            <ion-select-option value="advanced">Avancé</ion-select-option>
+            <ion-select-option value="expert">Expert</ion-select-option>
+            <ion-select-option value="professional">Professionnel</ion-select-option>
+          </ion-select>
+        </ion-item>
+        
+        <ion-item class="form-item">
+          <ion-icon name="scale-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Poids (kg)</ion-label>
+          <ion-input formControlName="weight" type="number" min="30" max="200"></ion-input>
+        </ion-item>
+        
+        <div class="button-container">
+          <ion-button expand="block" type="submit" [disabled]="profileForm.invalid || !profileForm.dirty" class="save-button">
+            <ion-icon name="save-outline" slot="start"></ion-icon>
+            Enregistrer les modifications
+          </ion-button>
+          
+          <div class="logout-link" (click)="logout()">Déconnexion</div>
+        </div>
+      </form>
+    </div>
+  </div>
 </ion-content>
