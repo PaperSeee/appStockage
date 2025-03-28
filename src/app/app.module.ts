@@ -21,6 +21,9 @@ import { FirebaseService } from './services/firebase.service';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
+// Import GrService
+import { GrService } from './services/gr.service'; // Assurez-vous que ce chemin est correct
+
 // Initialize Firebase
 const app = initializeApp(environment.firebaseConfig);
 // Get Firebase service instances
@@ -50,6 +53,7 @@ export function HttpLoaderFactory(http: HttpClient) {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     FirebaseService,
+    GrService // Ajoutez le service ici
   ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA] // Ajoutez ceci
