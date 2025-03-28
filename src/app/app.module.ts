@@ -33,7 +33,6 @@ const auth = getAuth(app);
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    // Removed any references to 'fr'
     FirebaseService,
   ],
   bootstrap: [AppComponent],
