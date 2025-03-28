@@ -288,7 +288,15 @@ export class Tab1Page implements OnInit {
     console.log('Inscription à l\'événement:', event);
   }
 
-  openProfile() {
-    this.router.navigate(['/profile']);
+  async openProfile() {
+    const isLoggedIn = await this.firebaseService.isUserLoggedIn();
+    
+    if (isLoggedIn) {
+      // Si l'utilisateur est connecté, naviguer vers la page de profil
+      this.router.navigate(['/profile']);
+    } else {
+      // Si l'utilisateur n'est pas connecté, naviguer vers la page d'inscription
+      this.router.navigate(['/register']);
+    }
   }
 }

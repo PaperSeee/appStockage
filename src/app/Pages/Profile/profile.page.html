@@ -1,7 +1,7 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button routerLink="/tabs/tab1">
+      <ion-button (click)="goToTab1()">
         <ion-icon name="arrow-back-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -87,7 +87,7 @@
         <div class="button-container">
           <ion-button expand="block" type="submit" [disabled]="profileForm.invalid || !profileForm.dirty" class="save-button">
             <ion-icon name="save-outline" slot="start"></ion-icon>
-            Enregistrer les modifications
+            Enregistrer
           </ion-button>
           
           <div class="logout-link" (click)="logout()">Déconnexion</div>
