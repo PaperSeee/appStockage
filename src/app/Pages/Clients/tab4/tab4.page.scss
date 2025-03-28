@@ -22,9 +22,47 @@ ion-chip {
   margin-bottom: 8px;
 }
 
-// Spacing in the modal
-form ion-item {
-  margin-bottom: 8px;
+// Registration form styling
+.event-header {
+  margin-bottom: 16px;
+  
+  h2 {
+    font-weight: bold;
+    font-size: 18px;
+  }
+}
+
+.form-item {
+  margin-bottom: 16px;
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+}
+
+// Fix for date picker
+.date-container {
+  width: 100%;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+ion-datetime-button::part(native) {
+  width: 100%;
+  margin-left: 0;
+}
+
+// Terms and conditions checkbox layout
+.terms-label {
+  white-space: normal;
+  margin-left: 8px;
+  font-size: 14px;
+}
+
+.terms-error {
+  display: block;
+  padding-left: 16px;
+  margin-top: 4px;
+  margin-bottom: 16px;
 }
 
 // Custom style for the event list when empty
@@ -36,4 +74,10 @@ form ion-item {
     margin-bottom: 16px;
     opacity: 0.6;
   }
+}
+
+// Modal scroll content
+ion-modal ion-content {
+  --padding-top: 16px;
+  --padding-bottom: 16px;
 }

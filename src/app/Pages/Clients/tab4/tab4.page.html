@@ -127,7 +127,7 @@
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
-      <ion-item *ngIf="selectedEvent">
+      <ion-item *ngIf="selectedEvent" lines="none" class="event-header">
         <ion-label>
           <h2>{{ selectedEvent.name }}</h2>
           <p>{{ selectedEvent.date | date:'dd/MM/yyyy' }} | {{ selectedEvent.location }}</p>
@@ -135,7 +135,8 @@
       </ion-item>
 
       <form (ngSubmit)="submitRegistration()" [formGroup]="registrationForm">
-        <ion-item>
+        <!-- Nom -->
+        <ion-item class="form-item">
           <ion-label position="floating">Nom</ion-label>
           <ion-input formControlName="lastName" type="text" required></ion-input>
           <ion-note slot="error" *ngIf="registrationForm.get('lastName')?.invalid && registrationForm.get('lastName')?.touched">
@@ -143,7 +144,8 @@
           </ion-note>
         </ion-item>
 
-        <ion-item>
+        <!-- Prénom -->
+        <ion-item class="form-item">
           <ion-label position="floating">Prénom</ion-label>
           <ion-input formControlName="firstName" type="text" required></ion-input>
           <ion-note slot="error" *ngIf="registrationForm.get('firstName')?.invalid && registrationForm.get('firstName')?.touched">
@@ -151,22 +153,35 @@
           </ion-note>
         </ion-item>
 
-        <ion-item>
-          <ion-label position="floating">Date de naissance</ion-label>
-          <ion-datetime-button datetime="datetime"></ion-datetime-button>
-          <ion-modal [keepContentsMounted]="true">
-            <ng-template>
-              <ion-datetime id="datetime" formControlName="birthDate" presentation="date"></ion-datetime>
-            </ng-template>
-          </ion-modal>
+        <!-- Date de naissance - Fixed layout -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Date de naissance</ion-label>
+          <div class="date-container">
+            <ion-datetime-button datetime="datetime"></ion-datetime-button>
+          </div>
           <ion-note slot="error" *ngIf="registrationForm.get('birthDate')?.invalid && registrationForm.get('birthDate')?.touched">
             La date de naissance est requise
           </ion-note>
         </ion-item>
+        
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime 
+              id="datetime" 
+              formControlName="birthDate" 
+              presentation="date"
+              [preferWheel]="true"
+              [showDefaultButtons]="true"
+              doneText="Confirmer"
+              cancelText="Annuler">
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
 
-        <ion-item>
-          <ion-label position="floating">Catégorie de poids (kg)</ion-label>
-          <ion-select formControlName="weightClass" interface="popover">
+        <!-- Catégorie de poids -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Catégorie de poids (kg)</ion-label>
+          <ion-select formControlName="weightClass" interface="popover" placeholder="Sélectionnez votre catégorie">
             <ion-select-option value="bantamweight">Bantamweight (-61kg)</ion-select-option>
             <ion-select-option value="featherweight">Featherweight (-66kg)</ion-select-option>
             <ion-select-option value="lightweight">Lightweight (-70kg)</ion-select-option>
@@ -180,9 +195,10 @@
           </ion-note>
         </ion-item>
 
-        <ion-item>
-          <ion-label position="floating">Niveau d'expérience</ion-label>
-          <ion-select formControlName="experienceLevel" interface="popover">
+        <!-- Niveau d'expérience -->
+        <ion-item class="form-item">
+          <ion-label position="stacked">Niveau d'expérience</ion-label>
+          <ion-select formControlName="experienceLevel" interface="popover" placeholder="Sélectionnez votre niveau">
             <ion-select-option value="beginner">Débutant (0-1 an)</ion-select-option>
             <ion-select-option value="intermediate">Intermédiaire (1-3 ans)</ion-select-option>
             <ion-select-option value="advanced">Avancé (3-5 ans)</ion-select-option>
@@ -194,7 +210,8 @@
           </ion-note>
         </ion-item>
 
-        <ion-item>
+        <!-- Email -->
+        <ion-item class="form-item">
           <ion-label position="floating">Email</ion-label>
           <ion-input formControlName="email" type="email" required></ion-input>
           <ion-note slot="error" *ngIf="registrationForm.get('email')?.invalid && registrationForm.get('email')?.touched">
@@ -202,20 +219,22 @@
           </ion-note>
         </ion-item>
 
-        <ion-item>
+        <!-- Téléphone -->
+        <ion-item class="form-item">
           <ion-label position="floating">Téléphone</ion-label>
           <ion-input formControlName="phone" type="tel"></ion-input>
         </ion-item>
 
-        <ion-item lines="none">
-          <ion-checkbox formControlName="termsAccepted"></ion-checkbox>
-          <ion-label class="ion-padding-start">J'accepte les conditions générales et je certifie être apte physiquement à participer à cette compétition</ion-label>
+        <!-- Conditions -->
+        <ion-item class="form-item" lines="none">
+          <ion-checkbox formControlName="termsAccepted" slot="start"></ion-checkbox>
+          <ion-label class="terms-label">J'accepte les conditions générales et je certifie être apte physiquement à participer à cette compétition</ion-label>
         </ion-item>
-        <ion-note *ngIf="registrationForm.get('termsAccepted')?.invalid && registrationForm.get('termsAccepted')?.touched" color="danger">
+        <ion-note *ngIf="registrationForm.get('termsAccepted')?.invalid && registrationForm.get('termsAccepted')?.touched" color="danger" class="terms-error">
           Vous devez accepter les conditions générales
         </ion-note>
 
-        <div class="ion-padding">
+        <div class="ion-padding-top ion-padding-bottom">
           <ion-button expand="block" type="submit" [disabled]="registrationForm.invalid">
             Confirmer l'inscription
           </ion-button>
