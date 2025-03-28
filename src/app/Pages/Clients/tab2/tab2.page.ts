@@ -30,14 +30,14 @@ interface Filters {
   standalone: false,
 })
 export class Tab2Page implements OnInit {
-  // Mock data for partners
+  // Mock data for partners with updated image URLs
   partners: Partner[] = [
     {
       id: 1,
       name: 'Thomas',
       age: 28,
       gender: 'homme',
-      photo: 'https://images.unsplash.com/photo-1594825817885-7064a90503db?q=80&w=1000&auto=format&fit=crop',
+      photo: 'https://randomuser.me/api/portraits/men/32.jpg',
       bio: 'Passionné de boxe anglaise depuis 5 ans. Cherche des sparrings techniques pour progresser.',
       level: 'Intermédiaire',
       mainDiscipline: 'Boxe',
@@ -50,7 +50,7 @@ export class Tab2Page implements OnInit {
       name: 'Sophie',
       age: 24,
       gender: 'femme',
-      photo: 'https://images.unsplash.com/photo-1592588253459-d604d617e740?q=80&w=1000&auto=format&fit=crop',
+      photo: 'https://randomuser.me/api/portraits/women/44.jpg',
       bio: 'Pratiquante de BJJ depuis 2 ans. Ceinture bleue. Je cherche des partenaires pour des rolls techniques.',
       level: 'Intermédiaire',
       mainDiscipline: 'Jiu-jitsu',
@@ -63,7 +63,7 @@ export class Tab2Page implements OnInit {
       name: 'Mathieu',
       age: 32,
       gender: 'homme',
-      photo: 'https://images.unsplash.com/photo-1575535340302-d9241bea2e54?q=80&w=1000&auto=format&fit=crop',
+      photo: 'https://randomuser.me/api/portraits/men/67.jpg',
       bio: 'Champion régional de Muay Thai. Disponible pour des sparrings techniques ou intensifs.',
       level: 'Avancé',
       mainDiscipline: 'Muay Thai',
@@ -76,7 +76,7 @@ export class Tab2Page implements OnInit {
       name: 'Emma',
       age: 26,
       gender: 'femme',
-      photo: 'https://images.unsplash.com/photo-1588280991458-d759882787cf?q=80&w=1000&auto=format&fit=crop',
+      photo: 'https://randomuser.me/api/portraits/women/22.jpg',
       bio: 'Débutante en MMA, je cherche à progresser dans tous les domaines avec des partenaires patients.',
       level: 'Débutant',
       mainDiscipline: 'MMA',
@@ -89,7 +89,7 @@ export class Tab2Page implements OnInit {
       name: 'Alexandre',
       age: 30,
       gender: 'homme',
-      photo: 'https://images.unsplash.com/photo-1554344728-77cf90d9ed26?q=80&w=1000&auto=format&fit=crop',
+      photo: 'https://randomuser.me/api/portraits/men/91.jpg',
       bio: 'Judoka reconverti au BJJ. Je recherche des échanges techniques et des sparrings légers.',
       level: 'Intermédiaire',
       mainDiscipline: 'Judo',
@@ -203,15 +203,21 @@ export class Tab2Page implements OnInit {
     }
   }
 
-  // Method to safely set the background image
+  // Improved method to safely set the background image
   getSafeBackground(photoUrl: string): SafeStyle {
     // Check if the URL is valid
     if (!photoUrl || photoUrl.trim() === '') {
-      photoUrl = 'https://ionicframework.com/docs/img/demos/card-media.png'; // Default image
+      photoUrl = 'assets/default-profile.jpg'; // Default image from local assets
     }
     
     // Create the CSS value and sanitize it
-    const style = `url(${photoUrl}) center center / cover no-repeat`;
+    const style = `url('${photoUrl}') center center / cover no-repeat`;
     return this.sanitizer.bypassSecurityTrustStyle(style);
+  }
+
+  // Handle image loading errors
+  handleImageError(event: any) {
+    // Set a default image if loading fails
+    event.target.src = 'assets/default-profile.jpg';
   }
 }

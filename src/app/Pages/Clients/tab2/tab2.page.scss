@@ -33,13 +33,19 @@ ion-content {
   display: block;
 }
 
-.card-image {
+.card-image-container {
   height: 60%;
-  background-size: cover !important;
-  background-position: center !important;
   position: relative;
-  background-color: #ddd; /* Fallback color if image fails to load */
-  background-image: url('https://ionicframework.com/docs/img/demos/card-media.png'); /* Default image */
+  background-color: #ddd; /* Fallback color */
+  overflow: hidden;
+}
+
+.partner-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .card-info {

@@ -73,7 +73,12 @@
          [class.visible]="i === currentPartnerIndex"
          (swipeleft)="swipeLeft()"
          (swiperight)="sendMessage(partner)">
-      <div class="card-image" [style.background]="getSafeBackground(partner.photo)">
+      <!-- Changed to use direct <img> instead of background for better loading and error handling -->
+      <div class="card-image-container">
+        <img [src]="partner.photo" 
+             (error)="handleImageError($event)" 
+             alt="Photo de {{partner.name}}" 
+             class="partner-photo">
         <div class="card-info">
           <h2>{{partner.name}}, {{partner.age}}</h2>
           <p>{{partner.level}} · {{partner.mainDiscipline}}</p>
