@@ -446,34 +446,51 @@ export class Tab3Page implements OnInit {
   }
 
   async toggleLike(post: Post) {
-    const userId = this.currentUser.id;
-    const alreadyLiked = post.likes.some(like => like.userId === userId);
-    
-    if (alreadyLiked) {
-      post.likes = post.likes.filter(like => like.userId !== userId);
-      post.userLiked = false;
-    } else {
-      post.likes.push({ userId });
-      post.userLiked = true;
-      
-      // Créer une notification seulement si ce n'est pas son propre post
-      if (post.user.id !== this.currentUser.id && post.userId !== this.userId) {
-        await this.createNotification({
-          type: 'like',
-          postId: post.id,
-          toUserId: post.userId || post.user.id.toString(),
-          fromUser: this.currentUser
-        });
-      }
-    }
-    
-    // Sauvegarde du like dans Firebase pour qu'il soit visible par tous
     try {
-      await this.firebaseService.updateDocument('posts', post.id.toString(), {
-        likes: post.likes
-      });
+      const userId = this.currentUser.id;
+      const alreadyLiked = post.likes.some(like => like.userId === userId);
+      
+      // Mettre à jour l'état UI de manière optimiste
+      if (alreadyLiked) {
+        post.likes = post.likes.filter(like => like.userId !== userId);
+        post.userLiked = false;
+      } else {
+        post.likes.push({ userId });
+        post.userLiked = true;
+        
+        // Créer une notification seulement si ce n'est pas son propre post
+        if (post.user.id !== this.currentUser.id && post.userId !== this.userId) {
+          // Créer la notification en arrière-plan (non-bloquant)
+          this.createNotification({
+            type: 'like',
+            postId: post.id,
+            toUserId: post.userId || post.user.id.toString(),
+            fromUser: this.currentUser
+          }).catch(err => console.error('Background notification error:', err));
+        }
+      }
+      
+      // Sauvegarde du like dans Firebase avec gestion d'erreur améliorée
+      try {
+        await this.firebaseService.updateDocument('posts', post.id.toString(), {
+          likes: post.likes
+        });
+      } catch (error: any) {
+        console.error('Error updating likes:', error);
+        // Restaurer l'état précédent en cas d'erreur
+        if (!alreadyLiked) {
+          post.likes = post.likes.filter(like => like.userId !== userId);
+          post.userLiked = false;
+          this.showToast('Impossible d\'ajouter votre j\'aime. Veuillez réessayer.', 'danger');
+        } else {
+          post.likes.push({ userId });
+          post.userLiked = true;
+          this.showToast('Impossible de retirer votre j\'aime. Veuillez réessayer.', 'danger');
+        }
+      }
     } catch (error) {
-      console.error('Error updating likes:', error);
+      console.error('Unexpected error in toggleLike:', error);
+      this.showToast('Une erreur inattendue est survenue', 'danger');
     }
   }
 
@@ -484,35 +501,49 @@ export class Tab3Page implements OnInit {
   async addComment(post: Post) {
     if (!post.newComment?.trim()) return;
     
+    const commentText = post.newComment.trim();
+    const tempId = Math.floor(Math.random() * 1000);
+    
+    // Créer un commentaire avec des valeurs sanitisées
     const comment: Comment = {
-      id: Math.floor(Math.random() * 1000),
-      user: this.currentUser,
-      text: post.newComment,
+      id: tempId,
+      user: {
+        id: this.currentUser.id,
+        name: this.currentUser.name || 'Utilisateur',
+        avatar: this.currentUser.avatar || 'assets/default-avatar.png',
+        discipline: this.currentUser.discipline || '',
+        level: this.currentUser.level || ''
+      },
+      text: commentText,
       timestamp: new Date(),
       likes: 0
     };
     
+    // Mise à jour optimiste de l'UI
     post.comments.push(comment);
     post.newComment = '';
     
-    // Créer une notification seulement si ce n'est pas son propre post
+    // Créer une notification seulement si ce n'est pas son propre post (en non-bloquant)
     if (post.user.id !== this.currentUser.id && post.userId !== this.userId) {
-      await this.createNotification({
+      this.createNotification({
         type: 'comment',
         postId: post.id,
         toUserId: post.userId || post.user.id.toString(),
         fromUser: this.currentUser,
         content: comment.text
-      });
+      }).catch(err => console.error('Background notification error:', err));
     }
     
-    // Sauvegarde du commentaire dans Firebase pour qu'il soit visible par tous
+    // Sauvegarde du commentaire dans Firebase avec gestion d'erreur améliorée
     try {
       await this.firebaseService.updateDocument('posts', post.id.toString(), {
         comments: post.comments
       });
     } catch (error) {
       console.error('Error updating comments:', error);
+      // Restaurer l'état précédent en cas d'erreur
+      post.comments = post.comments.filter(c => c.id !== tempId);
+      this.showToast('Impossible d\'ajouter votre commentaire. Veuillez réessayer.', 'danger');
     }
   }
 
@@ -525,18 +556,30 @@ export class Tab3Page implements OnInit {
     content?: string
   }) {
     try {
+      // Sanitiser les données de l'utilisateur pour éviter les valeurs undefined
+      const sanitizedFromUser = {
+        id: data.fromUser.id || 0,
+        name: data.fromUser.name || 'Utilisateur',
+        avatar: data.fromUser.avatar || 'assets/default-avatar.png',
+        // S'assurer que la discipline n'est jamais undefined
+        discipline: data.fromUser.discipline || '',
+        level: data.fromUser.level || ''
+      };
+
       const notification = {
         type: data.type,
         postId: data.postId,
-        fromUser: data.fromUser,
+        fromUser: sanitizedFromUser,  // Utiliser la version sanitisée
         timestamp: new Date(),
         read: false,
-        content: data.content
+        content: data.content || ''  // S'assurer que content n'est jamais undefined
       };
       
       await this.firebaseService.addNotification(data.toUserId, notification);
     } catch (error) {
       console.error('Error creating notification:', error);
+      // Ne pas afficher d'erreur à l'utilisateur pour les notifications
+      // car ce n'est pas critique pour l'expérience utilisateur
     }
   }
 

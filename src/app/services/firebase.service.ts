@@ -198,15 +198,26 @@ export class FirebaseService {
         throw new Error('Authentication required');
       }
 
+      // Nettoyer les données pour éliminer les valeurs undefined
+      const cleanData = this.sanitizeData(data);
+
       const docRef = doc(this.firestore, collectionName, docId);
-      await updateDoc(docRef, data);
+      await updateDoc(docRef, cleanData);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating document:', error);
       
-      if ((error as { code: string }).code === 'permission-denied') {
+      if (error.code === 'permission-denied') {
         console.warn('Permission denied on document:', docId, 'in collection:', collectionName);
         await this.showErrorToast('Accès refusé. Vous n\'avez pas les permissions nécessaires pour modifier ce document.');
+        
+        // Vérifiez si l'utilisateur est toujours connecté
+        const isStillLoggedIn = await this.isUserLoggedIn();
+        if (!isStillLoggedIn) {
+          console.warn('User session expired');
+          await this.showErrorToast('Votre session a expiré. Veuillez vous reconnecter.');
+          // Rediriger vers la page de connexion ou actualiser le token
+        }
       } else {
         await this.showErrorToast('Une erreur est survenue lors de la mise à jour du document');
       }
@@ -350,11 +361,33 @@ export class FirebaseService {
   // Méthode pour ajouter une notification
   async addNotification(userId: string, notification: any) {
     try {
+      // Vérifier si l'identifiant de l'utilisateur est valide
+      if (!userId) {
+        console.error('User ID is invalid');
+        return;
+      }
+
+      // Sanitiser l'objet notification pour éviter les valeurs undefined
+      const sanitizedNotification = {
+        type: notification.type || 'info',
+        postId: notification.postId || 0,
+        fromUser: {
+          id: notification.fromUser.id || 0,
+          name: notification.fromUser.name || 'Utilisateur',
+          avatar: notification.fromUser.avatar || 'assets/default-avatar.png',
+          discipline: notification.fromUser.discipline || '',
+          level: notification.fromUser.level || ''
+        },
+        timestamp: notification.timestamp || new Date(),
+        read: notification.read || false,
+        content: notification.content || ''
+      };
+
       const notificationsCollection = collection(this.firestore, `users/${userId}/notifications`);
-      await addDoc(notificationsCollection, notification);
+      await addDoc(notificationsCollection, sanitizedNotification);
     } catch (error) {
       console.error('Error adding notification:', error);
-      throw error;
+      // Ne pas relancer l'erreur pour éviter de perturber l'expérience utilisateur
     }
   }
 
@@ -381,5 +414,47 @@ export class FirebaseService {
       console.error('Error marking notifications as read:', error);
       throw error;
     }
+  }
+
+  // Nouvelle méthode utilitaire pour nettoyer les données
+  private sanitizeData(data: any): any {
+    // Si null ou undefined, retourner un objet vide
+    if (!data) return {};
+    
+    // Si c'est un tableau, le parcourir et nettoyer chaque élément
+    if (Array.isArray(data)) {
+      return data.map(item => this.sanitizeData(item));
+    }
+    
+    // Si c'est un objet, parcourir ses propriétés
+    if (typeof data === 'object') {
+      const cleanedData: any = {};
+      
+      Object.keys(data).forEach(key => {
+        const value = data[key];
+        
+        // Ne pas inclure les valeurs undefined
+        if (value !== undefined) {
+          // Si c'est un objet ou un tableau, récursion
+          if (value !== null && typeof value === 'object') {
+            cleanedData[key] = this.sanitizeData(value);
+          } else {
+            cleanedData[key] = value;
+          }
+        } else {
+          // Remplacer les undefined par des valeurs par défaut selon le contexte
+          if (key === 'discipline' || key === 'level' || key === 'content') {
+            cleanedData[key] = '';
+          } else if (key.includes('Count') || key === 'likes') {
+            cleanedData[key] = 0;
+          }
+        }
+      });
+      
+      return cleanedData;
+    }
+    
+    // Pour les types primitifs, retourner tel quel
+    return data;
   }
 }
