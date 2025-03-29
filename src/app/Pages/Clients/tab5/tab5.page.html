@@ -213,6 +213,13 @@
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+  
+  <!-- Indicator for login requirement -->
+  <ion-fab vertical="bottom" horizontal="start" slot="fixed" *ngIf="!isLoggedIn">
+    <ion-fab-button size="small" color="medium" (click)="promptLogin()">
+      <ion-icon name="lock-closed"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>
 
 <!-- Modal template for adding training -->

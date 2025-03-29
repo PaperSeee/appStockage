@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ModalContentComponent } from '../../../components/modal-content/modal-content.component';
+import { FirebaseService } from '../../../services/firebase.service';
 
 // Define interfaces for the data types
 interface Training {
@@ -66,6 +67,9 @@ export class Tab5Page implements OnInit {
   trainingForm!: FormGroup;
   competitionForm!: FormGroup;
 
+  // Authentication state
+  isLoggedIn: boolean = false;
+
   // Statistics
   trainingStats = { count: 0, trend: 0, hours: 0, hoursTrend: 0 };
   competitionStats = { count: 0, trend: 0 };
@@ -90,14 +94,18 @@ export class Tab5Page implements OnInit {
     private modalController: ModalController,
     private toastController: ToastController,
     private alertController: AlertController,
-    private router: Router
+    private router: Router,
+    private firebaseService: FirebaseService
   ) { 
     const today = new Date();
     this.selectedMonth = today.getMonth() + 1;
     this.selectedYear = today.getFullYear();
   }
 
-  ngOnInit() {
+  async ngOnInit() {
+    // Vérifier si l'utilisateur est connecté
+    this.isLoggedIn = await this.firebaseService.isUserLoggedIn();
+    
     this.initForms();
     this.loadData();
     this.generateCalendar();
@@ -493,6 +501,12 @@ export class Tab5Page implements OnInit {
 
   // Show action sheet for adding new items
   async presentActionSheet() {
+    // Vérifier si l'utilisateur est connecté
+    if (!this.isLoggedIn) {
+      this.promptLogin();
+      return;
+    }
+
     const actionSheet = await this.actionSheetController.create({
       header: 'Ajouter',
       buttons: [
@@ -600,6 +614,12 @@ export class Tab5Page implements OnInit {
 
   // Add a new training
   async addTraining() {
+    // Vérifier si l'utilisateur est connecté
+    if (!this.isLoggedIn) {
+      this.promptLogin();
+      return;
+    }
+    
     // Reset form to default values
     this.trainingForm.reset({
       date: new Date().toISOString(),
@@ -628,6 +648,12 @@ export class Tab5Page implements OnInit {
 
   // Add a new competition
   async addCompetition() {
+    // Vérifier si l'utilisateur est connecté
+    if (!this.isLoggedIn) {
+      this.promptLogin();
+      return;
+    }
+    
     // Reset form to default values
     this.competitionForm.reset({
       name: '',
@@ -657,6 +683,12 @@ export class Tab5Page implements OnInit {
 
   // Add a new goal
   async addGoal() {
+    // Vérifier si l'utilisateur est connecté
+    if (!this.isLoggedIn) {
+      this.promptLogin();
+      return;
+    }
+    
     const alert = await this.alertController.create({
       header: 'Ajouter un objectif',
       inputs: [
@@ -781,6 +813,28 @@ export class Tab5Page implements OnInit {
     }).then(alert => alert.present());
   }
 
+  // Demander à l'utilisateur de se connecter
+  async promptLogin() {
+    const alert = await this.alertController.create({
+      header: 'Connexion requise',
+      message: 'Vous devez être connecté pour ajouter ou modifier des données.',
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'Se connecter',
+          handler: () => {
+            this.router.navigateByUrl('/login');
+          }
+        }
+      ]
+    });
+    
+    await alert.present();
+  }
+
   // Dismiss modal
   dismissModal() {
     this.modalController.dismiss({
@@ -849,7 +903,14 @@ export class Tab5Page implements OnInit {
   }
 
   // Navigation vers la page de profil
-  goToProfile() {
-    this.router.navigateByUrl('/profile');
+  async goToProfile() {
+    // Utiliser la propriété isLoggedIn qui est mise à jour dans ngOnInit
+    if (this.isLoggedIn) {
+      // Si l'utilisateur est connecté, naviguer vers la page de profil
+      this.router.navigate(['/profile']);
+    } else {
+      // Si l'utilisateur n'est pas connecté, naviguer vers la page de connexion
+      this.router.navigate(['/login']);
+    }
   }
 }

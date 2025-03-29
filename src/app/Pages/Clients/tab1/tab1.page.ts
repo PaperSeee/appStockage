@@ -329,8 +329,8 @@ export class Tab1Page implements OnInit, OnDestroy {
       // Si l'utilisateur est connecté, naviguer vers la page de profil
       this.router.navigate(['/profile']);
     } else {
-      // Si l'utilisateur n'est pas connecté, naviguer vers la page d'inscription
-      this.router.navigate(['/register']);
+      // Si l'utilisateur n'est pas connecté, naviguer vers la page de connexion
+      this.router.navigate(['/login']);
     }
   }
 
