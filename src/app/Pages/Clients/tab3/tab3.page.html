@@ -6,7 +6,7 @@
     <ion-buttons slot="end">
       <ion-button (click)="openNotifications()">
         <ion-icon name="notifications-outline"></ion-icon>
-        <ion-badge *ngIf="notifications.length > 0">{{ notifications.length }}</ion-badge>
+        <ion-badge *ngIf="unreadNotifications > 0">{{ unreadNotifications }}</ion-badge>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

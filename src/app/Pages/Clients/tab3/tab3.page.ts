@@ -70,6 +70,17 @@ interface Post {
   userId?: string; // Ajout de la propriété userId qui est utilisée dans le code
 }
 
+// Ajouter une interface pour les notifications
+interface Notification {
+  id: number;
+  type: 'like' | 'comment';
+  postId: number;
+  fromUser: User;
+  timestamp: Date;
+  read: boolean;
+  content?: string; // Pour le contenu du commentaire
+}
+
 interface Story {
   id: number;
   user: User;
@@ -96,7 +107,8 @@ export class Tab3Page implements OnInit {
   posts: Post[] = [];
   filteredPosts: Post[] = [];
   stories: Story[] = [];
-  notifications: any[] = [];
+  notifications: Notification[] = [];
+  unreadNotifications: number = 0;
   loading: boolean = true;
   selectedFilter: string = 'all';
   searchTerm: string = '';
@@ -122,11 +134,15 @@ export class Tab3Page implements OnInit {
   ) {}
 
   async ngOnInit() {
-    this.loadMockData();
+    // Commencer avec un tableau vide au lieu de charger des données fictives
+    this.posts = [];
+    this.filteredPosts = [];
+    this.stories = [];
+    this.notifications = [];
+    
     setTimeout(() => {
       this.loading = false;
-      this.filteredPosts = [...this.posts];
-    }, 1500);
+    }, 1000);
 
     // Check authentication
     try {
@@ -153,24 +169,28 @@ export class Tab3Page implements OnInit {
         // Load real posts from Firebase
         this.loadPosts();
       } else {
-        // Use mock data for non-authenticated users
-        this.loadMockData();
+        // Afficher l'état vide au lieu de charger des données fictives
+        this.loading = false;
       }
     } catch (error) {
       console.error('Error checking authentication:', error);
-      this.loadMockData();
+      this.loading = false;
     }
+
+    // Charger les notifications
+    await this.loadNotifications();
   }
 
   async loadPosts() {
     this.loading = true;
     try {
-      // Utilisation de la nouvelle méthode pour charger tous les posts
+      // Utilisation de la méthode pour charger tous les posts
       const postsData = await this.firebaseService.getAllPosts(50) as any[];
       
       if (!postsData || postsData.length === 0) {
-        console.log('Aucun post trouvé ou problème d\'accès. Chargement des données de test...');
-        this.loadMockData();
+        console.log('Aucun post trouvé ou problème d\'accès.');
+        this.posts = [];
+        this.filteredPosts = [];
         return;
       }
       
@@ -206,8 +226,9 @@ export class Tab3Page implements OnInit {
       console.log(`${this.posts.length} posts chargés avec succès`);
     } catch (error) {
       console.error('Error loading posts:', error);
-      // Fallback to mock data
-      this.loadMockData();
+      // Ne plus charger de données fictives en cas d'erreur
+      this.posts = [];
+      this.filteredPosts = [];
     } finally {
       this.loading = false;
     }
@@ -262,191 +283,22 @@ export class Tab3Page implements OnInit {
     }
   }
 
+  // Remplacer le contenu de loadMockData par une version vide qui n'initialise pas de faux posts
   loadMockData() {
-    // Mock users
-    const users: User[] = [
-      {
-        id: 1,
-        name: 'Sophie Laurent',
-        avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-        discipline: 'Boxe',
-        level: 'Avancé'
-      },
-      {
-        id: 2,
-        name: 'Marc Dubois',
-        avatar: 'https://randomuser.me/api/portraits/men/55.jpg',
-        discipline: 'Jiu-Jitsu',
-        level: 'Expert'
-      },
-      {
-        id: 3,
-        name: 'Julie Martin',
-        avatar: 'https://randomuser.me/api/portraits/women/33.jpg',
-        discipline: 'Muay Thai',
-        level: 'Intermédiaire'
-      },
-      {
-        id: 4,
-        name: 'Antoine Leclerc',
-        avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
-        discipline: 'MMA',
-        level: 'Débutant'
-      }
-    ];
-
-    // Mock posts
-    this.posts = [
-      {
-        id: 1,
-        user: users[0],
-        content: 'Super entraînement aujourd\'hui au club ! 10 rounds de sparring et beaucoup de progrès sur mon jab-cross. Le coach a dit que j\'étais prête pour la compétition du mois prochain. Qui d\'autre sera là? 🥊',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30),
-        type: 'Entraînement',
-        tags: ['boxe', 'sparring', 'progression'],
-        media: [
-          {
-            id: 1,
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80'
-          }
-        ],
-        likes: [{ userId: 2 }, { userId: 3 }],
-        comments: [
-          {
-            id: 1,
-            user: users[3],
-            text: 'Bravo Sophie! Je serai à la compétition aussi, on pourra s\'encourager 👊',
-            timestamp: new Date(Date.now() - 1000 * 60 * 20),
-            likes: 1
-          }
-        ],
-        shares: 2,
-        userLiked: false
-      },
-      {
-        id: 2,
-        user: users[1],
-        content: 'Question technique pour les pratiquants de BJJ: comment améliorez-vous votre garde? J\'ai du mal à maintenir ma position quand je suis contre des adversaires plus lourds. Des conseils?',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3),
-        type: 'Question',
-        tags: ['bjj', 'technique', 'garde'],
-        likes: [{ userId: 0 }, { userId: 3 }, { userId: 4 }],
-        comments: [
-          {
-            id: 2,
-            user: users[2],
-            text: 'Essaie de travailler ton angle et tes hanches plutôt que de compter sur ta force. Tu peux aussi voir des vidéos de Roger Gracie, son jeu de garde est excellent!',
-            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-            likes: 4
-          },
-          {
-            id: 3,
-            user: this.currentUser,
-            text: 'J\'avais le même problème. Ce qui m\'a aidé c\'est de faire des exercices spécifiques de renforcement du core et de travailler la garde fermée avant de passer aux gardes ouvertes.',
-            timestamp: new Date(Date.now() - 1000 * 60 * 30),
-            likes: 2
-          }
-        ],
-        shares: 5,
-        userLiked: true
-      },
-      {
-        id: 3,
-        user: users[2],
-        content: 'Première compétition de Muay Thai ce weekend! Très stressée mais aussi super excitée. Quelqu\'un d\'autre y participe?',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        type: 'Compétition',
-        tags: ['muaythai', 'competition', 'debutant'],
-        media: [
-          {
-            id: 2,
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1599058917765-a780eda07a3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1169&q=80'
-          }
-        ],
-        event: {
-          id: 1,
-          title: 'Championnats Régionaux de Muay Thai',
-          date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2),
-          location: 'Gymnase Marcel Cerdan, Paris',
-          attendees: 48,
-          image: 'https://images.unsplash.com/photo-1599058917765-a780eda07a3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1169&q=80'
-        },
-        likes: [{ userId: 0 }, { userId: 1 }],
-        comments: [],
-        shares: 1,
-        userLiked: true
-      }
-    ];
-
-    // Mock stories
-    this.stories = [
-      {
-        id: 1,
-        user: users[0],
-        media: [
-          {
-            id: 1,
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80'
-          }
-        ],
-        timestamp: new Date(Date.now() - 1000 * 60 * 120),
-        viewed: false
-      },
-      {
-        id: 2,
-        user: users[1],
-        media: [
-          {
-            id: 2,
-            type: 'video',
-            url: 'https://example.com/video1.mp4',
-            thumbnail: 'https://images.unsplash.com/photo-1577998474517-7a146cbbef25?ixlib=rb-4.0.3&auto=format&fit=crop&w=687&q=80'
-          }
-        ],
-        timestamp: new Date(Date.now() - 1000 * 60 * 180),
-        viewed: true
-      },
-      {
-        id: 3,
-        user: users[2],
-        media: [
-          {
-            id: 3,
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1599058917765-a780eda07a3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1169&q=80'
-          }
-        ],
-        timestamp: new Date(Date.now() - 1000 * 60 * 240),
-        viewed: false
-      }
-    ];
-
-    // Mock notifications
-    this.notifications = [
-      {
-        id: 1,
-        type: 'like',
-        user: users[1],
-        timestamp: new Date(Date.now() - 1000 * 60 * 60)
-      },
-      {
-        id: 2,
-        type: 'comment',
-        user: users[2],
-        timestamp: new Date(Date.now() - 1000 * 60 * 120)
-      }
-    ];
+    // Initialiser avec des tableaux vides
+    this.posts = [];
+    this.filteredPosts = [];
+    this.stories = [];
+    
+    // Vider aussi les notifications fictives
+    this.notifications = [];
   }
 
   refreshFeed(event: any) {
-    this.loadMockData();
-    setTimeout(() => {
-      this.filteredPosts = [...this.posts];
+    // Recharger les vrais posts au lieu des données fictives
+    this.loadPosts().then(() => {
       event.target.complete();
-    }, 1000);
+    });
   }
 
   filterPosts(filter: string) {
@@ -593,7 +445,7 @@ export class Tab3Page implements OnInit {
     }
   }
 
-  toggleLike(post: Post) {
+  async toggleLike(post: Post) {
     const userId = this.currentUser.id;
     const alreadyLiked = post.likes.some(like => like.userId === userId);
     
@@ -603,6 +455,25 @@ export class Tab3Page implements OnInit {
     } else {
       post.likes.push({ userId });
       post.userLiked = true;
+      
+      // Créer une notification seulement si ce n'est pas son propre post
+      if (post.user.id !== this.currentUser.id && post.userId !== this.userId) {
+        await this.createNotification({
+          type: 'like',
+          postId: post.id,
+          toUserId: post.userId || post.user.id.toString(),
+          fromUser: this.currentUser
+        });
+      }
+    }
+    
+    // Sauvegarde du like dans Firebase pour qu'il soit visible par tous
+    try {
+      await this.firebaseService.updateDocument('posts', post.id.toString(), {
+        likes: post.likes
+      });
+    } catch (error) {
+      console.error('Error updating likes:', error);
     }
   }
 
@@ -610,7 +481,7 @@ export class Tab3Page implements OnInit {
     post.showComments = !post.showComments;
   }
 
-  addComment(post: Post) {
+  async addComment(post: Post) {
     if (!post.newComment?.trim()) return;
     
     const comment: Comment = {
@@ -623,6 +494,50 @@ export class Tab3Page implements OnInit {
     
     post.comments.push(comment);
     post.newComment = '';
+    
+    // Créer une notification seulement si ce n'est pas son propre post
+    if (post.user.id !== this.currentUser.id && post.userId !== this.userId) {
+      await this.createNotification({
+        type: 'comment',
+        postId: post.id,
+        toUserId: post.userId || post.user.id.toString(),
+        fromUser: this.currentUser,
+        content: comment.text
+      });
+    }
+    
+    // Sauvegarde du commentaire dans Firebase pour qu'il soit visible par tous
+    try {
+      await this.firebaseService.updateDocument('posts', post.id.toString(), {
+        comments: post.comments
+      });
+    } catch (error) {
+      console.error('Error updating comments:', error);
+    }
+  }
+
+  // Ajouter une méthode pour créer une notification
+  async createNotification(data: { 
+    type: 'like' | 'comment', 
+    postId: number, 
+    toUserId: string, 
+    fromUser: User,
+    content?: string
+  }) {
+    try {
+      const notification = {
+        type: data.type,
+        postId: data.postId,
+        fromUser: data.fromUser,
+        timestamp: new Date(),
+        read: false,
+        content: data.content
+      };
+      
+      await this.firebaseService.addNotification(data.toUserId, notification);
+    } catch (error) {
+      console.error('Error creating notification:', error);
+    }
   }
 
   likeComment(comment: Comment) {
@@ -645,9 +560,51 @@ export class Tab3Page implements OnInit {
     await this.sharingService.showShareOptions(title, text, url);
   }
 
-  openNotifications() {
-    // Here we would open a notifications panel
-    console.log('Opening notifications');
+  async openNotifications() {
+    if (this.notifications.length === 0) {
+      this.showToast('Vous n\'avez pas de notifications');
+      return;
+    }
+    
+    // Afficher une liste des notifications
+    const modal = await this.modalController.create({
+      component: 'NotificationsComponent',
+      componentProps: {
+        notifications: this.notifications
+      }
+    });
+    
+    await modal.present();
+    
+    // Marquer toutes les notifications comme lues
+    await this.markNotificationsAsRead();
+  }
+
+  // Ajouter une méthode pour marquer les notifications comme lues
+  async markNotificationsAsRead() {
+    if (!this.userId || this.notifications.length === 0) return;
+    
+    try {
+      // Mettre à jour les notifications locales
+      this.notifications.forEach(n => n.read = true);
+      this.unreadNotifications = 0;
+      
+      // Mettre à jour les notifications dans Firebase
+      await this.firebaseService.markNotificationsAsRead(this.userId);
+    } catch (error) {
+      console.error('Error marking notifications as read:', error);
+    }
+  }
+
+  // Ajouter une méthode utilitaire pour afficher des toasts
+  async showToast(message: string, color: string = 'primary') {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: 'bottom',
+      color
+    });
+    await toast.present();
   }
 
   viewProfile(userId: number) {
@@ -869,5 +826,33 @@ export class Tab3Page implements OnInit {
   registerForEvent(event: Event) {
     // Here we would open a registration form
     console.log('Registering for event', event);
+  }
+
+  // Ajouter une méthode pour charger les notifications
+  async loadNotifications() {
+    if (!this.userId) return;
+    
+    try {
+      const notificationsData = await this.firebaseService.getNotifications(this.userId) as any[];
+      
+      if (notificationsData && notificationsData.length > 0) {
+        this.notifications = notificationsData.map(notification => {
+          return {
+            id: notification.id,
+            type: notification.type,
+            postId: notification.postId,
+            fromUser: notification.fromUser,
+            timestamp: notification.timestamp?.toDate ? notification.timestamp.toDate() : new Date(),
+            read: notification.read || false,
+            content: notification.content
+          };
+        });
+        
+        // Calculer le nombre de notifications non lues
+        this.unreadNotifications = this.notifications.filter(n => !n.read).length;
+      }
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    }
   }
 }

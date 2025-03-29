@@ -1,0 +1,34 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Notifications</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let notification of notifications" (click)="viewNotification(notification)" [class.unread]="!notification.read">
+      <ion-avatar slot="start">
+        <img [src]="notification.fromUser?.avatar || 'assets/default-avatar.png'" [alt]="notification.fromUser?.name">
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ notification.fromUser?.name }}</h2>
+        <p *ngIf="notification.type === 'like'">a aimé votre publication</p>
+        <p *ngIf="notification.type === 'comment'">a commenté : {{ notification.content }}</p>
+        <p class="notification-time">{{ formatTime(notification.timestamp) }}</p>
+      </ion-label>
+      <ion-icon *ngIf="notification.type === 'like'" name="heart" color="danger" slot="end"></ion-icon>
+      <ion-icon *ngIf="notification.type === 'comment'" name="chatbubble" color="primary" slot="end"></ion-icon>
+    </ion-item>
+    
+    <ion-item *ngIf="notifications.length === 0">
+      <ion-label class="ion-text-center">
+        <p>Vous n'avez pas de notifications</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

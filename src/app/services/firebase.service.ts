@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
 import { 
   getFirestore, collection, doc, getDoc, getDocs, 
-  addDoc, updateDoc, deleteDoc, query, where, orderBy, limit as firestoreLimit, setDoc
+  addDoc, updateDoc, deleteDoc, query, where, orderBy, limit as firestoreLimit, setDoc, writeBatch
 } from 'firebase/firestore';
 import { 
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
@@ -322,6 +322,63 @@ export class FirebaseService {
         await this.showErrorToast('Une erreur est survenue lors de l\'enregistrement du document');
       }
       
+      throw error;
+    }
+  }
+
+  // Méthode pour récupérer les notifications d'un utilisateur
+  async getNotifications(userId: string) {
+    try {
+      const notificationsCollection = collection(this.firestore, `users/${userId}/notifications`);
+      const notificationsQuery = query(
+        notificationsCollection, 
+        orderBy('timestamp', 'desc')
+      );
+      
+      const querySnapshot = await getDocs(notificationsQuery);
+      
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error('Error getting notifications:', error);
+      return [];
+    }
+  }
+
+  // Méthode pour ajouter une notification
+  async addNotification(userId: string, notification: any) {
+    try {
+      const notificationsCollection = collection(this.firestore, `users/${userId}/notifications`);
+      await addDoc(notificationsCollection, notification);
+    } catch (error) {
+      console.error('Error adding notification:', error);
+      throw error;
+    }
+  }
+
+  // Méthode pour marquer toutes les notifications comme lues
+  async markNotificationsAsRead(userId: string) {
+    try {
+      const notificationsCollection = collection(this.firestore, `users/${userId}/notifications`);
+      const notificationsQuery = query(
+        notificationsCollection,
+        where('read', '==', false)
+      );
+      
+      const querySnapshot = await getDocs(notificationsQuery);
+      
+      const batch = writeBatch(this.firestore);
+      
+      querySnapshot.docs.forEach(doc => {
+        const notificationRef = doc.ref;
+        batch.update(notificationRef, { read: true });
+      });
+      
+      await batch.commit();
+    } catch (error) {
+      console.error('Error marking notifications as read:', error);
       throw error;
     }
   }
