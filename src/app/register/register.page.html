@@ -69,27 +69,28 @@
         
         <div class="form-group">
           <ion-item class="custom-item">
-            <ion-icon name="fitness-outline" slot="start"></ion-icon>
-            <ion-label position="floating">Discipline</ion-label>
-            <ion-select [(ngModel)]="user.discipline" name="discipline" interface="popover">
-              <ion-select-option value="boxing">Boxe</ion-select-option>
+            <ion-icon name="trophy-outline" slot="start"></ion-icon>
+            <ion-label position="stacked">Discipline</ion-label>
+            <ion-select [(ngModel)]="user.discipline" name="discipline" interface="popover" placeholder="Sélectionner votre discipline">
+              <ion-select-option value="boxe">Boxe</ion-select-option>
               <ion-select-option value="mma">MMA</ion-select-option>
-              <ion-select-option value="jiujitsu">Jiu-Jitsu</ion-select-option>
-              <ion-select-option value="muaythai">Muay Thai</ion-select-option>
-              <ion-select-option value="kickboxing">Kick-boxing</ion-select-option>
-              <ion-select-option value="wrestling">Lutte</ion-select-option>
+              <ion-select-option value="jiu-jitsu">Jiu-jitsu</ion-select-option>
+              <ion-select-option value="muay-thai">Muay Thai</ion-select-option>
+              <ion-select-option value="karate">Karaté</ion-select-option>
+              <ion-select-option value="judo">Judo</ion-select-option>
+              <ion-select-option value="lutte">Lutte</ion-select-option>
             </ion-select>
           </ion-item>
         </div>
         
         <div class="form-group">
           <ion-item class="custom-item">
-            <ion-icon name="trending-up-outline" slot="start"></ion-icon>
-            <ion-label position="floating">Niveau</ion-label>
-            <ion-select [(ngModel)]="user.level" name="level" interface="popover">
-              <ion-select-option value="beginner">Débutant</ion-select-option>
-              <ion-select-option value="intermediate">Intermédiaire</ion-select-option>
-              <ion-select-option value="advanced">Avancé</ion-select-option>
+            <ion-icon name="ribbon-outline" slot="start"></ion-icon>
+            <ion-label position="stacked">Niveau</ion-label>
+            <ion-select [(ngModel)]="user.level" name="level" interface="popover" placeholder="Sélectionner votre niveau">
+              <ion-select-option value="debutant">Débutant</ion-select-option>
+              <ion-select-option value="intermediaire">Intermédiaire</ion-select-option>
+              <ion-select-option value="avance">Avancé</ion-select-option>
               <ion-select-option value="expert">Expert</ion-select-option>
             </ion-select>
           </ion-item>
