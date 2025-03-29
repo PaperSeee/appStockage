@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ActionSheetController, ModalController, ToastController, AlertController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ModalContentComponent } from '../../../components/modal-content/modal-content.component';
 
 // Define interfaces for the data types
@@ -88,7 +89,8 @@ export class Tab5Page implements OnInit {
     private actionSheetController: ActionSheetController,
     private modalController: ModalController,
     private toastController: ToastController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private router: Router
   ) { 
     const today = new Date();
     this.selectedMonth = today.getMonth() + 1;
@@ -844,5 +846,10 @@ export class Tab5Page implements OnInit {
       position: 'bottom'
     });
     await toast.present();
+  }
+
+  // Navigation vers la page de profil
+  goToProfile() {
+    this.router.navigateByUrl('/profile');
   }
 }
