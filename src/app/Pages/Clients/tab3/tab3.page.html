@@ -1,17 +1,244 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Messagerie
+      Combat Social
     </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openNotifications()">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <ion-badge *ngIf="notifications.length > 0">{{ notifications.length }}</ion-badge>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  
+  <ion-toolbar>
+    <div class="search-container">
+      <ion-searchbar [(ngModel)]="searchTerm" (ionChange)="searchPosts()" placeholder="Rechercher dans le feed..." animated></ion-searchbar>
+    </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Messagerie</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-refresher slot="fixed" (ionRefresh)="refreshFeed($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
-  <app-explore-container name="Page en cours de construction"></app-explore-container>
+  <!-- Create Post Section -->
+  <div class="create-post-card">
+    <div class="post-header">
+      <ion-avatar>
+        <img [src]="currentUser.avatar || 'assets/default-avatar.png'" alt="Avatar">
+      </ion-avatar>
+      <ion-input placeholder="Partagez votre expérience d'entraînement..." (click)="openPostCreator()"></ion-input>
+    </div>
+    <div class="post-actions">
+      <ion-button fill="clear" (click)="openPostCreator('photo')">
+        <ion-icon name="image-outline" color="primary"></ion-icon>
+        <ion-label>Photo</ion-label>
+      </ion-button>
+      <ion-button fill="clear" (click)="openPostCreator('video')">
+        <ion-icon name="videocam-outline" color="success"></ion-icon>
+        <ion-label>Vidéo</ion-label>
+      </ion-button>
+      <ion-button fill="clear" (click)="openPostCreator('event')">
+        <ion-icon name="calendar-outline" color="warning"></ion-icon>
+        <ion-label>Événement</ion-label>
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Discipline Filter -->
+  <div class="discipline-filter">
+    <div 
+      class="filter-item" 
+      [class.active]="selectedFilter === 'all'" 
+      (click)="filterPosts('all')"
+    >Tous</div>
+    <div 
+      class="filter-item" 
+      [class.active]="selectedFilter === 'mma'" 
+      (click)="filterPosts('mma')"
+    >MMA</div>
+    <div 
+      class="filter-item" 
+      [class.active]="selectedFilter === 'boxe'" 
+      (click)="filterPosts('boxe')"
+    >Boxe</div>
+    <div 
+      class="filter-item" 
+      [class.active]="selectedFilter === 'jiu-jitsu'" 
+      (click)="filterPosts('jiu-jitsu')"
+    >Jiu-Jitsu</div>
+    <div 
+      class="filter-item" 
+      [class.active]="selectedFilter === 'muay-thai'" 
+      (click)="filterPosts('muay-thai')"
+    >Muay Thai</div>
+  </div>
+
+  <!-- Stories Section -->
+  <div class="stories-container" *ngIf="stories.length > 0">
+    <div class="story-item" *ngFor="let story of stories" (click)="viewStory(story)">
+      <div class="story-avatar" [class.has-new]="!story.viewed">
+        <img [src]="story.user.avatar" [alt]="story.user.name">
+      </div>
+      <span class="story-username">{{ story.user.name }}</span>
+    </div>
+    <div class="story-item add-story" (click)="createStory()">
+      <div class="story-avatar add">
+        <ion-icon name="add"></ion-icon>
+      </div>
+      <span class="story-username">Ajouter</span>
+    </div>
+  </div>
+
+  <!-- Posts Feed -->
+  <div class="posts-container">
+    <div *ngIf="loading" class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Chargement du feed...</p>
+    </div>
+
+    <div *ngIf="!loading && filteredPosts.length === 0" class="empty-feed">
+      <ion-icon name="fitness-outline" size="large"></ion-icon>
+      <h3>Aucune publication</h3>
+      <p>Soyez le premier à partager votre expérience ou changez vos filtres</p>
+      <ion-button (click)="openPostCreator()">Créer une publication</ion-button>
+    </div>
+
+    <div class="post-card" *ngFor="let post of filteredPosts">
+      <div class="post-header">
+        <ion-avatar (click)="viewProfile(post.user.id)">
+          <img [src]="post.user.avatar" [alt]="post.user.name">
+        </ion-avatar>
+        <div class="post-info">
+          <div class="user-info">
+            <h4 (click)="viewProfile(post.user.id)">{{ post.user.name }}</h4>
+            <ion-chip *ngIf="post.type" outline color="primary" class="post-type">
+              {{ post.type }}
+            </ion-chip>
+          </div>
+          <p class="post-meta">
+            {{ post.timestamp | date:'dd MMM à HH:mm' }} · 
+            <ion-icon name="globe-outline"></ion-icon> Public
+          </p>
+        </div>
+        <ion-button fill="clear" (click)="showPostOptions(post)">
+          <ion-icon name="ellipsis-horizontal"></ion-icon>
+        </ion-button>
+      </div>
+
+      <div class="post-content">
+        <p class="post-text" [innerHTML]="post.content"></p>
+        
+        <div *ngIf="post.tags && post.tags.length > 0" class="post-tags">
+          <ion-chip *ngFor="let tag of post.tags" size="small" (click)="searchByTag(tag)">
+            <ion-label>#{{ tag }}</ion-label>
+          </ion-chip>
+        </div>
+
+        <div *ngIf="post.media && post.media.length > 0" class="post-media">
+          <ng-container *ngIf="post.media.length === 1">
+            <img *ngIf="post.media[0].type === 'image'" [src]="post.media[0].url" (click)="openMedia(post.media[0])">
+            <video *ngIf="post.media[0].type === 'video'" [src]="post.media[0].url" controls></video>
+          </ng-container>
+          
+          <div *ngIf="post.media.length > 1" class="media-grid">
+            <div *ngFor="let media of post.media" class="media-item" (click)="openMedia(media)">
+              <img *ngIf="media.type === 'image'" [src]="media.url">
+              <div *ngIf="media.type === 'video'" class="video-thumbnail">
+                <img [src]="media.thumbnail">
+                <ion-icon name="play-circle"></ion-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="post.event" class="post-event">
+          <div class="event-banner">
+            <img [src]="post.event.image">
+            <div class="event-date">
+              <div class="date-day">{{ post.event.date | date:'dd' }}</div>
+              <div class="date-month">{{ post.event.date | date:'MMM' }}</div>
+            </div>
+          </div>
+          <div class="event-details">
+            <h4>{{ post.event.title }}</h4>
+            <p><ion-icon name="location-outline"></ion-icon> {{ post.event.location }}</p>
+            <p><ion-icon name="people-outline"></ion-icon> {{ post.event.attendees }} participants</p>
+            <ion-button expand="block" (click)="registerForEvent(post.event)">
+              Je participe
+            </ion-button>
+          </div>
+        </div>
+      </div>
+
+      <div class="post-stats">
+        <div class="likes">
+          <ion-icon name="heart"></ion-icon> {{ post.likes.length }}
+        </div>
+        <div class="comments-shares">
+          {{ post.comments.length }} commentaires · {{ post.shares }} partages
+        </div>
+      </div>
+
+      <div class="post-actions">
+        <ion-button fill="clear" [color]="post.userLiked ? 'danger' : 'medium'" (click)="toggleLike(post)">
+          <ion-icon [name]="post.userLiked ? 'heart' : 'heart-outline'"></ion-icon>
+          J'aime
+        </ion-button>
+        
+        <ion-button fill="clear" color="medium" (click)="toggleComments(post)">
+          <ion-icon name="chatbubble-outline"></ion-icon>
+          Commenter
+        </ion-button>
+        
+        <ion-button fill="clear" color="medium" (click)="sharePost(post)">
+          <ion-icon name="share-social-outline"></ion-icon>
+          Partager
+        </ion-button>
+      </div>
+
+      <div class="post-comments" *ngIf="post.showComments">
+        <div class="comment-list">
+          <div class="comment-item" *ngFor="let comment of post.comments">
+            <ion-avatar>
+              <img [src]="comment.user.avatar" [alt]="comment.user.name">
+            </ion-avatar>
+            <div class="comment-content">
+              <div class="comment-bubble">
+                <h5>{{ comment.user.name }}</h5>
+                <p>{{ comment.text }}</p>
+              </div>
+              <div class="comment-actions">
+                <span class="comment-time">{{ comment.timestamp | date:'dd MMM à HH:mm' }}</span>
+                <span class="like-button" (click)="likeComment(comment)">J'aime</span>
+                <span class="reply-button" (click)="replyToComment(comment)">Répondre</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="add-comment">
+          <ion-avatar>
+            <img [src]="currentUser.avatar || 'assets/default-avatar.png'" alt="Avatar">
+          </ion-avatar>
+          <ion-input 
+            placeholder="Écrivez un commentaire..." 
+            [(ngModel)]="post.newComment" 
+            (keyup.enter)="addComment(post)">
+          </ion-input>
+          <ion-button fill="clear" (click)="addComment(post)">
+            <ion-icon name="send"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="openPostCreator()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>
