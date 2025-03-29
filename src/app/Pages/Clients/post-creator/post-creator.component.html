@@ -1,0 +1,88 @@
+<div class="post-creator-container">
+  <ion-header class="modern-header">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="cancel()" class="cancel-button">
+          <ion-icon name="arrow-back-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <ion-title>Nouvelle publication</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="submitPost()" [disabled]="(!post.content.trim() && post.media.length === 0)" class="publish-button">
+          Publier
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content class="modern-content">
+    <div class="user-profile-section">
+      <ion-avatar>
+        <img [src]="currentUser?.avatar || 'assets/default-avatar.png'" alt="Avatar">
+      </ion-avatar>
+      <div class="user-info">
+        <h4>{{ currentUser?.name || 'Utilisateur' }}</h4>
+        <div class="post-type-selector">
+          <ion-chip *ngFor="let type of availableTypes" 
+                   [class.selected]="post.type === type.value"
+                   (click)="post.type = type.value">
+            <ion-label>{{ type.label }}</ion-label>
+          </ion-chip>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-area">
+      <ion-textarea 
+        [(ngModel)]="post.content"
+        rows="6"
+        placeholder="Partagez votre expérience..." 
+        class="modern-textarea"
+        (ionChange)="extractHashtags()">
+      </ion-textarea>
+      
+      <div class="hashtag-help" *ngIf="post.content && !post.tags.length">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>Utilisez #hashtag pour ajouter des tags à votre publication</span>
+      </div>
+      
+      <div class="tags-preview" *ngIf="post.tags.length > 0">
+        <ion-chip *ngFor="let tag of post.tags" class="tag-chip">
+          <ion-label>#{{ tag }}</ion-label>
+        </ion-chip>
+      </div>
+      
+      <div class="media-section" *ngIf="post.media.length > 0">
+        <h5>Médias ajoutés</h5>
+        <div class="media-preview">
+          <div *ngFor="let media of post.media; let i = index" class="media-item">
+            <img *ngIf="media.type === 'image'" [src]="media.url">
+            <video *ngIf="media.type === 'video'" [src]="media.url" controls></video>
+            <ion-button fill="clear" class="remove-button" (click)="removeMedia(i)">
+              <ion-icon name="close-circle"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ion-content>
+
+  <ion-footer class="modern-footer">
+    <div class="action-buttons">
+      <ion-button (click)="addPhoto()" class="media-button">
+        <ion-icon name="image-outline"></ion-icon>
+        <span>Photos</span>
+      </ion-button>
+      
+      <ion-button disabled class="media-button">
+        <ion-icon name="videocam-outline"></ion-icon>
+        <span>Vidéo</span>
+      </ion-button>
+      
+      <ion-button disabled class="media-button">
+        <ion-icon name="link-outline"></ion-icon>
+        <span>Lien</span>
+      </ion-button>
+    </div>
+  </ion-footer>
+</div>

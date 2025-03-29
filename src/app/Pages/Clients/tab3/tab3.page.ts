@@ -5,6 +5,20 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { SharingService } from '../../../services/sharing.service';
+import { FirebaseService } from '../../../services/firebase.service'; 
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { PostCreatorComponent } from '../post-creator/post-creator.component';
+
+// Define interface for Firebase user data
+interface UserData {
+  id?: string;
+  userId?: string;
+  firstName?: string;
+  lastName?: string;
+  photo?: string;
+  discipline?: string;
+  [key: string]: any; // Allow for other properties
+}
 
 interface User {
   id: number;
@@ -86,21 +100,100 @@ export class Tab3Page implements OnInit {
   selectedFilter: string = 'all';
   searchTerm: string = '';
 
+  isAuthenticated = false;
+  userId: string | null = null;
+  newPost = {
+    content: '',
+    tags: [] as string[],
+    media: [] as any[],
+    type: '' // 'training', 'competition', etc.
+  };
+  availableTags = ['training', 'competition', 'technique', 'mma', 'boxe', 'jiu-jitsu', 'muay-thai'];
+
   constructor(
     private router: Router,
     private toastController: ToastController,
     private alertController: AlertController,
     private actionSheetController: ActionSheetController,
     private modalController: ModalController,
-    private sharingService: SharingService
+    private sharingService: SharingService,
+    private firebaseService: FirebaseService
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.loadMockData();
     setTimeout(() => {
       this.loading = false;
       this.filteredPosts = [...this.posts];
     }, 1500);
+
+    // Check authentication
+    try {
+      const user = await this.firebaseService.getCurrentUser() as any;
+      this.isAuthenticated = !!user;
+      if (user && user.uid) {
+        this.userId = user.uid;
+        
+        // Add null check before calling getDocument
+        if (this.userId) {
+          // Use type assertion to properly type the userData
+          const userData = await this.firebaseService.getDocument('users', this.userId) as UserData;
+          
+          if (userData) {
+            this.currentUser = {
+              id: parseInt(this.userId || '0'),
+              name: `${userData?.firstName || ''} ${userData?.lastName || ''}`,
+              avatar: userData?.photo || 'assets/default-avatar.png',
+              discipline: userData?.discipline
+            };
+          }
+        }
+        
+        // Load real posts from Firebase
+        this.loadPosts();
+      } else {
+        // Use mock data for non-authenticated users
+        this.loadMockData();
+      }
+    } catch (error) {
+      console.error('Error checking authentication:', error);
+      this.loadMockData();
+    }
+  }
+
+  async loadPosts() {
+    this.loading = true;
+    try {
+      const postsData = await this.firebaseService.getAllDocuments('posts') as any[];
+      // Transform Firebase data to match our Post interface
+      this.posts = postsData.map(post => {
+        return {
+          id: parseInt(post.id || '0') || Math.floor(Math.random() * 1000),
+          user: post.user || this.currentUser,
+          content: post.content || '',
+          media: post.media || [],
+          tags: post.tags || [],
+          type: post.type || '',
+          likes: post.likes || [],
+          comments: post.comments || [],
+          shares: post.shares || 0,
+          timestamp: post.timestamp?.toDate ? post.timestamp.toDate() : new Date(),
+          userLiked: (post.likes || []).some((like: any) => like.userId === this.currentUser.id) || false,
+          showComments: false,
+          newComment: ''
+        };
+      });
+      
+      // Sort by timestamp, newest first
+      this.posts.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      this.filteredPosts = [...this.posts];
+    } catch (error) {
+      console.error('Error loading posts:', error);
+      // Fallback to mock data
+      this.loadMockData();
+    } finally {
+      this.loading = false;
+    }
   }
 
   loadMockData() {
@@ -270,23 +363,21 @@ export class Tab3Page implements OnInit {
       {
         id: 1,
         type: 'like',
-        user: users[0],
-        post: this.posts[1],
-        timestamp: new Date(Date.now() - 1000 * 60 * 30)
+        user: users[1],
+        timestamp: new Date(Date.now() - 1000 * 60 * 60)
       },
       {
         id: 2,
         type: 'comment',
         user: users[2],
-        post: this.posts[0],
-        timestamp: new Date(Date.now() - 1000 * 60 * 60)
+        timestamp: new Date(Date.now() - 1000 * 60 * 120)
       }
     ];
   }
 
   refreshFeed(event: any) {
+    this.loadMockData();
     setTimeout(() => {
-      this.loadMockData();
       this.filteredPosts = [...this.posts];
       event.target.complete();
     }, 1000);
@@ -324,9 +415,116 @@ export class Tab3Page implements OnInit {
     this.searchPosts();
   }
 
-  openPostCreator(type?: string) {
-    console.log('Opening post creator', type);
-    // Here we would open a modal to create a post
+  async openPostCreator(type?: string) {
+    if (!this.isAuthenticated) {
+      const toast = await this.toastController.create({
+        message: 'Vous devez être connecté pour créer une publication',
+        duration: 2000,
+        position: 'bottom',
+        buttons: [
+          {
+            text: 'Se connecter',
+            handler: () => {
+              this.router.navigate(['/login']);
+            }
+          }
+        ]
+      });
+      await toast.present();
+      return;
+    }
+    
+    const modal = await this.modalController.create({
+      component: PostCreatorComponent,
+      componentProps: {
+        postType: type
+      }
+    });
+    
+    await modal.present();
+    
+    const { data } = await modal.onDidDismiss();
+    if (data && data.submitted) {
+      await this.createPost(data.post);
+    }
+  }
+
+  async createPost(postData: any) {
+    this.loading = true;
+    
+    try {
+      // Upload media files if needed
+      const mediaUrls: any[] = [];
+      for (const media of postData.media) {
+        if (media.url.startsWith('data:')) {
+          // For now, we'll just use the data URL directly instead of uploading to Firebase Storage
+          // This is a temporary solution until Firebase storage upload is properly implemented
+          mediaUrls.push({
+            type: media.type,
+            url: media.url,
+            id: Math.floor(Math.random() * 10000)
+          });
+          
+          /* Uncomment this when you have implemented Firebase Storage
+          // Convert data URL to File
+          const response = await fetch(media.url);
+          const blob = await response.blob();
+          const fileName = `post_${Date.now()}_${mediaUrls.length}.${media.type === 'image' ? 'jpg' : 'mp4'}`;
+          const file = new File([blob], fileName, { type: media.type === 'image' ? 'image/jpeg' : 'video/mp4' });
+          
+          // Upload to Firebase Storage
+          const uploadUrl = await this.firebaseService.uploadFile(file, `posts/${this.userId}/${fileName}`);
+          mediaUrls.push({
+            type: media.type,
+            url: uploadUrl,
+            id: Math.floor(Math.random() * 10000)
+          });
+          */
+        } else {
+          mediaUrls.push({...media, id: Math.floor(Math.random() * 10000)});
+        }
+      }
+      
+      // Create post object
+      const post = {
+        userId: this.userId,
+        user: {
+          id: this.currentUser.id,
+          name: this.currentUser.name,
+          avatar: this.currentUser.avatar,
+          discipline: this.currentUser.discipline || ''
+        },
+        content: postData.content,
+        media: mediaUrls,
+        tags: postData.tags,
+        type: postData.type,
+        likes: [],
+        comments: [],
+        shares: 0,
+        timestamp: new Date()
+      };
+      
+      // Save to Firebase
+      await this.firebaseService.addDocument('posts', post);
+      
+      // Refresh posts
+      await this.loadPosts();
+      
+      const toast = await this.toastController.create({
+        message: 'Publication créée avec succès',
+        duration: 2000
+      });
+      await toast.present();
+    } catch (error) {
+      console.error('Error creating post:', error);
+      const toast = await this.toastController.create({
+        message: 'Erreur lors de la création de la publication',
+        duration: 2000
+      });
+      await toast.present();
+    } finally {
+      this.loading = false;
+    }
   }
 
   toggleLike(post: Post) {
@@ -366,8 +564,8 @@ export class Tab3Page implements OnInit {
   }
 
   replyToComment(comment: Comment) {
-    console.log('Replying to comment', comment);
     // Here we would focus the comment input and maybe add a prefix like "@username "
+    console.log('Replying to comment', comment);
   }
 
   sharePost(post: Post) {
@@ -382,37 +580,37 @@ export class Tab3Page implements OnInit {
   }
 
   openNotifications() {
-    console.log('Opening notifications');
     // Here we would open a notifications panel
+    console.log('Opening notifications');
   }
 
   viewProfile(userId: number) {
-    console.log('Viewing profile', userId);
     // Here we would navigate to the user's profile
+    console.log('Viewing profile', userId);
   }
 
   viewStory(story: Story) {
-    console.log('Viewing story', story);
     // Here we would open a story viewer
+    console.log('Viewing story', story);
   }
 
   createStory() {
-    console.log('Creating story');
     // Here we would open a story creator
+    console.log('Creating story');
   }
 
   openMedia(media: Media) {
-    console.log('Opening media', media);
     // Here we would open a media viewer
+    console.log('Opening media', media);
   }
 
   showPostOptions(post: Post) {
-    console.log('Showing post options', post);
     // Here we would show a context menu
+    console.log('Showing post options', post);
   }
 
   registerForEvent(event: Event) {
-    console.log('Registering for event', event);
     // Here we would open a registration form
+    console.log('Registering for event', event);
   }
 }
