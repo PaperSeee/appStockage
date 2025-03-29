@@ -1,9 +1,10 @@
 import { IonicModule } from '@ionic/angular';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Tab5Page } from './tab5.page';
 import { ExploreContainerComponentModule } from '../../../explore-container/explore-container.module';
+import { ModalContentComponent } from '../../../components/modal-content/modal-content.component';
 
 import { Tab5PageRoutingModule } from './tab5-routing.module';
 
@@ -12,6 +13,7 @@ import { Tab5PageRoutingModule } from './tab5-routing.module';
     IonicModule,
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     ExploreContainerComponentModule,
     Tab5PageRoutingModule
   ],

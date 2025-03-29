@@ -9,7 +9,7 @@
     <ion-title>Évolution</ion-title>
     
     <ion-buttons slot="end">
-      <ion-button>
+      <ion-button (click)="openSettings()">
         <ion-icon name="settings-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -20,140 +20,97 @@
   <!-- Stats Summary Cards -->
   <div class="stats-overview">
     <div class="stat-card">
-      <div class="stat-value">24</div>
+      <div class="stat-value">{{trainingStats.count || 0}}</div>
       <div class="stat-label">Entraînements</div>
-      <div class="stat-trend positive">
-        <ion-icon name="arrow-up"></ion-icon>
-        <span>12%</span>
+      <div class="stat-trend" [ngClass]="trainingStats.trend > 0 ? 'positive' : trainingStats.trend < 0 ? 'negative' : 'neutral'">
+        <ion-icon [name]="trainingStats.trend > 0 ? 'arrow-up' : trainingStats.trend < 0 ? 'arrow-down' : 'remove'"></ion-icon>
+        <span>{{trainingStats.trend}}%</span>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-value">5</div>
+      <div class="stat-value">{{competitionStats.count || 0}}</div>
       <div class="stat-label">Compétitions</div>
-      <div class="stat-trend neutral">
-        <ion-icon name="remove"></ion-icon>
-        <span>0%</span>
+      <div class="stat-trend" [ngClass]="competitionStats.trend > 0 ? 'positive' : competitionStats.trend < 0 ? 'negative' : 'neutral'">
+        <ion-icon [name]="competitionStats.trend > 0 ? 'arrow-up' : competitionStats.trend < 0 ? 'arrow-down' : 'remove'"></ion-icon>
+        <span>{{competitionStats.trend}}%</span>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-value">18h</div>
+      <div class="stat-value">{{trainingStats.hours || 0}}h</div>
       <div class="stat-label">Temps total</div>
-      <div class="stat-trend positive">
-        <ion-icon name="arrow-up"></ion-icon>
-        <span>8%</span>
+      <div class="stat-trend" [ngClass]="trainingStats.hoursTrend > 0 ? 'positive' : trainingStats.hoursTrend < 0 ? 'negative' : 'neutral'">
+        <ion-icon [name]="trainingStats.hoursTrend > 0 ? 'arrow-up' : trainingStats.hoursTrend < 0 ? 'arrow-down' : 'remove'"></ion-icon>
+        <span>{{trainingStats.hoursTrend}}%</span>
       </div>
     </div>
   </div>
 
-  <!-- Weekly Progress Chart -->
+  <!-- Weekly Progress Chart - Improved Design -->
   <div class="chart-section">
     <div class="section-header">
       <h2>Progression hebdomadaire</h2>
-      <ion-button fill="clear" size="small">
+      <ion-button fill="clear" size="small" (click)="filterWeeklyData()">
         <ion-icon name="filter-outline"></ion-icon>
       </ion-button>
     </div>
-    <div class="chart-container">
-      <!-- Y-axis scale -->
-      <div class="chart-y-axis">
-        <div class="y-axis-label">100%</div>
-        <div class="y-axis-label">75%</div>
-        <div class="y-axis-label">50%</div>
-        <div class="y-axis-label">25%</div>
-        <div class="y-axis-label">0%</div>
-      </div>
-      <!-- Chart with grid -->
-      <div class="chart-placeholder">
-        <div class="chart-grid"></div>
-        <div class="chart-bars">
-          <div class="chart-bar" style="height: 30%"><span>L</span></div>
-          <div class="chart-bar" style="height: 60%"><span>M</span></div>
-          <div class="chart-bar" style="height: 45%"><span>M</span></div>
-          <div class="chart-bar" style="height: 75%"><span>J</span></div>
-          <div class="chart-bar" style="height: 25%"><span>V</span></div>
-          <div class="chart-bar" style="height: 90%"><span>S</span></div>
-          <div class="chart-bar" style="height: 15%"><span>D</span></div>
+    <div class="progress-container">
+      <div class="progress-metrics">
+        <div class="metric" *ngFor="let day of weeklyData">
+          <div class="metric-bar-container">
+            <div class="metric-bar" [style.height.%]="day.percentage"></div>
+          </div>
+          <div class="metric-label">{{day.label}}</div>
+          <div class="metric-value">{{day.hours}}h</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Training Calendar -->
+  <!-- Training Calendar - Redesigned -->
   <div class="calendar-section">
     <div class="section-header">
       <h2>Calendrier d'entraînement</h2>
       <div class="month-selector">
-        <ion-button fill="clear" size="small" class="month-nav-btn">
+        <ion-button fill="clear" size="small" class="month-nav-btn" (click)="prevMonth()">
           <ion-icon name="chevron-back"></ion-icon>
         </ion-button>
-        <ion-select interface="popover" value="6" class="month-select">
-          <ion-select-option value="1">Janvier 2023</ion-select-option>
-          <ion-select-option value="2">Février 2023</ion-select-option>
-          <ion-select-option value="3">Mars 2023</ion-select-option>
-          <ion-select-option value="4">Avril 2023</ion-select-option>
-          <ion-select-option value="5">Mai 2023</ion-select-option>
-          <ion-select-option value="6">Juin 2023</ion-select-option>
-          <ion-select-option value="7">Juillet 2023</ion-select-option>
-          <ion-select-option value="8">Août 2023</ion-select-option>
-          <ion-select-option value="9">Septembre 2023</ion-select-option>
-          <ion-select-option value="10">Octobre 2023</ion-select-option>
-          <ion-select-option value="11">Novembre 2023</ion-select-option>
-          <ion-select-option value="12">Décembre 2023</ion-select-option>
-        </ion-select>
-        <ion-button fill="clear" size="small" class="month-nav-btn">
+        <div class="current-month">
+          <span>{{months[selectedMonth-1]}} {{selectedYear}}</span>
+          <ion-icon name="calendar-outline"></ion-icon>
+        </div>
+        <ion-button fill="clear" size="small" class="month-nav-btn" (click)="nextMonth()">
           <ion-icon name="chevron-forward"></ion-icon>
         </ion-button>
       </div>
     </div>
-    <div class="calendar-grid">
-      <div class="calendar-day-header">L</div>
-      <div class="calendar-day-header">M</div>
-      <div class="calendar-day-header">M</div>
-      <div class="calendar-day-header">J</div>
-      <div class="calendar-day-header">V</div>
-      <div class="calendar-day-header">S</div>
-      <div class="calendar-day-header">D</div>
 
-      <!-- Days would be generated dynamically -->
-      <div class="calendar-day inactive">29</div>
-      <div class="calendar-day inactive">30</div>
-      <div class="calendar-day inactive">31</div>
-      <div class="calendar-day">1</div>
-      <div class="calendar-day">2</div>
-      <div class="calendar-day trained">3</div>
-      <div class="calendar-day">4</div>
+    <div class="modern-calendar">
+      <div class="calendar-weekdays">
+        <div class="weekday" *ngFor="let day of weekdays">{{day}}</div>
+      </div>
       
-      <div class="calendar-day trained">5</div>
-      <div class="calendar-day">6</div>
-      <div class="calendar-day trained">7</div>
-      <div class="calendar-day">8</div>
-      <div class="calendar-day trained">9</div>
-      <div class="calendar-day competition">10</div>
-      <div class="calendar-day">11</div>
-      
-      <div class="calendar-day">12</div>
-      <div class="calendar-day trained">13</div>
-      <div class="calendar-day">14</div>
-      <div class="calendar-day trained">15</div>
-      <div class="calendar-day">16</div>
-      <div class="calendar-day trained">17</div>
-      <div class="calendar-day">18</div>
-      
-      <div class="calendar-day trained">19</div>
-      <div class="calendar-day">20</div>
-      <div class="calendar-day trained">21</div>
-      <div class="calendar-day">22</div>
-      <div class="calendar-day trained">23</div>
-      <div class="calendar-day competition">24</div>
-      <div class="calendar-day">25</div>
-      
-      <div class="calendar-day">26</div>
-      <div class="calendar-day trained">27</div>
-      <div class="calendar-day">28</div>
-      <div class="calendar-day trained">29</div>
-      <div class="calendar-day">30</div>
-      <div class="calendar-day inactive">1</div>
-      <div class="calendar-day inactive">2</div>
+      <div class="calendar-body">
+        <div 
+          *ngFor="let day of calendarDays" 
+          class="calendar-day" 
+          [ngClass]="{
+            'inactive': !day.isCurrentMonth,
+            'trained': day.hasTraining,
+            'competition': day.hasCompetition,
+            'today': day.isToday,
+            'has-events': day.hasTraining || day.hasCompetition
+          }"
+          (click)="selectDay(day)"
+        >
+          <div class="day-content">
+            <span class="day-number">{{day.date.getDate()}}</span>
+            <div class="day-indicators" *ngIf="day.hasTraining || day.hasCompetition">
+              <div class="indicator training" *ngIf="day.hasTraining"></div>
+              <div class="indicator competition" *ngIf="day.hasCompetition"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     
     <div class="calendar-legend">
@@ -172,108 +129,274 @@
   <div class="competitions-section">
     <div class="section-header">
       <h2>Compétitions récentes</h2>
-      <ion-button fill="clear" size="small">
+      <ion-button fill="clear" size="small" (click)="viewAllCompetitions()">
         Voir tout
         <ion-icon name="chevron-forward"></ion-icon>
       </ion-button>
     </div>
     
-    <div class="competition-card">
-      <div class="competition-medal gold">
-        <ion-icon name="trophy"></ion-icon>
+    <div class="competition-list">
+      <div class="competition-card" *ngFor="let competition of recentCompetitions">
+        <div class="competition-medal" [ngClass]="competition.position === 1 ? 'gold' : competition.position === 2 ? 'silver' : competition.position === 3 ? 'bronze' : 'other'">
+          <ion-icon name="trophy" *ngIf="competition.position <= 3"></ion-icon>
+          <ion-icon name="ribbon" *ngIf="competition.position > 3"></ion-icon>
+        </div>
+        <div class="competition-details">
+          <h3>{{competition.name}}</h3>
+          <p class="competition-date">{{competition.date | date:'d MMMM yyyy'}}</p>
+          <p class="competition-location">
+            <ion-icon name="location-outline"></ion-icon>
+            {{competition.location}}
+          </p>
+        </div>
+        <div class="competition-position">{{competition.position}}{{competition.position === 1 ? 'er' : 'ème'}}</div>
       </div>
-      <div class="competition-details">
-        <h3>Championnat Régional MMA</h3>
-        <p class="competition-date">24 juin 2023</p>
-        <p class="competition-location">
-          <ion-icon name="location-outline"></ion-icon>
-          Paris, France
-        </p>
-      </div>
-      <div class="competition-position">1er</div>
-    </div>
-    
-    <div class="competition-card">
-      <div class="competition-medal silver">
-        <ion-icon name="trophy"></ion-icon>
-      </div>
-      <div class="competition-details">
-        <h3>Tournoi Open de Boxe</h3>
-        <p class="competition-date">10 juin 2023</p>
-        <p class="competition-location">
-          <ion-icon name="location-outline"></ion-icon>
-          Lyon, France
-        </p>
-      </div>
-      <div class="competition-position">2ème</div>
+      
+      <ion-card *ngIf="recentCompetitions.length === 0" class="empty-state">
+        <ion-card-content>
+          <ion-icon name="trophy-outline" class="empty-icon"></ion-icon>
+          <p>Aucune compétition n'a encore été enregistrée</p>
+          <ion-button fill="clear" (click)="addCompetition()">Ajouter une compétition</ion-button>
+        </ion-card-content>
+      </ion-card>
     </div>
   </div>
 
-  <!-- Replacing Metrics with Goals & Achievements Section -->
+  <!-- Goals & Achievements Section -->
   <div class="goals-section">
     <div class="section-header">
       <h2>Objectifs & Récompenses</h2>
-      <ion-button fill="clear" size="small">
+      <ion-button fill="clear" size="small" (click)="addGoal()">
         <ion-icon name="add-outline"></ion-icon>
       </ion-button>
     </div>
     
     <div class="goal-timeline">
-      <!-- Completed goal -->
-      <div class="goal-item completed">
+      <div class="goal-item" *ngFor="let goal of goals" [ngClass]="goal.status">
         <div class="goal-icon">
-          <ion-icon name="checkmark-circle"></ion-icon>
+          <ion-icon [name]="goal.status === 'completed' ? 'checkmark-circle' : goal.status === 'in-progress' ? 'time' : 'flag'"></ion-icon>
         </div>
         <div class="goal-content">
-          <div class="goal-title">10 séances consécutives</div>
-          <div class="goal-date">Accompli le 15 mai 2023</div>
-          <div class="goal-badge">
-            <ion-icon name="medal"></ion-icon>
-            <span>Persévérance</span>
+          <div class="goal-title">{{goal.title}}</div>
+          <div class="goal-date" *ngIf="goal.status === 'completed'">Accompli le {{goal.completedDate | date:'d MMMM yyyy'}}</div>
+          <div class="goal-progress" *ngIf="goal.status !== 'completed'">
+            <div class="progress-bar">
+              <div class="progress" [style.width.%]="goal.progress"></div>
+            </div>
+            <span>{{goal.current}}/{{goal.target}} {{goal.unit}}</span>
+          </div>
+          <div class="goal-date" *ngIf="goal.status === 'upcoming'">Échéance: {{goal.dueDate | date:'d MMMM yyyy'}}</div>
+          <div class="goal-badge" *ngIf="goal.badge">
+            <ion-icon [name]="goal.badgeIcon"></ion-icon>
+            <span>{{goal.badge}}</span>
           </div>
         </div>
       </div>
       
-      <!-- In progress goal -->
-      <div class="goal-item in-progress">
-        <div class="goal-icon">
-          <ion-icon name="time"></ion-icon>
-        </div>
-        <div class="goal-content">
-          <div class="goal-title">Participer à 3 compétitions</div>
-          <div class="goal-progress">
-            <div class="progress-bar">
-              <div class="progress" style="width: 66%"></div>
-            </div>
-            <span>2/3</span>
-          </div>
-          <div class="goal-badge">
-            <ion-icon name="trophy"></ion-icon>
-            <span>Compétiteur</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Upcoming goal -->
-      <div class="goal-item upcoming">
-        <div class="goal-icon">
-          <ion-icon name="flag"></ion-icon>
-        </div>
-        <div class="goal-content">
-          <div class="goal-title">Atteindre 20 heures d'entraînement mensuel</div>
-          <div class="goal-progress">
-            <div class="progress-bar">
-              <div class="progress" style="width: 90%"></div>
-            </div>
-            <span>18/20 heures</span>
-          </div>
-          <div class="goal-date">Échéance: 30 juin 2023</div>
-        </div>
-      </div>
+      <ion-card *ngIf="goals.length === 0" class="empty-state">
+        <ion-card-content>
+          <ion-icon name="flag-outline" class="empty-icon"></ion-icon>
+          <p>Aucun objectif n'a encore été défini</p>
+          <ion-button fill="clear" (click)="addGoal()">Ajouter un objectif</ion-button>
+        </ion-card-content>
+      </ion-card>
     </div>
     
-    <ion-button expand="block" fill="outline" class="view-all-btn">
+    <ion-button expand="block" fill="outline" class="view-all-btn" (click)="viewAllGoals()">
       Voir tous les objectifs
     </ion-button>
   </div>
+
+  <!-- Floating Action Button for adding new data -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="presentActionSheet()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>
+
+<!-- Modal template for adding training -->
+<ng-template #addTrainingModal let-formGroup="formGroup">
+  <ion-header class="modal-header">
+    <ion-toolbar>
+      <ion-title>Nouvel entraînement</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="dismissModal()">
+          <ion-icon name="close-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="modal-content">
+    <form [formGroup]="formGroup" (ngSubmit)="saveTraining()">
+      <div class="form-container">
+        <div class="form-section">
+          <div class="section-header">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <h3>Date et durée</h3>
+          </div>
+          
+          <ion-item lines="none" class="date-item">
+            <ion-label position="stacked">Date</ion-label>
+            <ion-datetime-button datetime="date-picker-training"></ion-datetime-button>
+            <ion-modal [keepContentsMounted]="true">
+              <ng-template>
+                <ion-datetime 
+                  id="date-picker-training"
+                  presentation="date" 
+                  formControlName="date"
+                  [showDefaultButtons]="true"
+                  doneText="Confirmer"
+                  cancelText="Annuler"
+                  [preferWheel]="true">
+                </ion-datetime>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+          
+          <ion-item lines="none">
+            <ion-label position="stacked">Durée (heures)</ion-label>
+            <ion-input type="number" formControlName="duration" min="0.5" step="0.5" placeholder="1.5"></ion-input>
+          </ion-item>
+        </div>
+        
+        <div class="form-section">
+          <div class="section-header">
+            <ion-icon name="barbell-outline"></ion-icon>
+            <h3>Type d'entraînement</h3>
+          </div>
+          
+          <div class="training-type-selector">
+            <ion-segment formControlName="type" scrollable="true">
+              <ion-segment-button value="cardio">
+                <ion-icon name="heart-outline"></ion-icon>
+                <ion-label>Cardio</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="strength">
+                <ion-icon name="barbell-outline"></ion-icon>
+                <ion-label>Musculation</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="technique">
+                <ion-icon name="flash-outline"></ion-icon>
+                <ion-label>Technique</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="sparring">
+                <ion-icon name="people-outline"></ion-icon>
+                <ion-label>Sparring</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="other">
+                <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
+                <ion-label>Autre</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <div class="section-header">
+            <ion-icon name="create-outline"></ion-icon>
+            <h3>Notes</h3>
+          </div>
+          
+          <ion-item lines="none">
+            <ion-textarea formControlName="notes" rows="3" placeholder="Ajoutez des notes sur cet entraînement..."></ion-textarea>
+          </ion-item>
+        </div>
+        
+        <ion-button expand="block" type="submit" [disabled]="!formGroup.valid" class="submit-button">
+          <ion-icon name="save-outline" slot="start"></ion-icon>
+          Enregistrer l'entraînement
+        </ion-button>
+      </div>
+    </form>
+  </ion-content>
+</ng-template>
+
+<!-- Modal template for adding competition -->
+<ng-template #addCompetitionModal let-formGroup="formGroup">
+  <ion-header class="modal-header">
+    <ion-toolbar>
+      <ion-title>Nouvelle compétition</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="dismissModal()">
+          <ion-icon name="close-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="modal-content">
+    <form [formGroup]="formGroup" (ngSubmit)="saveCompetition()">
+      <div class="form-container">
+        <div class="form-section">
+          <div class="section-header">
+            <ion-icon name="trophy-outline"></ion-icon>
+            <h3>Informations générales</h3>
+          </div>
+          
+          <ion-item lines="none">
+            <ion-label position="stacked">Nom de la compétition</ion-label>
+            <ion-input type="text" formControlName="name" placeholder="Championnat régional..."></ion-input>
+          </ion-item>
+          
+          <ion-item lines="none" class="date-item">
+            <ion-label position="stacked">Date</ion-label>
+            <ion-datetime-button datetime="date-picker-competition"></ion-datetime-button>
+            <ion-modal [keepContentsMounted]="true">
+              <ng-template>
+                <ion-datetime 
+                  id="date-picker-competition"
+                  presentation="date" 
+                  formControlName="date"
+                  [showDefaultButtons]="true"
+                  doneText="Confirmer"
+                  cancelText="Annuler"
+                  [preferWheel]="true">
+                </ion-datetime>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+          
+          <ion-item lines="none">
+            <ion-label position="stacked">Lieu</ion-label>
+            <ion-input type="text" formControlName="location" placeholder="Paris, France..."></ion-input>
+          </ion-item>
+        </div>
+        
+        <div class="form-section">
+          <div class="section-header">
+            <ion-icon name="ribbon-outline"></ion-icon>
+            <h3>Résultat</h3>
+          </div>
+          
+          <ion-item lines="none">
+            <ion-label position="stacked">Position</ion-label>
+            <ion-select formControlName="position" interface="popover" placeholder="Sélectionnez">
+              <ion-select-option [value]="1">1er - Or</ion-select-option>
+              <ion-select-option [value]="2">2ème - Argent</ion-select-option>
+              <ion-select-option [value]="3">3ème - Bronze</ion-select-option>
+              <ion-select-option [value]="4">4ème</ion-select-option>
+              <ion-select-option [value]="5">5ème</ion-select-option>
+              <ion-select-option [value]="6">Autre position</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
+        
+        <div class="form-section">
+          <div class="section-header">
+            <ion-icon name="create-outline"></ion-icon>
+            <h3>Notes</h3>
+          </div>
+          
+          <ion-item lines="none">
+            <ion-textarea formControlName="notes" rows="3" placeholder="Ajoutez des notes sur cette compétition..."></ion-textarea>
+          </ion-item>
+        </div>
+        
+        <ion-button expand="block" type="submit" [disabled]="!formGroup.valid" class="submit-button">
+          <ion-icon name="save-outline" slot="start"></ion-icon>
+          Enregistrer la compétition
+        </ion-button>
+      </div>
+    </form>
+  </ion-content>
+</ng-template>

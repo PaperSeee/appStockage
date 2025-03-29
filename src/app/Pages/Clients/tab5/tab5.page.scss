@@ -57,61 +57,70 @@ ion-header {
 }
 
 .evolution-content {
-  --background: #f4f5f8;
+  --background: #f5f7fa;
   --padding-start: 16px;
   --padding-end: 16px;
-  font-family: 'Montserrat', sans-serif;
+  --padding-top: 16px;
+  --padding-bottom: 24px;
 }
 
 // Stats Overview
 .stats-overview {
-  display: flex;
-  justify-content: space-between;
-  margin: 20px 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 28px;
 }
 
 .stat-card {
   background: white;
   border-radius: 16px;
-  padding: 16px;
-  width: 30%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 20px 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  }
 }
 
 .stat-value {
-  font-size: 1.8rem;
+  font-size: 24px;
   font-weight: 700;
-  color: #333;
+  margin-bottom: 4px;
+  color: var(--ion-color-primary);
 }
 
 .stat-label {
-  font-size: 0.8rem;
+  font-size: 14px;
   color: #666;
-  margin-top: 4px;
+  margin-bottom: 8px;
 }
 
 .stat-trend {
+  font-size: 12px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-top: 8px;
-  font-size: 0.8rem;
-  
+
   &.positive {
     color: #4caf50;
   }
-  
+
   &.negative {
     color: #f44336;
   }
-  
+
   &.neutral {
     color: #9e9e9e;
   }
-  
+
   ion-icon {
-    margin-right: 2px;
+    margin-right: 4px;
   }
 }
 
@@ -120,194 +129,295 @@ ion-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 24px 0 16px;
-  
+  margin-bottom: 18px;
+
   h2 {
-    font-size: 1.2rem;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: 700;
     margin: 0;
-    color: #333;
+    color: #000000;
+    letter-spacing: -0.3px;
   }
 }
 
-// Chart Section with Scale
+// Progress Metrics (Improved Chart Design)
 .chart-section {
   background: white;
   border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
 
-.chart-container {
-  height: 200px;
-  margin-top: 16px;
+.progress-container {
+  overflow-x: auto;
+  padding-bottom: 12px;
+  
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 2px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--ion-color-primary);
+    border-radius: 2px;
+  }
+}
+
+.progress-metrics {
   display: flex;
+  justify-content: space-between;
+  min-width: 100%;
+  height: 220px;
+  padding: 10px 0;
 }
 
-.chart-y-axis {
+.metric {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  width: 40px;
-  padding-right: 8px;
-  
-  .y-axis-label {
-    font-size: 0.7rem;
-    color: #888;
-    text-align: right;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
-}
-
-.chart-placeholder {
+  align-items: center;
   flex: 1;
-  height: 100%;
-  display: flex;
-  align-items: flex-end;
-  position: relative;
+  min-width: 40px;
 }
 
-.chart-grid {
+.metric-bar-container {
+  width: 18px;
+  height: 150px;
+  background: #eef0f5;
+  border-radius: 9px;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.metric-bar {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
   bottom: 0;
-  background-size: 100% 25%;
-  background-image: linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
-  z-index: 1;
-}
-
-.chart-bars {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
   width: 100%;
-  height: 100%;
-  position: relative;
-  z-index: 2;
+  background: linear-gradient(to top, var(--ion-color-primary), #4a8bfc);
+  border-radius: 9px;
+  transition: height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.chart-bar {
-  width: 12%;
-  background: linear-gradient(to top, #6200ea, #b388ff);
-  border-radius: 8px 8px 0 0;
-  position: relative;
-  
-  span {
-    position: absolute;
-    bottom: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.7rem;
-    color: #666;
-  }
+.metric-label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #444;
+}
+
+.metric-value {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
 }
 
 // Calendar Section
 .calendar-section {
   background: white;
   border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
 }
 
 .month-selector {
   display: flex;
   align-items: center;
   
-  .month-select {
-    --padding-start: 0;
-    --padding-end: 0;
-    max-width: 140px;
-    margin: 0 8px;
-    font-weight: 500;
+  .month-nav-btn {
+    --color: var(--ion-color-primary);
+    --padding-start: 8px;
+    --padding-end: 8px;
+    --background-hover: rgba(var(--ion-color-primary-rgb), 0.1);
+    
+    ion-icon {
+      font-size: 18px;
+    }
   }
   
-  .month-nav-btn {
-    --border-radius: 50%;
-    --padding-start: 0;
-    --padding-end: 0;
-    width: 28px;
-    height: 28px;
+  .current-month {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+    background: #f5f7fa;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: background 0.2s ease;
     
     &:hover {
-      --background: #f0f0f0;
+      background: #eef0f5;
+    }
+    
+    ion-icon {
+      color: var(--ion-color-primary);
     }
   }
 }
 
-.calendar-grid {
+.modern-calendar {
+  margin-top: 20px;
+}
+
+.calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 8px;
-  margin-top: 16px;
+  margin-bottom: 8px;
 }
 
-.calendar-day-header {
+.weekday {
   text-align: center;
   font-weight: 600;
-  color: #666;
-  font-size: 0.8rem;
-  padding-bottom: 8px;
+  font-size: 13px;
+  color: #555;
+  padding: 10px 0;
+  text-transform: uppercase;
+}
+
+.calendar-body {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
 }
 
 .calendar-day {
   aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 0.9rem;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  user-select: none;
+  background: #f5f7fa;
+  
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+  }
+  
+  .day-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 8px;
+  }
+  
+  .day-number {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    align-self: flex-start;
+  }
+  
+  .day-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 4px;
+    
+    .indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      
+      &.training {
+        background-color: var(--ion-color-primary);
+      }
+      
+      &.competition {
+        background-color: #ff3d00;
+      }
+    }
+  }
   
   &.inactive {
-    color: #ccc;
+    opacity: 0.4;
+    
+    .day-number {
+      color: #999;
+    }
+  }
+  
+  &.today {
+    .day-number {
+      background: var(--ion-color-primary);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   }
   
   &.trained {
-    background-color: #bbdefb;
-    color: #1565c0;
+    background: rgba(var(--ion-color-primary-rgb), 0.15);
+    border: 1px solid rgba(var(--ion-color-primary-rgb), 0.3);
   }
   
   &.competition {
-    background-color: #ffecb3;
-    color: #ff8f00;
+    background: rgba(255, 61, 0, 0.15);
+    border: 1px solid rgba(255, 61, 0, 0.3);
+  }
+  
+  &.has-events {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  }
+  
+  &.trained.competition {
+    background: linear-gradient(135deg, 
+      rgba(var(--ion-color-primary-rgb), 0.2) 0%, 
+      rgba(var(--ion-color-primary-rgb), 0.2) 50%, 
+      rgba(255, 61, 0, 0.2) 50%, 
+      rgba(255, 61, 0, 0.2) 100%);
   }
 }
 
 .calendar-legend {
   display: flex;
-  margin-top: 16px;
-  
-  .legend-item {
-    display: flex;
-    align-items: center;
-    margin-right: 16px;
-    
-    .legend-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      margin-right: 6px;
-      
-      &.trained {
-        background-color: #bbdefb;
-      }
-      
-      &.competition {
-        background-color: #ffecb3;
-      }
-    }
-    
-    span {
-      font-size: 0.8rem;
-      color: #666;
-    }
+  justify-content: center;
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #555;
+}
+
+.legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  margin-right: 8px;
+
+  &.trained {
+    background-color: rgba(var(--ion-color-primary-rgb), 0.6);
+    box-shadow: 0 2px 5px rgba(var(--ion-color-primary-rgb), 0.3);
+  }
+
+  &.competition {
+    background-color: rgba(255, 61, 0, 0.6);
+    box-shadow: 0 2px 5px rgba(255, 61, 0, 0.3);
   }
 }
 
@@ -315,67 +425,85 @@ ion-header {
 .competitions-section {
   background: white;
   border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
 
 .competition-card {
   display: flex;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #eee;
+  padding: 16px;
+  border-radius: 12px;
+  background: #f8f9fc;
+  margin-bottom: 16px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #eaecf0;
   
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+  }
+
   &:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
   }
 }
 
 .competition-medal {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: flex;
-  align-items: center;
   justify-content: center;
-  margin-right: 16px;
+  align-items: center;
+  margin-right: 18px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
   
+  &:hover {
+    transform: scale(1.1) rotate(5deg);
+  }
+
   &.gold {
-    background-color: #ffe082;
-    color: #ff6f00;
+    background: linear-gradient(145deg, #ffd700, #ffc107);
   }
-  
+
   &.silver {
-    background-color: #e0e0e0;
-    color: #616161;
+    background: linear-gradient(145deg, #e0e0e0, #c0c0c0);
   }
-  
+
   &.bronze {
-    background-color: #ffab91;
-    color: #bf360c;
+    background: linear-gradient(145deg, #cd7f32, #be7023);
   }
-  
+
+  &.other {
+    background: linear-gradient(145deg, #b0b0b0, #a0a0a0);
+  }
+
   ion-icon {
-    font-size: 1.5rem;
+    color: white;
+    font-size: 24px;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
   }
 }
 
 .competition-details {
   flex: 1;
-  
+
   h3 {
     margin: 0 0 4px;
-    font-size: 1rem;
+    font-size: 16px;
     font-weight: 600;
   }
-  
+
   .competition-date, .competition-location {
-    margin: 2px 0;
-    font-size: 0.8rem;
+    margin: 0;
+    font-size: 12px;
     color: #666;
     display: flex;
     align-items: center;
-    
+
     ion-icon {
       margin-right: 4px;
     }
@@ -384,148 +512,282 @@ ion-header {
 
 .competition-position {
   font-weight: 700;
-  font-size: 1.2rem;
   color: #333;
+  font-size: 16px;
 }
 
-// Goals and Achievements Section (replacing Metrics)
+// Goals Section
 .goals-section {
   background: white;
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .goal-timeline {
   position: relative;
-  padding-left: 20px;
-  
-  &:before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 8px;
-    width: 2px;
-    background: #e0e0e0;
-  }
 }
 
 .goal-item {
   display: flex;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   position: relative;
-  
+  align-items: flex-start;
+
   &:last-child {
     margin-bottom: 0;
   }
-  
-  &.completed .goal-icon {
-    background-color: #4caf50;
-    color: white;
+
+  &.completed {
+    .goal-icon {
+      background-color: #4caf50;
+    }
   }
-  
-  &.in-progress .goal-icon {
-    background-color: #2196f3;
-    color: white;
+
+  &.in-progress {
+    .goal-icon {
+      background-color: var(--ion-color-primary);
+    }
   }
-  
-  &.upcoming .goal-icon {
-    background-color: #ff9800;
-    color: white;
+
+  &.upcoming {
+    .goal-icon {
+      background-color: #9e9e9e;
+    }
   }
 }
 
 .goal-icon {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: #e0e0e0;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   margin-right: 16px;
-  position: absolute;
-  left: -12px;
-  z-index: 2;
-  
+  flex-shrink: 0;
+
   ion-icon {
-    font-size: 14px;
+    color: white;
+    font-size: 16px;
   }
 }
 
 .goal-content {
-  background-color: #f9f9f9;
-  border-radius: 12px;
-  padding: 12px 16px;
   flex: 1;
-  margin-left: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 12px;
 }
 
 .goal-title {
   font-weight: 600;
-  font-size: 0.95rem;
-  color: #333;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  font-size: 14px;
 }
 
 .goal-date {
-  font-size: 0.8rem;
-  color: #888;
+  font-size: 12px;
+  color: #666;
   margin-bottom: 8px;
 }
 
 .goal-progress {
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
-  
+  gap: 8px;
+
   .progress-bar {
     flex: 1;
-    height: 4px;
-    background-color: #e0e0e0;
-    border-radius: 2px;
-    margin-right: 8px;
-    
-    .progress {
-      height: 100%;
-      background: linear-gradient(to right, #2196f3, #64b5f6);
-      border-radius: 2px;
-    }
+    height: 6px;
+    background-color: #eee;
+    border-radius: 3px;
+    overflow: hidden;
   }
-  
+
+  .progress {
+    height: 100%;
+    background-color: var(--ion-color-primary);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
   span {
-    font-size: 0.75rem;
+    font-size: 12px;
     color: #666;
-    font-weight: 500;
+    white-space: nowrap;
   }
 }
 
 .goal-badge {
   display: inline-flex;
   align-items: center;
-  background-color: #ede7f6;
-  border-radius: 12px;
+  background-color: #f0f0f0;
   padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
   
   ion-icon {
-    font-size: 0.9rem;
-    color: #6200ea;
     margin-right: 4px;
-  }
-  
-  span {
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: #6200ea;
+    color: var(--ion-color-primary);
   }
 }
 
 .view-all-btn {
   margin-top: 16px;
-  --border-color: #6200ea;
-  --color: #6200ea;
-  font-size: 0.9rem;
-  font-weight: 500;
+}
+
+// Empty state styling
+.empty-state {
+  text-align: center;
+  padding: 24px 16px;
+  
+  .empty-icon {
+    font-size: 48px;
+    color: #ccc;
+    margin-bottom: 12px;
+  }
+  
+  p {
+    color: #666;
+    margin-bottom: 16px;
+  }
+}
+
+// FAB Button animation
+ion-fab-button {
+  --box-shadow: 0 4px 16px rgba(var(--ion-color-primary-rgb), 0.4);
+  transition: transform 0.3s ease;
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// Modal styling
+.modal-header {
+  ion-toolbar {
+    --background: linear-gradient(120deg, var(--ion-color-primary), #4a8bfc);
+    
+    ion-title {
+      color: white;
+      font-weight: 600;
+      font-size: 18px;
+    }
+    
+    ion-button {
+      --color: white;
+    }
+  }
+}
+
+.modal-content {
+  --background: #f5f7fa;
+}
+
+.form-container {
+  padding: 20px 16px;
+}
+
+.form-section {
+  background-color: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  
+  ion-icon {
+    font-size: 22px;
+    color: var(--ion-color-primary);
+    margin-right: 10px;
+  }
+  
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+}
+
+ion-item {
+  --background: #f9f9f9;
+  --border-radius: 8px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  margin-bottom: 12px;
+  
+  ion-label {
+    color: #555;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  
+  ion-input, ion-textarea, ion-select {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --background: #f9f9f9;
+    font-size: 15px;
+  }
+}
+
+.date-item {
+  display: block;
+  
+  ion-datetime-button {
+    margin-top: 8px;
+    width: 100%;
+    --background: #f0f0f0;
+    --border-radius: 8px;
+    --box-shadow: none;
+  }
+}
+
+.training-type-selector {
+  margin-bottom: 12px;
+  
+  ion-segment {
+    --background: #f0f0f0;
+    border-radius: 8px;
+    
+    ion-segment-button {
+      --background-checked: var(--ion-color-primary);
+      --color-checked: white;
+      --indicator-color: transparent;
+      --border-radius: 8px;
+      --padding-top: 8px;
+      --padding-bottom: 8px;
+      min-width: 90px;
+      
+      ion-icon {
+        margin-bottom: 4px;
+      }
+      
+      ion-label {
+        font-size: 12px;
+        text-transform: none;
+      }
+    }
+  }
+}
+
+.submit-button {
+  margin-top: 10px;
+  --border-radius: 10px;
+  --box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb), 0.3);
+  height: 48px;
+  font-weight: 600;
+  
+  ion-icon {
+    font-size: 18px;
+    margin-right: 8px;
+  }
 }
