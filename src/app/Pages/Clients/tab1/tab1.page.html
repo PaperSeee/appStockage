@@ -58,32 +58,32 @@
     <div 
       class="filter-item" 
       [class.active]="disciplineFilter === 'all'" 
-      (click)="disciplineFilter = 'all'"
+      (click)="filterByDiscipline('all')"
     >Tous</div>
     <div 
       class="filter-item" 
       [class.active]="disciplineFilter === 'mma'" 
-      (click)="disciplineFilter = 'mma'"
+      (click)="filterByDiscipline('mma')"
     >MMA</div>
     <div 
       class="filter-item" 
       [class.active]="disciplineFilter === 'boxe'" 
-      (click)="disciplineFilter = 'boxe'"
+      (click)="filterByDiscipline('boxe')"
     >Boxe</div>
     <div 
       class="filter-item" 
       [class.active]="disciplineFilter === 'jiu-jitsu'" 
-      (click)="disciplineFilter = 'jiu-jitsu'"  
+      (click)="filterByDiscipline('jiu-jitsu')"  
     >Jiu-Jitsu</div>
     <div 
       class="filter-item" 
       [class.active]="disciplineFilter === 'muay-thai'" 
-      (click)="disciplineFilter = 'muay-thai'"
+      (click)="filterByDiscipline('muay-thai')"
     >Muay Thai</div>
     <div 
       class="filter-item" 
       [class.active]="disciplineFilter === 'lutte'" 
-      (click)="disciplineFilter = 'lutte'"
+      (click)="filterByDiscipline('lutte')"
     >Lutte</div>
   </div>
   

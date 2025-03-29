@@ -55,7 +55,7 @@ export class Tab1Page implements OnInit {
   trainings: Training[] = [];
   nearbyPartners: User[] = [];
   upcomingEvents: Event[] = [];
-  disciplineFilter: string = '';
+  disciplineFilter: string = 'all'; // Set default filter to 'all'
   locationFilter: string = '';
   weeklySummary: WeeklySummary = {
     sessions: 3,
@@ -323,37 +323,98 @@ export class Tab1Page implements OnInit {
     }
   }
 
-  searchItems() {
-    const term = this.searchTerm.toLowerCase().trim();
+  filterByDiscipline(discipline: string) {
+    this.disciplineFilter = discipline;
     
-    if (!term) {
-      // If search is empty, reset to original data
-      this.filteredEvents = [...this.upcomingEvents];
-      this.filteredPartners = [...this.nearbyPartners];
-      this.filteredTrainings = [...this.trainings];
+    if (discipline === 'all') {
+      // If 'all' is selected, show all items (but respect search term if present)
+      if (this.searchTerm) {
+        this.searchItems(); // Re-apply search with current term
+      } else {
+        this.filteredEvents = [...this.upcomingEvents];
+        this.filteredPartners = [...this.nearbyPartners];
+        this.filteredTrainings = [...this.trainings];
+      }
       return;
     }
     
-    // Filter events
-    this.filteredEvents = this.upcomingEvents.filter(event => 
+    // Filter events by discipline/type
+    this.filteredEvents = this.upcomingEvents.filter(event => {
+      // Events might have 'type' instead of 'discipline'
+      return event.type.toLowerCase() === discipline.toLowerCase();
+    });
+    
+    // Filter partners by discipline
+    this.filteredPartners = this.nearbyPartners.filter(partner => {
+      return partner.discipline.toLowerCase() === discipline.toLowerCase();
+    });
+    
+    // Filter trainings by discipline
+    this.filteredTrainings = this.trainings.filter(training => {
+      return training.type.toLowerCase() === discipline.toLowerCase() || 
+             training.user.discipline.toLowerCase() === discipline.toLowerCase();
+    });
+    
+    // If search term is also present, further filter the results
+    if (this.searchTerm) {
+      this.applySearchFilter();
+    }
+  }
+  
+  // Helper method to apply search filtering to already filtered results
+  private applySearchFilter() {
+    const term = this.searchTerm.toLowerCase().trim();
+    
+    // Further filter events
+    this.filteredEvents = this.filteredEvents.filter(event => 
       event.title.toLowerCase().includes(term) ||
       event.type.toLowerCase().includes(term) ||
       event.location.toLowerCase().includes(term)
     );
     
-    // Filter partners
-    this.filteredPartners = this.nearbyPartners.filter(partner => 
+    // Further filter partners
+    this.filteredPartners = this.filteredPartners.filter(partner => 
       partner.name.toLowerCase().includes(term) ||
       partner.discipline.toLowerCase().includes(term)
     );
     
-    // Filter trainings
-    this.filteredTrainings = this.trainings.filter(training => 
+    // Further filter trainings
+    this.filteredTrainings = this.filteredTrainings.filter(training => 
       training.title.toLowerCase().includes(term) ||
       training.description.toLowerCase().includes(term) ||
       training.type.toLowerCase().includes(term) ||
       training.user.name.toLowerCase().includes(term) ||
       training.location.toLowerCase().includes(term)
     );
+  }
+
+  searchItems() {
+    const term = this.searchTerm.toLowerCase().trim();
+    
+    if (!term) {
+      // If search is empty, reset to original data
+      if (this.disciplineFilter === 'all') {
+        this.filteredEvents = [...this.upcomingEvents];
+        this.filteredPartners = [...this.nearbyPartners];
+        this.filteredTrainings = [...this.trainings];
+      } else {
+        // If discipline filter is active, re-apply it
+        this.filterByDiscipline(this.disciplineFilter);
+      }
+      return;
+    }
+    
+    // First apply discipline filter if active
+    if (this.disciplineFilter !== 'all') {
+      this.filterByDiscipline(this.disciplineFilter);
+    } else {
+      // Start with all data
+      this.filteredEvents = [...this.upcomingEvents];
+      this.filteredPartners = [...this.nearbyPartners];
+      this.filteredTrainings = [...this.trainings];
+    }
+    
+    // Then apply search filter
+    this.applySearchFilter();
   }
 }
