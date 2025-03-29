@@ -67,6 +67,7 @@ interface Post {
   userLiked?: boolean;
   showComments?: boolean;
   newComment?: string;
+  userId?: string; // Ajout de la propriété userId qui est utilisée dans le code
 }
 
 interface Story {
@@ -685,9 +686,184 @@ export class Tab3Page implements OnInit {
     console.log('Opening media', media);
   }
 
-  showPostOptions(post: Post) {
-    // Here we would show a context menu
-    console.log('Showing post options', post);
+  async showPostOptions(post: Post) {
+    // Vérifier si c'est le post de l'utilisateur actuel
+    const isUserPost = post.user.id === this.currentUser.id || (post.userId === this.userId);
+    
+    const buttons: any[] = [ // Utilisation de any[] pour éviter les problèmes de typage
+      {
+        text: 'Signaler',
+        icon: 'flag-outline',
+        handler: () => {
+          this.reportPost(post);
+        }
+      },
+      {
+        text: 'Partager',
+        icon: 'share-outline',
+        handler: () => {
+          this.sharePost(post);
+        }
+      }
+    ];
+    
+    // Ajouter l'option de suppression uniquement si c'est le post de l'utilisateur
+    if (isUserPost) {
+      buttons.unshift({
+        text: 'Supprimer',
+        role: 'destructive',
+        icon: 'trash-outline',
+        handler: () => {
+          this.confirmDeletePost(post);
+        }
+      });
+    }
+    
+    buttons.push({
+      text: 'Annuler',
+      icon: 'close',
+      role: 'cancel'
+    });
+    
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Options',
+      buttons: buttons
+    });
+    
+    await actionSheet.present();
+  }
+  
+  // Ajout d'une méthode pour confirmer la suppression
+  async confirmDeletePost(post: Post) {
+    const alert = await this.alertController.create({
+      header: 'Confirmer la suppression',
+      message: 'Êtes-vous sûr de vouloir supprimer cette publication ? Cette action est irréversible.',
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'Supprimer',
+          role: 'destructive',
+          handler: () => {
+            this.deletePost(post);
+          }
+        }
+      ]
+    });
+  
+    await alert.present();
+  }
+  
+  // Nouvelle méthode pour supprimer un post
+  async deletePost(post: Post) {
+    try {
+      this.loading = true;
+      
+      // Vérifier encore une fois que c'est bien le post de l'utilisateur
+      if (post.user.id !== this.currentUser.id && post.userId !== this.userId) {
+        throw new Error('Vous ne pouvez pas supprimer les publications d\'autres utilisateurs');
+      }
+      
+      // Supprimer le post de Firestore
+      if (post.id) {
+        await this.firebaseService.deleteDocument('posts', post.id.toString());
+        
+        // Supprimer le post du tableau local
+        this.posts = this.posts.filter(p => p.id !== post.id);
+        this.filteredPosts = this.filteredPosts.filter(p => p.id !== post.id);
+        
+        const toast = await this.toastController.create({
+          message: 'Publication supprimée avec succès',
+          duration: 2000,
+          position: 'bottom'
+        });
+        await toast.present();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression du post:', error);
+      const toast = await this.toastController.create({
+        message: 'Erreur lors de la suppression de la publication',
+        duration: 2000,
+        position: 'bottom',
+        color: 'danger'
+      });
+      await toast.present();
+    } finally {
+      this.loading = false;
+    }
+  }
+  
+  // Nouvelle méthode pour signaler un post
+  async reportPost(post: Post) {
+    const alert = await this.alertController.create({
+      header: 'Signaler la publication',
+      message: 'Pour quelle raison souhaitez-vous signaler cette publication ?',
+      inputs: [
+        {
+          name: 'reason',
+          type: 'radio',
+          label: 'Contenu inapproprié',
+          value: 'inappropriate',
+          checked: true
+        },
+        {
+          name: 'reason',
+          type: 'radio',
+          label: 'Harcèlement',
+          value: 'harassment'
+        },
+        {
+          name: 'reason',
+          type: 'radio',
+          label: 'Fausses informations',
+          value: 'fake'
+        },
+        {
+          name: 'reason',
+          type: 'radio',
+          label: 'Autre',
+          value: 'other'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'Signaler',
+          handler: (data) => {
+            this.submitReport(post, data);
+          }
+        }
+      ]
+    });
+  
+    await alert.present();
+  }
+  
+  // Méthode pour soumettre un signalement
+  async submitReport(post: Post, reason: string) {
+    try {
+      // Ici, vous pourriez enregistrer le signalement dans Firestore
+      // Par exemple: await this.firebaseService.addDocument('reports', { postId: post.id, userId: this.userId, reason, timestamp: new Date() });
+      
+      const toast = await this.toastController.create({
+        message: 'Merci pour votre signalement. Notre équipe va l\'examiner.',
+        duration: 2000
+      });
+      await toast.present();
+    } catch (error) {
+      console.error('Erreur lors du signalement:', error);
+      const toast = await this.toastController.create({
+        message: 'Erreur lors du signalement',
+        duration: 2000,
+        color: 'danger'
+      });
+      await toast.present();
+    }
   }
 
   registerForEvent(event: Event) {
