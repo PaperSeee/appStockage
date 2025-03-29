@@ -4,6 +4,7 @@ import { ActionSheetController, AlertController, ModalController, ToastControlle
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { SharingService } from '../../../services/sharing.service';
 
 interface User {
   id: number;
@@ -90,7 +91,8 @@ export class Tab3Page implements OnInit {
     private toastController: ToastController,
     private alertController: AlertController,
     private actionSheetController: ActionSheetController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private sharingService: SharingService
   ) {}
 
   ngOnInit() {
@@ -370,8 +372,11 @@ export class Tab3Page implements OnInit {
 
   sharePost(post: Post) {
     post.shares++;
-    console.log('Sharing post', post);
-    // Here we would open a share sheet
+    this.showShareOptions(post.content, 'Publication', '');
+  }
+
+  async showShareOptions(text: string, title: string, url: string) {
+    await this.sharingService.showShareOptions(title, text, url);
   }
 
   openNotifications() {
