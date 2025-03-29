@@ -76,6 +76,14 @@
     >Muay Thai</div>
   </div>
 
+  <!-- Après le bloc des filtres -->
+  <div class="profile-indicator" *ngIf="selectedFilter === 'user'">
+    <ion-button fill="clear" (click)="resetFeed()">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+      Retour au fil principal
+    </ion-button>
+  </div>
+
   <!-- Stories Section -->
   <div class="stories-container" *ngIf="stories.length > 0">
     <div class="story-item" *ngFor="let story of stories" (click)="viewStory(story)">

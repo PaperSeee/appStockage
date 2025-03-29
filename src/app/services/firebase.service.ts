@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
 import { 
   getFirestore, collection, doc, getDoc, getDocs, 
-  addDoc, updateDoc, deleteDoc 
+  addDoc, updateDoc, deleteDoc, query, where, orderBy, limit as firestoreLimit
 } from 'firebase/firestore';
 import { 
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
@@ -11,6 +11,7 @@ import {
 } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import { environment } from '../../environments/environment';
+import { ToastController } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +24,9 @@ export class FirebaseService {
   googleProvider = new GoogleAuthProvider();
   appleProvider = new OAuthProvider('apple.com');
 
-  constructor() {
+  constructor(
+    private toastController: ToastController
+  ) {
     console.log('Firebase initialized with project:', this.app.options.projectId);
     this.googleProvider.setCustomParameters({
       prompt: 'select_account'
@@ -186,5 +189,77 @@ export class FirebaseService {
       console.error('Error deleting document:', error);
       throw error;
     }
+  }
+
+  // Méthode améliorée pour récupérer tous les posts
+  async getAllPosts(maxResults: number = 50) {
+    try {
+      // Requête pour obtenir les posts les plus récents d'abord, avec une limite
+      const postsCollection = collection(this.firestore, 'posts');
+      const postsQuery = query(
+        postsCollection, 
+        orderBy('timestamp', 'desc'), 
+        firestoreLimit(maxResults)
+      );
+      
+      const querySnapshot = await getDocs(postsQuery);
+      
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error: any) {
+      console.error('Error getting posts:', error);
+      
+      if (error.code === 'permission-denied') {
+        console.error('Permission denied. Check Firestore rules for posts collection');
+        // Afficher un message à l'utilisateur sur les problèmes de permission
+        await this.showErrorToast('Impossible de charger les publications. Problème de permission.');
+      }
+      
+      // Retourner un tableau vide en cas d'erreur
+      return [];
+    }
+  }
+  
+  // Méthode pour récupérer les posts d'un utilisateur spécifique
+  async getUserPosts(userId: string) {
+    try {
+      const postsCollection = collection(this.firestore, 'posts');
+      const postsQuery = query(
+        postsCollection, 
+        where('userId', '==', userId),
+        orderBy('timestamp', 'desc')
+      );
+      const querySnapshot = await getDocs(postsQuery);
+      
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error('Error getting user posts:', error);
+      return [];
+    }
+  }
+  
+  // Afficher un toast d'erreur
+  async showErrorToast(message: string) {
+    if (!this.toastController) return;
+    
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 3000,
+      position: 'bottom',
+      color: 'danger',
+      buttons: [
+        {
+          text: 'OK',
+          role: 'cancel'
+        }
+      ]
+    });
+    
+    await toast.present();
   }
 }

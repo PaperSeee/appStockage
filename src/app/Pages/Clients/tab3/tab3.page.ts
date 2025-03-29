@@ -164,12 +164,26 @@ export class Tab3Page implements OnInit {
   async loadPosts() {
     this.loading = true;
     try {
-      const postsData = await this.firebaseService.getAllDocuments('posts') as any[];
+      // Utilisation de la nouvelle méthode pour charger tous les posts
+      const postsData = await this.firebaseService.getAllPosts(50) as any[];
+      
+      if (!postsData || postsData.length === 0) {
+        console.log('Aucun post trouvé ou problème d\'accès. Chargement des données de test...');
+        this.loadMockData();
+        return;
+      }
+      
       // Transform Firebase data to match our Post interface
       this.posts = postsData.map(post => {
+        // S'assurer que tous les champs nécessaires sont présents
         return {
           id: parseInt(post.id || '0') || Math.floor(Math.random() * 1000),
-          user: post.user || this.currentUser,
+          user: post.user || {
+            id: 0,
+            name: 'Utilisateur inconnu',
+            avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+            discipline: ''
+          },
           content: post.content || '',
           media: post.media || [],
           tags: post.tags || [],
@@ -184,13 +198,64 @@ export class Tab3Page implements OnInit {
         };
       });
       
-      // Sort by timestamp, newest first
+      // Tri déjà effectué dans la requête Firestore, mais au cas où
       this.posts.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
       this.filteredPosts = [...this.posts];
+      
+      console.log(`${this.posts.length} posts chargés avec succès`);
     } catch (error) {
       console.error('Error loading posts:', error);
       // Fallback to mock data
       this.loadMockData();
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  // Ajouter une méthode pour charger les posts d'un utilisateur spécifique
+  async loadUserPosts(userId: string) {
+    this.loading = true;
+    try {
+      const postsData = await this.firebaseService.getUserPosts(userId) as any[];
+      if (postsData && postsData.length > 0) {
+        // Utiliser le même mapping que pour loadPosts
+        const userPosts = postsData.map(post => {
+          return {
+            id: parseInt(post.id || '0') || Math.floor(Math.random() * 1000),
+            user: post.user || {
+              id: 0,
+              name: 'Utilisateur inconnu',
+              avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
+              discipline: ''
+            },
+            content: post.content || '',
+            media: post.media || [],
+            tags: post.tags || [],
+            type: post.type || '',
+            likes: post.likes || [],
+            comments: post.comments || [],
+            shares: post.shares || 0,
+            timestamp: post.timestamp?.toDate ? post.timestamp.toDate() : new Date(),
+            userLiked: (post.likes || []).some((like: any) => like.userId === this.currentUser.id) || false,
+            showComments: false,
+            newComment: ''
+          };
+        });
+        
+        // Mise à jour des posts filtrés uniquement
+        this.filteredPosts = userPosts;
+      } else {
+        // Aucun post trouvé pour cet utilisateur
+        this.filteredPosts = [];
+        const toast = await this.toastController.create({
+          message: 'Aucune publication trouvée pour cet utilisateur',
+          duration: 2000
+        });
+        await toast.present();
+      }
+    } catch (error) {
+      console.error('Error loading user posts:', error);
+      this.filteredPosts = [];
     } finally {
       this.loading = false;
     }
@@ -585,8 +650,24 @@ export class Tab3Page implements OnInit {
   }
 
   viewProfile(userId: number) {
-    // Here we would navigate to the user's profile
-    console.log('Viewing profile', userId);
+    // Si c'est l'utilisateur actuel, on pourrait naviguer vers son profil complet
+    if (userId === this.currentUser.id) {
+      console.log('Viewing my own profile', userId);
+      // this.router.navigate(['/tabs/tab5']); // Probablement l'onglet de profil
+    } else {
+      // Pour les autres utilisateurs, on charge simplement leurs posts
+      console.log('Viewing user profile and posts', userId);
+      this.loadUserPosts(userId.toString());
+      
+      // Changer le filtre actif pour indiquer qu'on regarde un profil spécifique
+      this.selectedFilter = 'user';
+    }
+  }
+
+  // Ajouter un bouton pour revenir à tous les posts
+  resetFeed() {
+    this.selectedFilter = 'all';
+    this.loadPosts();
   }
 
   viewStory(story: Story) {
