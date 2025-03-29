@@ -1,17 +1,17 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" class="modern-header">
   <ion-toolbar>
-    <ion-title>
-      Sparring Partners
+    <ion-title class="ion-text-center">
+      <strong>Sparring Partners</strong>
     </ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="openFilters()" color="dark">
+      <ion-button (click)="openFilters()" class="filter-button">
         <ion-icon name="options-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true" class="ultra-modern-content">
   <!-- Filter modal that appears when filter button is clicked -->
   <ion-modal [isOpen]="isFilterModalOpen" (didDismiss)="closeFilters()">
     <ng-template>
@@ -67,53 +67,69 @@
     </ng-template>
   </ion-modal>
 
-  <!-- Cards container for the swipeable profiles -->
-  <div class="card-container" *ngIf="filteredPartners.length > 0">
-    <div class="card" *ngFor="let partner of filteredPartners; let i = index" 
-         [class.visible]="i === currentPartnerIndex"
-         (swipeleft)="swipeLeft()"
-         (swiperight)="sendMessage(partner)">
-      <!-- Changed to use direct <img> instead of background for better loading and error handling -->
-      <div class="card-image-container">
-        <img [src]="partner.photo" 
-             (error)="handleImageError($event)" 
-             alt="Photo de {{partner.name}}" 
-             class="partner-photo">
-        <div class="card-info">
-          <h2>{{partner.name}}, {{partner.age}}</h2>
-          <p>{{partner.level}} · {{partner.mainDiscipline}}</p>
-          <p>{{partner.distance}} km · {{partner.city}}</p>
-          
-          <div class="disciplines">
-            <ion-chip *ngFor="let discipline of partner.disciplines">
-              {{discipline}}
-            </ion-chip>
+  <!-- Ultra modern partners list -->
+  <div class="partners-container" *ngIf="filteredPartners.length > 0">
+    <div class="partner-card" *ngFor="let partner of filteredPartners">
+      <div class="card-top">
+        <div class="partner-avatar">
+          <img [src]="partner.photo || 'assets/default-profile.jpg'" 
+              (error)="handleImageError($event)" 
+              alt="Photo de {{partner.name}}">
+          <div class="status-indicator online"></div>
+        </div>
+        
+        <div class="partner-basic-info">
+          <h2>{{partner.name}} <span class="age">{{partner.age}}</span></h2>
+          <div class="partner-badges">
+            <span class="badge level">{{partner.level}}</span>
+            <span class="badge distance">{{partner.distance}} km</span>
           </div>
         </div>
       </div>
-      <div class="card-body">
-        <p>{{partner.bio}}</p>
-        
-        <!-- Card action buttons -->
-        <div class="card-actions">
-          <ion-button color="medium" (click)="swipeLeft()">
-            <ion-icon slot="start" name="close-outline"></ion-icon>
-            Passer
-          </ion-button>
-          <ion-button color="primary" (click)="sendMessage(partner)">
-            <ion-icon slot="start" name="chatbubble-outline"></ion-icon>
-            Message
-          </ion-button>
+      
+      <div class="partner-details">
+        <div class="location-info">
+          <ion-icon name="location-outline"></ion-icon>
+          <span>{{partner.city}}</span>
         </div>
+        
+        <div class="discipline-info">
+          <ion-icon name="fitness-outline"></ion-icon>
+          <span>{{partner.mainDiscipline}}</span>
+        </div>
+      </div>
+      
+      <div class="disciplines-container">
+        <div class="tag" *ngFor="let discipline of partner.disciplines">
+          {{discipline}}
+        </div>
+      </div>
+      
+      <p class="bio">{{partner.bio}}</p>
+      
+      <div class="action-buttons">
+        <button class="action-btn message-btn" (click)="sendMessage(partner)">
+          <ion-icon name="chatbubble-outline"></ion-icon>
+          <span>Message</span>
+        </button>
+        <button class="action-btn connect-btn">
+          <ion-icon name="person-add-outline"></ion-icon>
+          <span>Connecter</span>
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Empty state when no profiles are available -->
-  <div class="empty-state" *ngIf="filteredPartners.length === 0">
-    <ion-icon name="sad-outline" size="large"></ion-icon>
+  <!-- Modern empty state -->
+  <div class="empty-state-container" *ngIf="filteredPartners.length === 0">
+    <div class="empty-illustration">
+      <ion-icon name="search-outline"></ion-icon>
+    </div>
     <h3>Aucun partenaire disponible</h3>
-    <p>Modifiez vos filtres pour trouver plus de partenaires</p>
-    <ion-button (click)="openFilters()">Modifier les filtres</ion-button>
+    <p>Nous n'avons pas trouvé de partenaires correspondant à vos critères</p>
+    <button class="action-btn primary-btn" (click)="openFilters()">
+      <ion-icon name="options-outline"></ion-icon>
+      <span>Modifier les filtres</span>
+    </button>
   </div>
 </ion-content>

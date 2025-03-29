@@ -3,14 +3,14 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FirebaseService } from '../services/firebase.service';
-import { Router } from '@angular/router'; // Import du service Router
+import { Router, RouterLink } from '@angular/router'; // Ajout de RouterLink
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.page.html',
   styleUrls: ['./register.page.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule, CommonModule] // Ajout des modules nécessaires
+  imports: [IonicModule, FormsModule, CommonModule, RouterLink] // Ajout de RouterLink
 })
 export class RegisterPage {
   user = {
@@ -47,13 +47,39 @@ export class RegisterPage {
         photo: this.user.photo
       });
 
-      alert('Account created successfully!');
+      alert('Compte créé avec succès!');
       
       // Redirection vers tab1 après l'inscription réussie
       this.router.navigate(['/tabs/tab1']);
     } catch (error) {
-      console.error('Error during registration:', error);
-      alert('Registration failed. Please try again.');
+      console.error('Erreur lors de l\'inscription:', error);
+      alert('L\'inscription a échoué. Veuillez réessayer.');
+    }
+  }
+
+  async signInWithGoogle() {
+    try {
+      const result = await this.firebaseService.signInWithGoogle();
+      if (result) {
+        // Vérifier si l'utilisateur existe déjà dans Firestore
+        const userDoc = await this.firebaseService.getDocument('users', result.uid);
+        
+        if (!userDoc) {
+          // Si l'utilisateur n'existe pas, créer un nouveau document
+          await this.firebaseService.addDocument('users', {
+            userId: result.uid,
+            firstName: result.displayName?.split(' ')[0] || '',
+            lastName: result.displayName?.split(' ').slice(1).join(' ') || '',
+            email: result.email,
+            photo: result.photoURL
+          });
+        }
+        
+        this.router.navigate(['/tabs/tab1']);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la connexion avec Google:', error);
+      alert('La connexion avec Google a échoué. Veuillez réessayer.');
     }
   }
 }

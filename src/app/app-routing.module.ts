@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import { RegisterPage } from './register/register.page'; // Import direct du composant standalone
+import { RegisterPage } from './register/register.page';
 import { ProfilePage } from './Pages/Profile/profile.page';
+import { LoginPage } from './login/login.page'; // Importer la nouvelle page
 
 const routes: Routes = [
   {
@@ -13,8 +14,9 @@ const routes: Routes = [
     redirectTo: 'tabs/tab1',
     pathMatch: 'full'
   },
-  { path: 'register', component: RegisterPage }, // Utilisation directe du composant
-  { path: 'profile', component: ProfilePage }
+  { path: 'register', component: RegisterPage },
+  { path: 'profile', component: ProfilePage },
+  { path: 'login', component: LoginPage } // Ajouter la route de connexion
 ];
 
 @NgModule({

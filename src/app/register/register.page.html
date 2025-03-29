@@ -4,47 +4,126 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <form (ngSubmit)="register()">
-    <ion-item>
-      <ion-label>First Name</ion-label>
-      <ion-input [(ngModel)]="user.firstName" name="firstName" required></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label>Last Name</ion-label>
-      <ion-input [(ngModel)]="user.lastName" name="lastName" required></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label>Email</ion-label>
-      <ion-input [(ngModel)]="user.email" name="email" type="email" required></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label>Password</ion-label>
-      <ion-input [(ngModel)]="user.password" name="password" type="password" required></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label>Gender</ion-label>
-      <ion-select [(ngModel)]="user.gender" name="gender" required>
-        <ion-select-option value="male">Male</ion-select-option>
-        <ion-select-option value="female">Female</ion-select-option>
-      </ion-select>
-    </ion-item>
-    <ion-item>
-      <ion-label>Discipline</ion-label>
-      <ion-input [(ngModel)]="user.discipline" name="discipline" required></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label>Level</ion-label>
-      <ion-input [(ngModel)]="user.level" name="level" required></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label>Age</ion-label>
-      <ion-input [(ngModel)]="user.age" name="age" type="number" required></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label>Photo</ion-label>
-      <ion-input [(ngModel)]="user.photo" name="photo" type="file"></ion-input>
-    </ion-item>
-    <ion-button expand="full" type="submit">Register</ion-button>
-  </form>
+<ion-content class="register-content">
+  <div class="register-container">
+    <div class="register-header">
+      <div class="logo-container">
+        <img src="assets/icon/favicon.png" alt="App Logo" class="app-logo">
+      </div>
+      <h1>Rejoindre la communauté</h1>
+      <p>Créez votre compte pour trouver des partenaires d'entraînement</p>
+    </div>
+
+    <form (ngSubmit)="register()" class="register-form">
+      <!-- Social Authentication -->
+      <div class="social-auth-buttons">
+        <ion-button expand="block" class="google-button" type="button" (click)="signInWithGoogle()">
+          <ion-icon name="logo-google"></ion-icon>
+          Continuer avec Google
+        </ion-button>
+        
+        <div class="social-divider">ou</div>
+      </div>
+      
+      <div class="form-group">
+        <ion-item class="custom-item">
+          <ion-icon name="person-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Prénom</ion-label>
+          <ion-input [(ngModel)]="user.firstName" name="firstName" required></ion-input>
+        </ion-item>
+      </div>
+
+      <div class="form-group">
+        <ion-item class="custom-item">
+          <ion-icon name="people-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Nom</ion-label>
+          <ion-input [(ngModel)]="user.lastName" name="lastName" required></ion-input>
+        </ion-item>
+      </div>
+
+      <div class="form-group">
+        <ion-item class="custom-item">
+          <ion-icon name="mail-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Email</ion-label>
+          <ion-input [(ngModel)]="user.email" name="email" type="email" required></ion-input>
+        </ion-item>
+      </div>
+
+      <div class="form-group">
+        <ion-item class="custom-item">
+          <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Mot de passe</ion-label>
+          <ion-input [(ngModel)]="user.password" name="password" type="password" required></ion-input>
+        </ion-item>
+      </div>
+
+      <div class="divider">
+        <span>Informations sportives</span>
+      </div>
+
+      <div class="form-group">
+        <ion-item class="custom-item">
+          <ion-icon name="body-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Genre</ion-label>
+          <ion-select [(ngModel)]="user.gender" name="gender" required interface="popover">
+            <ion-select-option value="male">Homme</ion-select-option>
+            <ion-select-option value="female">Femme</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <div class="form-group">
+        <ion-item class="custom-item">
+          <ion-icon name="fitness-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Discipline</ion-label>
+          <ion-select [(ngModel)]="user.discipline" name="discipline" required interface="popover">
+            <ion-select-option value="boxing">Boxe</ion-select-option>
+            <ion-select-option value="mma">MMA</ion-select-option>
+            <ion-select-option value="jiujitsu">Jiu-Jitsu</ion-select-option>
+            <ion-select-option value="muaythai">Muay Thai</ion-select-option>
+            <ion-select-option value="kickboxing">Kick-boxing</ion-select-option>
+            <ion-select-option value="wrestling">Lutte</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <div class="form-group">
+        <ion-item class="custom-item">
+          <ion-icon name="trophy-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Niveau</ion-label>
+          <ion-select [(ngModel)]="user.level" name="level" required interface="popover">
+            <ion-select-option value="beginner">Débutant</ion-select-option>
+            <ion-select-option value="intermediate">Intermédiaire</ion-select-option>
+            <ion-select-option value="advanced">Avancé</ion-select-option>
+            <ion-select-option value="expert">Expert</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <div class="form-group">
+        <ion-item class="custom-item">
+          <ion-icon name="calendar-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Âge</ion-label>
+          <ion-input [(ngModel)]="user.age" name="age" type="number" required min="18" max="100"></ion-input>
+        </ion-item>
+      </div>
+
+      <div class="form-group">
+        <ion-item class="custom-item">
+          <ion-icon name="image-outline" slot="start"></ion-icon>
+          <ion-label position="floating">Photo de profil</ion-label>
+          <ion-input [(ngModel)]="user.photo" name="photo" type="file"></ion-input>
+        </ion-item>
+      </div>
+
+      <ion-button expand="block" type="submit" class="register-button">
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        S'inscrire
+      </ion-button>
+
+      <div class="login-link">
+        Déjà un compte ? <a routerLink="/login">Se connecter</a>
+      </div>
+    </form>
+  </div>
 </ion-content>

@@ -1,7 +1,14 @@
-import { Injectable, Inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { 
+  getFirestore, collection, doc, getDoc, getDocs, 
+  addDoc, updateDoc, deleteDoc 
+} from 'firebase/firestore';
+import { 
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
+  signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, 
+  signInWithRedirect, getRedirectResult 
+} from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import { environment } from '../../environments/environment';
 
@@ -13,9 +20,13 @@ export class FirebaseService {
   auth = getAuth(this.app);
   firestore = getFirestore(this.app);
   analytics = getAnalytics(this.app);
+  googleProvider = new GoogleAuthProvider();
 
   constructor() {
     console.log('Firebase initialized with project:', this.app.options.projectId);
+    this.googleProvider.setCustomParameters({
+      prompt: 'select_account'
+    });
   }
 
   // Authentication methods
@@ -35,6 +46,28 @@ export class FirebaseService {
       return userCredential.user;
     } catch (error) {
       console.error('Error signing up:', error);
+      throw error;
+    }
+  }
+
+  async signInWithGoogle() {
+    try {
+      // Sur mobile, utilisez signInWithRedirect au lieu de signInWithPopup
+      const result = await signInWithPopup(this.auth, this.googleProvider);
+      return result.user;
+    } catch (error) {
+      console.error('Error signing in with Google:', error);
+      throw error;
+    }
+  }
+
+  // Ajoutez cette méthode si vous utilisez signInWithRedirect
+  async getRedirectResult() {
+    try {
+      const result = await getRedirectResult(this.auth);
+      return result?.user;
+    } catch (error) {
+      console.error('Error getting redirect result:', error);
       throw error;
     }
   }
