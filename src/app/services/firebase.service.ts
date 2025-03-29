@@ -71,7 +71,10 @@ export class FirebaseService {
       // Sur mobile, utilisez signInWithRedirect au lieu de signInWithPopup
       const result = await signInWithPopup(this.auth, this.appleProvider);
       return result.user;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 'auth/operation-not-allowed') {
+        alert('Apple authentication is not enabled. Please contact support.');
+      }
       console.error('Error signing in with Apple:', error);
       throw error;
     }
