@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { RegisterPage } from './register/register.page';
 import { ProfilePage } from './Pages/Profile/profile.page';
-import { LoginPage } from './login/login.page'; // Importer la nouvelle page
+import { LoginPage } from './login/login.page';
 
 const routes: Routes = [
   {
@@ -16,7 +16,12 @@ const routes: Routes = [
   },
   { path: 'register', component: RegisterPage },
   { path: 'profile', component: ProfilePage },
-  { path: 'login', component: LoginPage }, // Ajouter la route de connexion
+  { path: 'login', component: LoginPage },
+  {
+    path: 'browser',
+    loadComponent: () => 
+      import('./pages/browser/browser.page').then(m => m.BrowserPage)
+  },
   {
     path: 'messaging',
     children: [
@@ -40,7 +45,13 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [
+    RouterModule.forRoot(routes, {
+      preloadingStrategy: PreloadAllModules,
+      useHash: false,
+      urlUpdateStrategy: 'eager'
+    })
+  ],
   exports: [RouterModule]
 })
 export class AppRoutingModule {}

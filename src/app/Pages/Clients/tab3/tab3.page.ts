@@ -372,7 +372,9 @@ export class Tab3Page implements OnInit {
 
   sharePost(post: Post) {
     post.shares++;
-    this.showShareOptions(post.content, 'Publication', '');
+    // Utilisation de l'URL de l'application plutôt qu'une URL web
+    const appUrl = `appfight://post/${post.id}`;
+    this.showShareOptions(post.content, 'Publication', appUrl);
   }
 
   async showShareOptions(text: string, title: string, url: string) {
