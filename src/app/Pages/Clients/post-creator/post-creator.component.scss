@@ -230,3 +230,340 @@
     }
   }
 }
+
+// Styles inspirés de Twitter mais avec la palette de couleurs de l'app
+
+// Variables de couleurs - utilisez les couleurs de votre thème
+:host {
+  --twitter-primary: var(--ion-color-primary);
+  --twitter-primary-rgb: var(--ion-color-primary-rgb);
+  --twitter-secondary: var(--ion-color-secondary);
+  --twitter-light: var(--ion-color-light);
+  --twitter-medium: var(--ion-color-medium);
+  --twitter-dark: var(--ion-color-dark);
+  --twitter-background: var(--ion-background-color);
+  --twitter-border: rgba(var(--ion-color-medium-rgb), 0.2);
+  --twitter-highlight: rgba(var(--ion-color-primary-rgb), 0.1);
+}
+
+.twitter-style-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--twitter-background);
+}
+
+// Header
+.twitter-header {
+  ion-toolbar {
+    --background: var(--twitter-background);
+    --border-style: none;
+    
+    .close-button {
+      --color: var(--twitter-dark);
+      font-size: 24px;
+      margin: 0;
+    }
+    
+    .tweet-button {
+      --background: var(--twitter-primary);
+      --color: white;
+      --border-radius: 9999px;
+      --padding-start: 16px;
+      --padding-end: 16px;
+      font-weight: 700;
+      font-size: 14px;
+      height: 36px;
+      margin-right: 8px;
+      
+      &[disabled] {
+        --background: var(--twitter-primary);
+        opacity: 0.5;
+      }
+    }
+  }
+}
+
+// Content
+.twitter-content {
+  --background: var(--twitter-background);
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.composer-container {
+  display: flex;
+  padding: 16px;
+  
+  .user-avatar {
+    margin-right: 12px;
+    
+    ion-avatar {
+      width: 48px;
+      height: 48px;
+      border: 2px solid var(--twitter-light);
+    }
+  }
+  
+  .composer-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.type-selector {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--twitter-highlight);
+  color: var(--twitter-primary);
+  border-radius: 16px;
+  padding: 4px 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  align-self: flex-start;
+  
+  .selected-type {
+    margin-right: 4px;
+  }
+  
+  ion-icon {
+    font-size: 16px;
+  }
+}
+
+.tweet-textarea {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 8px;
+  font-size: 18px;
+  line-height: 1.5;
+  min-height: 120px;
+  color: var(--twitter-dark);
+  border: none;
+  background: transparent;
+  margin-bottom: 16px;
+  
+  &::placeholder {
+    color: var(--twitter-medium);
+    opacity: 0.7;
+  }
+}
+
+.media-gallery {
+  margin-bottom: 16px;
+  
+  .media-grid {
+    display: grid;
+    gap: 4px;
+    border-radius: 16px;
+    overflow: hidden;
+    
+    &.grid-1 {
+      grid-template-columns: 1fr;
+      max-height: 300px;
+    }
+    
+    &.grid-2 {
+      grid-template-columns: repeat(2, 1fr);
+      max-height: 200px;
+    }
+    
+    &.grid-3 {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      max-height: 300px;
+      
+      .media-item:first-child {
+        grid-row: span 2;
+      }
+    }
+    
+    &.grid-4, &.grid-4-plus {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      max-height: 280px;
+    }
+    
+    .media-item {
+      position: relative;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+      
+      img, video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      .remove-media-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background-color: rgba(0, 0, 0, 0.6);
+        border: none;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        padding: 0;
+        
+        ion-icon {
+          font-size: 16px;
+        }
+      }
+      
+      .media-count {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: bold;
+      }
+    }
+  }
+}
+
+.tags-container {
+  margin-bottom: 16px;
+  
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    
+    .tag-item {
+      color: var(--twitter-primary);
+      font-size: 14px;
+      padding: 4px 0;
+    }
+  }
+}
+
+.type-selector-popup {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--twitter-background);
+  border-top: 1px solid var(--twitter-border);
+  padding: 16px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transform: translateY(0);
+  transition: transform 0.3s ease;
+  
+  &.hidden {
+    transform: translateY(100%);
+  }
+  
+  .type-options {
+    .type-option {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      font-size: 16px;
+      color: var(--twitter-dark);
+      
+      &.active {
+        color: var(--twitter-primary);
+        font-weight: 500;
+        
+        ion-icon {
+          color: var(--twitter-primary);
+        }
+      }
+    }
+  }
+}
+
+// Footer
+.twitter-footer {
+  border-top: 1px solid var(--twitter-border);
+  padding: 8px 16px;
+  background-color: var(--twitter-background);
+}
+
+.composer-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  .media-tools {
+    display: flex;
+    gap: 12px;
+    
+    .tool-button {
+      background: transparent;
+      border: none;
+      color: var(--twitter-primary);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+      
+      ion-icon {
+        font-size: 22px;
+      }
+      
+      &:active {
+        background-color: var(--twitter-highlight);
+      }
+      
+      &[disabled] {
+        color: var(--twitter-medium);
+        opacity: 0.6;
+      }
+    }
+  }
+  
+  .composer-status {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    
+    .hashtag-info {
+      display: flex;
+      align-items: center;
+      color: var(--twitter-primary);
+      font-size: 14px;
+      
+      ion-icon {
+        margin-right: 4px;
+      }
+    }
+    
+    .character-counter {
+      font-size: 14px;
+      color: var(--twitter-medium);
+      
+      &.near-limit {
+        color: orange;
+      }
+      
+      &.at-limit {
+        color: red;
+      }
+    }
+  }
+}

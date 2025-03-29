@@ -1,88 +1,104 @@
-<div class="post-creator-container">
-  <ion-header class="modern-header">
+<div class="twitter-style-container">
+  <ion-header class="twitter-header">
     <ion-toolbar>
       <ion-buttons slot="start">
-        <ion-button (click)="cancel()" class="cancel-button">
-          <ion-icon name="arrow-back-outline"></ion-icon>
+        <ion-button (click)="cancel()" class="close-button">
+          <ion-icon name="close-outline"></ion-icon>
         </ion-button>
       </ion-buttons>
-      <ion-title>Nouvelle publication</ion-title>
       <ion-buttons slot="end">
-        <ion-button (click)="submitPost()" [disabled]="(!post.content.trim() && post.media.length === 0)" class="publish-button">
+        <ion-button (click)="submitPost()" 
+                   [disabled]="(!post.content.trim() && post.media.length === 0)" 
+                   class="tweet-button">
           Publier
         </ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
 
-  <ion-content class="modern-content">
-    <div class="user-profile-section">
-      <ion-avatar>
-        <img [src]="currentUser?.avatar || 'assets/default-avatar.png'" alt="Avatar">
-      </ion-avatar>
-      <div class="user-info">
-        <h4>{{ currentUser?.name || 'Utilisateur' }}</h4>
-        <div class="post-type-selector">
-          <ion-chip *ngFor="let type of availableTypes" 
-                   [class.selected]="post.type === type.value"
-                   (click)="post.type = type.value">
-            <ion-label>{{ type.label }}</ion-label>
-          </ion-chip>
+  <ion-content class="twitter-content">
+    <div class="composer-container">
+      <div class="user-avatar">
+        <ion-avatar>
+          <img [src]="currentUser?.avatar || 'assets/default-avatar.png'" alt="Avatar">
+        </ion-avatar>
+      </div>
+      
+      <div class="composer-main">
+        <div class="type-selector" *ngIf="post.type">
+          <span class="selected-type">{{ getTypeLabel(post.type) }}</span>
+          <ion-icon name="chevron-down-outline" (click)="showTypeSelector()"></ion-icon>
+        </div>
+        
+        <ion-textarea 
+          [(ngModel)]="post.content"
+          placeholder="Qu'est-ce qui vous inspire aujourd'hui ?" 
+          class="tweet-textarea"
+          autoGrow="true"
+          (ionChange)="extractHashtags()">
+        </ion-textarea>
+        
+        <div class="media-gallery" *ngIf="post.media.length > 0">
+          <div class="media-grid" [ngClass]="'grid-' + (post.media.length > 4 ? '4-plus' : post.media.length)">
+            <div *ngFor="let media of post.media; let i = index" class="media-item">
+              <img *ngIf="media.type === 'image'" [src]="media.url">
+              <video *ngIf="media.type === 'video'" [src]="media.url" controls></video>
+              <button class="remove-media-btn" (click)="removeMedia(i)">
+                <ion-icon name="close"></ion-icon>
+              </button>
+              <div class="media-count" *ngIf="i === 3 && post.media.length > 4">+{{ post.media.length - 4 }}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tags-container" *ngIf="post.tags.length > 0">
+          <div class="tag-list">
+            <div class="tag-item" *ngFor="let tag of post.tags">
+              <span>#{{ tag }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-
-    <div class="content-area">
-      <ion-textarea 
-        [(ngModel)]="post.content"
-        rows="6"
-        placeholder="Partagez votre expérience..." 
-        class="modern-textarea"
-        (ionChange)="extractHashtags()">
-      </ion-textarea>
-      
-      <div class="hashtag-help" *ngIf="post.content && !post.tags.length">
-        <ion-icon name="information-circle-outline"></ion-icon>
-        <span>Utilisez #hashtag pour ajouter des tags à votre publication</span>
-      </div>
-      
-      <div class="tags-preview" *ngIf="post.tags.length > 0">
-        <ion-chip *ngFor="let tag of post.tags" class="tag-chip">
-          <ion-label>#{{ tag }}</ion-label>
-        </ion-chip>
-      </div>
-      
-      <div class="media-section" *ngIf="post.media.length > 0">
-        <h5>Médias ajoutés</h5>
-        <div class="media-preview">
-          <div *ngFor="let media of post.media; let i = index" class="media-item">
-            <img *ngIf="media.type === 'image'" [src]="media.url">
-            <video *ngIf="media.type === 'video'" [src]="media.url" controls></video>
-            <ion-button fill="clear" class="remove-button" (click)="removeMedia(i)">
-              <ion-icon name="close-circle"></ion-icon>
-            </ion-button>
-          </div>
+    
+    <div class="type-selector-popup" *ngIf="showingTypeSelector">
+      <div class="type-options">
+        <div class="type-option" 
+             *ngFor="let type of availableTypes"
+             [class.active]="post.type === type.value"
+             (click)="selectType(type.value)">
+          <span>{{ type.label }}</span>
+          <ion-icon name="checkmark" *ngIf="post.type === type.value"></ion-icon>
         </div>
       </div>
     </div>
   </ion-content>
 
-  <ion-footer class="modern-footer">
-    <div class="action-buttons">
-      <ion-button (click)="addPhoto()" class="media-button">
-        <ion-icon name="image-outline"></ion-icon>
-        <span>Photos</span>
-      </ion-button>
+  <ion-footer class="twitter-footer">
+    <div class="composer-tools">
+      <div class="media-tools">
+        <button class="tool-button" (click)="addPhoto()">
+          <ion-icon name="image-outline"></ion-icon>
+        </button>
+        <button class="tool-button" disabled>
+          <ion-icon name="videocam-outline"></ion-icon>
+        </button>
+        <button class="tool-button" disabled>
+          <ion-icon name="attach-outline"></ion-icon>
+        </button>
+      </div>
       
-      <ion-button disabled class="media-button">
-        <ion-icon name="videocam-outline"></ion-icon>
-        <span>Vidéo</span>
-      </ion-button>
-      
-      <ion-button disabled class="media-button">
-        <ion-icon name="link-outline"></ion-icon>
-        <span>Lien</span>
-      </ion-button>
+      <div class="composer-status">
+        <div class="hashtag-info" *ngIf="post.tags.length > 0">
+          <ion-icon name="pricetag-outline"></ion-icon>
+          <span>{{ post.tags.length }}</span>
+        </div>
+        
+        <div class="character-counter" [ngClass]="{'near-limit': post.content.length > 200, 'at-limit': post.content.length > 280}">
+          <span *ngIf="post.content.length <= 280">{{ post.content.length }}/280</span>
+          <span *ngIf="post.content.length > 280">{{ post.content.length - 280 }} dépassés</span>
+        </div>
+      </div>
     </div>
   </ion-footer>
 </div>

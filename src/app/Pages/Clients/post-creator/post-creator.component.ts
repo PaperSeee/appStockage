@@ -39,6 +39,9 @@ export class PostCreatorComponent implements OnInit {
     { value: 'question', label: 'Question' }
   ];
   
+  // Nouvelle propriété pour gérer l'affichage du sélecteur de type
+  showingTypeSelector = false;
+  
   constructor(
     private modalController: ModalController,
     private firebaseService: FirebaseService,
@@ -169,5 +172,22 @@ export class PostCreatorComponent implements OnInit {
     this.modalController.dismiss({
       submitted: false
     });
+  }
+  
+  // Obtenir le libellé du type sélectionné
+  getTypeLabel(typeValue: string): string {
+    const type = this.availableTypes.find(t => t.value === typeValue);
+    return type ? type.label : '';
+  }
+  
+  // Afficher/masquer le sélecteur de type
+  showTypeSelector() {
+    this.showingTypeSelector = !this.showingTypeSelector;
+  }
+  
+  // Sélectionner un type et fermer le sélecteur
+  selectType(typeValue: string) {
+    this.post.type = typeValue;
+    this.showingTypeSelector = false;
   }
 }
