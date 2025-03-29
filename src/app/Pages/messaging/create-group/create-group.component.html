@@ -1,0 +1,99 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/messaging"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Nouveau groupe</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="createGroup()" [disabled]="!groupName || selectedUsers.length === 0 || creatingGroup">
+        <ion-icon name="checkmark-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="group-info">
+    <div class="group-photo-container">
+      <img [src]="groupPhoto || defaultGroupPhoto" alt="Group Photo" class="group-photo">
+      <ion-button fill="clear" class="photo-edit-button">
+        <input type="file" (change)="handlePhotoSelection($event)" accept="image/*" class="file-input">
+        <ion-icon name="camera-outline"></ion-icon>
+      </ion-button>
+    </div>
+    
+    <ion-item class="group-name-input">
+      <ion-label position="stacked">Nom du groupe</ion-label>
+      <ion-input [(ngModel)]="groupName" placeholder="Entrez un nom pour le groupe" maxlength="30"></ion-input>
+    </ion-item>
+  </div>
+  
+  <div class="participants-section">
+    <div class="section-header">
+      <h4>Participants ({{ selectedUsers.length }})</h4>
+    </div>
+    
+    <div class="selected-users" *ngIf="selectedUsers.length > 0">
+      <div class="selected-user" *ngFor="let user of selectedUsers; let i = index">
+        <ion-avatar>
+          <img [src]="user.photo || 'assets/default-avatar.png'" alt="Avatar" onError="this.src='assets/default-avatar.png'">
+        </ion-avatar>
+        <span class="user-name">{{ getUserFullName(user) }}</span>
+        <ion-button fill="clear" (click)="removeSelectedUser(i)" class="remove-button">
+          <ion-icon name="close-circle-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+    
+    <ion-searchbar 
+      [(ngModel)]="searchTerm" 
+      (ionInput)="filterUsers()" 
+      placeholder="Ajouter des participants"
+      animated
+    ></ion-searchbar>
+    
+    <div *ngIf="loading" class="ion-padding ion-text-center">
+      <ion-spinner></ion-spinner>
+      <p>Chargement des utilisateurs...</p>
+    </div>
+    
+    <ion-list *ngIf="!loading">
+      <ion-item button *ngFor="let user of filteredUsers" (click)="selectUser(user)">
+        <ion-avatar slot="start">
+          <img [src]="user.photo || 'assets/default-avatar.png'" alt="Avatar" onError="this.src='assets/default-avatar.png'">
+        </ion-avatar>
+        
+        <ion-label>
+          <h2>{{ getUserFullName(user) }}</h2>
+          <p>
+            <span *ngIf="user.discipline">{{ user.discipline }}</span>
+            <span *ngIf="user.discipline && user.level"> · </span>
+            <span *ngIf="user.level">{{ user.level }}</span>
+          </p>
+        </ion-label>
+      </ion-item>
+      
+      <ion-item *ngIf="filteredUsers.length === 0 && !loading" lines="none" class="ion-text-center">
+        <ion-label color="medium">
+          <h2>Aucun utilisateur trouvé</h2>
+          <p>Essayez une autre recherche ou tous les utilisateurs sont déjà ajoutés</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+  
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="selectedUsers.length > 0 && groupName">
+    <ion-fab-button (click)="createGroup()" [disabled]="creatingGroup">
+      <ion-icon name="checkmark-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
+
+<ion-footer *ngIf="creatingGroup">
+  <ion-toolbar class="creating-toolbar">
+    <ion-title>
+      <ion-spinner name="crescent"></ion-spinner>
+      Création du groupe en cours...
+    </ion-title>
+  </ion-toolbar>
+</ion-footer>

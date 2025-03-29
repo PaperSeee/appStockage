@@ -1,0 +1,71 @@
+ion-list {
+  background: transparent;
+  padding: 0;
+}
+
+ion-item {
+  --padding-start: 16px;
+  --inner-padding-end: 16px;
+  --background-activated: var(--ion-color-light);
+  --background-focused: var(--ion-color-light);
+  --background-hover: var(--ion-color-light);
+  margin-bottom: 1px;
+}
+
+ion-item.unread {
+  --background: rgba(var(--ion-color-primary-rgb), 0.05);
+  
+  ion-label h2 {
+    font-weight: 700;
+  }
+}
+
+ion-avatar {
+  width: 48px;
+  height: 48px;
+  margin-right: 10px;
+}
+
+.conversation-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  
+  h2 {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  
+  ion-note {
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+}
+
+.last-message {
+  color: var(--ion-color-medium);
+  font-size: 14px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+  
+  ion-icon {
+    font-size: 12px;
+    margin-right: 2px;
+    vertical-align: middle;
+  }
+}
+
+ion-badge {
+  --background: var(--ion-color-primary);
+  --color: white;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 10px;
+}

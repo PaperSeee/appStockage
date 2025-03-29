@@ -16,7 +16,27 @@ const routes: Routes = [
   },
   { path: 'register', component: RegisterPage },
   { path: 'profile', component: ProfilePage },
-  { path: 'login', component: LoginPage } // Ajouter la route de connexion
+  { path: 'login', component: LoginPage }, // Ajouter la route de connexion
+  {
+    path: 'messaging',
+    children: [
+      {
+        path: '',
+        loadComponent: () => 
+          import('./Pages/messaging/conversations-list/conversations-list.component').then(m => m.ConversationsListComponent)
+      },
+      {
+        path: 'new',
+        loadComponent: () => 
+          import('./Pages/messaging/new-chat/new-chat.component').then(m => m.NewChatComponent)
+      },
+      {
+        path: 'chat/:id',
+        loadComponent: () => 
+          import('./Pages/messaging/chat/chat.component').then(m => m.ChatComponent)
+      }
+    ]
+  }
 ];
 
 @NgModule({

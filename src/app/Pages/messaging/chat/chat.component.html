@@ -1,0 +1,89 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/messaging"></ion-back-button>
+    </ion-buttons>
+    
+    <ion-title>
+      <div class="chat-title" [class.group-chat]="conversation?.isGroup" (click)="showGroupInfo()">
+        <ion-avatar>
+          <img [src]="getConversationPhoto()" alt="Avatar" onError="this.src='assets/default-avatar.png'">
+        </ion-avatar>
+        <div class="title-info">
+          <span class="chat-name">{{ getConversationName() }}</span>
+          <span class="participant-count" *ngIf="conversation?.isGroup">
+            {{ conversation?.participants?.length || 0 }} participants
+          </span>
+        </div>
+      </div>
+    </ion-title>
+
+    <ion-buttons slot="end" *ngIf="conversation?.isGroup">
+      <ion-button (click)="showGroupInfo()">
+        <ion-icon slot="icon-only" name="information-circle-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="loading" class="ion-padding ion-text-center">
+    <ion-spinner></ion-spinner>
+    <p>Chargement des messages...</p>
+  </div>
+
+  <div class="chat-container">
+    <div *ngIf="messages.length === 0 && !loading" class="no-messages ion-text-center ion-padding">
+      <ion-icon name="chatbubble-outline"></ion-icon>
+      <p>Aucun message. Envoyez un message pour commencer la conversation.</p>
+    </div>
+
+    <div *ngFor="let message of messages; let i = index" class="message-wrapper">
+      <!-- Date divider -->
+      <div *ngIf="isFirstMessageOfDay(message, i)" class="date-divider">
+        <span>{{ formatDateDivider(message) }}</span>
+      </div>
+      
+      <!-- System message for group events -->
+      <div *ngIf="message.senderId === 'system'" class="system-message">
+        <div class="system-message-content">
+          {{ message.text }}
+        </div>
+        <div class="message-time">{{ formatMessageTime(message.timestamp) }}</div>
+      </div>
+      
+      <!-- Regular message -->
+      <div *ngIf="message.senderId !== 'system'" [class]="'message ' + (message.senderId === currentUserId ? 'sent' : 'received')">
+        <!-- Show sender name for received messages in groups -->
+        <div class="sender-name" *ngIf="message.senderId !== currentUserId && conversation?.isGroup">
+          {{ getSenderName(message.senderId) }}
+        </div>
+        
+        <div class="message-bubble">
+          <div class="message-text">{{ message.text }}</div>
+          <div class="message-time">{{ formatMessageTime(message.timestamp) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <div class="message-input-container">
+    <ion-input 
+      placeholder="Message..." 
+      [(ngModel)]="newMessage" 
+      (keyup.enter)="sendMessage()"
+      class="message-input"
+    ></ion-input>
+    
+    <ion-button 
+      fill="clear" 
+      [disabled]="!newMessage.trim()" 
+      (click)="sendMessage()"
+      class="send-button"
+    >
+      <ion-icon name="send"></ion-icon>
+    </ion-button>
+  </div>
+</ion-footer>

@@ -560,3 +560,16 @@ ion-header {
     text-align: center;
   }
 }
+
+.message-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 10px;
+  --padding-start: 5px;
+  --padding-end: 5px;
+  --padding-top: 2px;
+  --padding-bottom: 2px;
+  --background: var(--ion-color-danger);
+  z-index: 100;
+}

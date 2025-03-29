@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FirebaseService } from '../../../services/firebase.service';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { SharingService } from '../../../services/sharing.service';
+import { MessagingService } from '../../../services/messaging.service';
+import { Subscription } from 'rxjs';
 
 interface Training {
   id: number;
@@ -51,7 +53,7 @@ interface Event {
   styleUrls: ['tab1.page.scss'],
   standalone: false,
 })
-export class Tab1Page implements OnInit {
+export class Tab1Page implements OnInit, OnDestroy {
   trainings: Training[] = [];
   nearbyPartners: User[] = [];
   upcomingEvents: Event[] = [];
@@ -69,11 +71,15 @@ export class Tab1Page implements OnInit {
   filteredPartners: any[] = [];
   filteredTrainings: any[] = [];
   
+  unreadMessageCount: number = 0;
+  private conversationsSub: Subscription | null = null;
+  
   constructor(
     private firebaseService: FirebaseService,
     private alertController: AlertController,
     private router: Router,
-    private sharingService: SharingService
+    private sharingService: SharingService,
+    private messagingService: MessagingService
   ) {}
 
   ngOnInit() {
@@ -83,6 +89,11 @@ export class Tab1Page implements OnInit {
     this.filteredEvents = [...this.upcomingEvents];
     this.filteredPartners = [...this.nearbyPartners];
     this.filteredTrainings = [...this.trainings];
+    
+    // Subscribe to conversations to get unread count
+    this.conversationsSub = this.messagingService.conversations$.subscribe(conversations => {
+      this.unreadMessageCount = this.messagingService.getTotalUnreadCount();
+    });
   }
 
   loadMockData() {
@@ -416,5 +427,11 @@ export class Tab1Page implements OnInit {
     
     // Then apply search filter
     this.applySearchFilter();
+  }
+
+  ngOnDestroy() {
+    if (this.conversationsSub) {
+      this.conversationsSub.unsubscribe();
+    }
   }
 }

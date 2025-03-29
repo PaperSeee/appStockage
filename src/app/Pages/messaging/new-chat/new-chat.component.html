@@ -1,0 +1,47 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/messaging"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Nouvelle conversation</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar 
+      [(ngModel)]="searchTerm" 
+      (ionInput)="filterUsers()" 
+      placeholder="Rechercher un utilisateur"
+      animated
+    ></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="loading" class="ion-padding ion-text-center">
+    <ion-spinner></ion-spinner>
+    <p>Chargement des utilisateurs...</p>
+  </div>
+
+  <ion-list *ngIf="!loading">
+    <ion-item *ngIf="filteredUsers.length === 0" lines="none" class="ion-text-center ion-padding">
+      <ion-label color="medium">
+        <h2>Aucun utilisateur trouvé</h2>
+        <p>Essayez une autre recherche</p>
+      </ion-label>
+    </ion-item>
+
+    <ion-item *ngFor="let user of filteredUsers" button detail (click)="startConversation(user)">
+      <ion-avatar slot="start">
+        <img [src]="user.photo || 'assets/default-avatar.png'" alt="Avatar" onError="this.src='assets/default-avatar.png'">
+      </ion-avatar>
+      
+      <ion-label>
+        <h2>{{ getUserFullName(user) }}</h2>
+        <p>
+          <span *ngIf="user.discipline">{{ user.discipline }}</span>
+          <span *ngIf="user.discipline && user.level"> · </span>
+          <span *ngIf="user.level">{{ user.level }}</span>
+        </p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>
