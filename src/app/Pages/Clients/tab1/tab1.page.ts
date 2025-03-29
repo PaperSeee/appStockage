@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FirebaseService } from '../../../services/firebase.service';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { SharingService } from '../../../services/sharing.service';
 
 interface Training {
   id: number;
@@ -63,14 +64,25 @@ export class Tab1Page implements OnInit {
     progress: 65
   };
   
+  searchTerm: string = '';
+  filteredEvents: any[] = [];
+  filteredPartners: any[] = [];
+  filteredTrainings: any[] = [];
+  
   constructor(
     private firebaseService: FirebaseService,
     private alertController: AlertController,
-    private router: Router // Ajout du service Router
+    private router: Router,
+    private sharingService: SharingService
   ) {}
 
   ngOnInit() {
     this.loadMockData();
+    
+    // Initialize filtered arrays
+    this.filteredEvents = [...this.upcomingEvents];
+    this.filteredPartners = [...this.nearbyPartners];
+    this.filteredTrainings = [...this.trainings];
   }
 
   loadMockData() {
@@ -220,8 +232,19 @@ export class Tab1Page implements OnInit {
   }
 
   shareWeeklySummary() {
-    // Implémentation du partage ici
-    console.log('Partage du résumé hebdomadaire');
+    const url = window.location.href;
+    const title = 'Mon résumé hebdomadaire d\'entraînement';
+    const text = `Cette semaine: ${this.weeklySummary.sessions} entraînements, ${this.weeklySummary.totalMinutes} minutes, intensité ${this.weeklySummary.intensity}/5.`;
+    
+    this.sharingService.showShareOptions(title, text, url);
+  }
+
+  shareTraining(training: Training) {
+    const url = window.location.href;
+    const title = `Séance de ${training.type}: ${training.title}`;
+    const text = `${training.description} - Durée: ${training.duration} min à ${training.location}`;
+    
+    this.sharingService.showShareOptions(title, text, url);
   }
 
   formatEventDate(date: Date): string {
@@ -298,5 +321,39 @@ export class Tab1Page implements OnInit {
       // Si l'utilisateur n'est pas connecté, naviguer vers la page d'inscription
       this.router.navigate(['/register']);
     }
+  }
+
+  searchItems() {
+    const term = this.searchTerm.toLowerCase().trim();
+    
+    if (!term) {
+      // If search is empty, reset to original data
+      this.filteredEvents = [...this.upcomingEvents];
+      this.filteredPartners = [...this.nearbyPartners];
+      this.filteredTrainings = [...this.trainings];
+      return;
+    }
+    
+    // Filter events
+    this.filteredEvents = this.upcomingEvents.filter(event => 
+      event.title.toLowerCase().includes(term) ||
+      event.type.toLowerCase().includes(term) ||
+      event.location.toLowerCase().includes(term)
+    );
+    
+    // Filter partners
+    this.filteredPartners = this.nearbyPartners.filter(partner => 
+      partner.name.toLowerCase().includes(term) ||
+      partner.discipline.toLowerCase().includes(term)
+    );
+    
+    // Filter trainings
+    this.filteredTrainings = this.trainings.filter(training => 
+      training.title.toLowerCase().includes(term) ||
+      training.description.toLowerCase().includes(term) ||
+      training.type.toLowerCase().includes(term) ||
+      training.user.name.toLowerCase().includes(term) ||
+      training.location.toLowerCase().includes(term)
+    );
   }
 }

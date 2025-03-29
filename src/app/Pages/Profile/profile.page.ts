@@ -1,7 +1,7 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { FirebaseService } from '../../services/firebase.service';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { ToastController, IonicModule, LoadingController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 
@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
   standalone: true,
-  imports: [IonicModule, FormsModule, ReactiveFormsModule, CommonModule, RouterLink],
+  imports: [IonicModule, FormsModule, ReactiveFormsModule, CommonModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ProfilePage implements OnInit {

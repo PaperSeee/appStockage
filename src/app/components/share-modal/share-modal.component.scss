@@ -1,0 +1,39 @@
+.share-button-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  ion-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  
+  div {
+    font-size: 12px;
+  }
+}
+
+/* Platform-specific colors */
+ion-icon[color="facebook"] {
+  color: #3b5998;
+}
+
+ion-icon[color="twitter"] {
+  color: #1da1f2;
+}
+
+ion-icon[color="whatsapp"] {
+  color: #25D366;
+}
+
+ion-icon[color="linkedin"] {
+  color: #0077B5;
+}
+
+ion-icon[color="instagram"] {
+  color: #E1306C;
+}
+
+ion-icon[color="snapchat"] {
+  color: #FFFC00;
+}

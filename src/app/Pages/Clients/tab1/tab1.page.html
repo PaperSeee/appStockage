@@ -23,7 +23,7 @@
   <div class="weekly-summary">
     <div class="summary-header">
       <h2>Cette semaine</h2>
-      <ion-button fill="clear" size="small" class="share-button">
+      <ion-button fill="clear" size="small" class="share-button" (click)="shareWeeklySummary()">
         <ion-icon name="share-social-outline"></ion-icon>
         Partager
       </ion-button>
@@ -51,7 +51,7 @@
   </div>
   
   <div class="search-container">
-    <ion-searchbar placeholder="Rechercher des partenaires, des activités..." animated></ion-searchbar>
+    <ion-searchbar [(ngModel)]="searchTerm" (ionChange)="searchItems()" placeholder="Rechercher des partenaires, des activités..." animated></ion-searchbar>
   </div>
   
   <div class="discipline-filter">
@@ -73,7 +73,7 @@
     <div 
       class="filter-item" 
       [class.active]="disciplineFilter === 'jiu-jitsu'" 
-      (click)="disciplineFilter = 'jiu-jitsu'"
+      (click)="disciplineFilter = 'jiu-jitsu'"  
     >Jiu-Jitsu</div>
     <div 
       class="filter-item" 
@@ -94,7 +94,7 @@
   
   <div class="events-container">
     <div class="events-list">
-      <div class="event-card" *ngFor="let event of upcomingEvents">
+      <div class="event-card" *ngFor="let event of filteredEvents">
         <div class="event-image-container">
           <img [src]="event.image" [alt]="event.title" class="event-image">
           <div class="event-type-badge">{{event.type}}</div>
@@ -130,7 +130,7 @@
   
   <div class="partners-container">
     <div class="partners-list">
-      <div class="partner-item" *ngFor="let partner of nearbyPartners">
+      <div class="partner-item" *ngFor="let partner of filteredPartners">
         <div class="avatar-container">
           <img [src]="partner.avatar" [alt]="partner.name" class="avatar">
           <div class="status-indicator"></div>
@@ -149,7 +149,7 @@
   </h3>
   
   <div class="activity-feed">
-    <div class="feed-item" *ngFor="let training of trainings">
+    <div class="feed-item" *ngFor="let training of filteredTrainings">
       <div class="feed-header">
         <img [src]="training.user.avatar" [alt]="training.user.name" class="user-avatar">
         <div class="user-info">
@@ -196,7 +196,7 @@
             Commenter
           </ion-button>
           
-          <ion-button fill="clear" color="medium">
+          <ion-button fill="clear" color="medium" (click)="shareTraining(training)">
             <ion-icon name="share-social-outline"></ion-icon>
             Partager
           </ion-button>
