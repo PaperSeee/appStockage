@@ -7,7 +7,7 @@ import {
 import { 
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
   signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, 
-  signInWithRedirect, getRedirectResult 
+  signInWithRedirect, getRedirectResult, OAuthProvider 
 } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import { environment } from '../../environments/environment';
@@ -21,12 +21,17 @@ export class FirebaseService {
   firestore = getFirestore(this.app);
   analytics = getAnalytics(this.app);
   googleProvider = new GoogleAuthProvider();
+  appleProvider = new OAuthProvider('apple.com');
 
   constructor() {
     console.log('Firebase initialized with project:', this.app.options.projectId);
     this.googleProvider.setCustomParameters({
       prompt: 'select_account'
     });
+    
+    // Configure Apple provider with necessary scopes
+    this.appleProvider.addScope('email');
+    this.appleProvider.addScope('name');
   }
 
   // Authentication methods
@@ -57,6 +62,17 @@ export class FirebaseService {
       return result.user;
     } catch (error) {
       console.error('Error signing in with Google:', error);
+      throw error;
+    }
+  }
+
+  async signInWithApple() {
+    try {
+      // Sur mobile, utilisez signInWithRedirect au lieu de signInWithPopup
+      const result = await signInWithPopup(this.auth, this.appleProvider);
+      return result.user;
+    } catch (error) {
+      console.error('Error signing in with Apple:', error);
       throw error;
     }
   }

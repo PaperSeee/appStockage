@@ -60,6 +60,32 @@ export class LoginPage {
     }
   }
 
+  async signInWithApple() {
+    try {
+      const result = await this.firebaseService.signInWithApple();
+      if (result) {
+        // Vérifier si l'utilisateur existe déjà dans Firestore
+        const userDoc = await this.firebaseService.getDocument('users', result.uid);
+        
+        if (!userDoc) {
+          // Si l'utilisateur n'existe pas, créer un nouveau document
+          await this.firebaseService.addDocument('users', {
+            userId: result.uid,
+            firstName: result.displayName?.split(' ')[0] || '',
+            lastName: result.displayName?.split(' ').slice(1).join(' ') || '',
+            email: result.email,
+            photo: result.photoURL
+          });
+        }
+        
+        this.router.navigate(['/tabs/tab1']);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la connexion avec Apple:', error);
+      this.showToast('La connexion avec Apple a échoué');
+    }
+  }
+
   async showToast(message: string) {
     const toast = await this.toastController.create({
       message,

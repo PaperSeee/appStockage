@@ -151,6 +151,20 @@
       --background: #f8f8f8;
     }
   }
+  
+  .apple-button {
+    --background: #000000;
+    --color: #ffffff;
+    --border-radius: 8px;
+    margin-top: 12px;
+    font-weight: 500;
+    height: 48px;
+    
+    ion-icon {
+      margin-right: 8px;
+      font-size: 1.2em;
+    }
+  }
 }
 
 .forgot-password {
