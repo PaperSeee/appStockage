@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
 import { 
   getFirestore, collection, doc, getDoc, getDocs, 
-  addDoc, updateDoc, deleteDoc, query, where, orderBy, limit as firestoreLimit
+  addDoc, updateDoc, deleteDoc, query, where, orderBy, limit as firestoreLimit, setDoc
 } from 'firebase/firestore';
 import { 
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
@@ -155,14 +155,25 @@ export class FirebaseService {
 
   async addDocument(collectionName: string, data: any) {
     try {
+      // Vérification préalable de l'authentification
+      const user = await this.getCurrentUser();
+      if (!user) {
+        console.warn('Tentative d\'écriture sans authentification');
+        await this.showErrorToast('Vous devez être connecté pour effectuer cette action');
+        throw new Error('Authentication required');
+      }
+
       const docRef = await addDoc(collection(this.firestore, collectionName), data);
       return docRef.id;
     } catch (error) {
       console.error('Error adding document:', error);
 
-      // Ajout d'une assertion de type pour résoudre l'erreur TS18046
+      // Gestion améliorée des erreurs de permission
       if ((error as { code: string }).code === 'permission-denied') {
-        alert('Vous n\'avez pas les permissions nécessaires pour effectuer cette action.');
+        console.warn('Permission denied on collection:', collectionName);
+        await this.showErrorToast('Accès refusé. Vous n\'avez pas les permissions nécessaires pour effectuer cette action.');
+      } else {
+        await this.showErrorToast('Une erreur est survenue lors de l\'ajout du document');
       }
 
       throw error;
@@ -171,11 +182,27 @@ export class FirebaseService {
 
   async updateDocument(collectionName: string, docId: string, data: any) {
     try {
+      // Vérification préalable de l'authentification
+      const user = await this.getCurrentUser();
+      if (!user) {
+        console.warn('Tentative d\'écriture sans authentification');
+        await this.showErrorToast('Vous devez être connecté pour effectuer cette action');
+        throw new Error('Authentication required');
+      }
+
       const docRef = doc(this.firestore, collectionName, docId);
       await updateDoc(docRef, data);
       return true;
     } catch (error) {
       console.error('Error updating document:', error);
+      
+      if ((error as { code: string }).code === 'permission-denied') {
+        console.warn('Permission denied on document:', docId, 'in collection:', collectionName);
+        await this.showErrorToast('Accès refusé. Vous n\'avez pas les permissions nécessaires pour modifier ce document.');
+      } else {
+        await this.showErrorToast('Une erreur est survenue lors de la mise à jour du document');
+      }
+      
       throw error;
     }
   }
@@ -261,5 +288,33 @@ export class FirebaseService {
     });
     
     await toast.present();
+  }
+
+  // Méthode pour définir ou mettre à jour un document avec un ID spécifique
+  async setDocument(collectionName: string, docId: string, data: any) {
+    try {
+      // Vérification préalable de l'authentification
+      const user = await this.getCurrentUser();
+      if (!user) {
+        console.warn('Tentative d\'écriture sans authentification');
+        await this.showErrorToast('Vous devez être connecté pour effectuer cette action');
+        throw new Error('Authentication required');
+      }
+      
+      const docRef = doc(this.firestore, collectionName, docId);
+      await setDoc(docRef, data);
+      return docId;
+    } catch (error) {
+      console.error('Error setting document:', error);
+      
+      if ((error as { code: string }).code === 'permission-denied') {
+        console.warn('Permission denied when setting document:', docId, 'in collection:', collectionName);
+        await this.showErrorToast('Accès refusé. Vous n\'avez pas les permissions nécessaires pour cette action.');
+      } else {
+        await this.showErrorToast('Une erreur est survenue lors de l\'enregistrement du document');
+      }
+      
+      throw error;
+    }
   }
 }

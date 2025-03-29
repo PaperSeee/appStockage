@@ -791,3 +791,34 @@ ion-item {
     margin-right: 8px;
   }
 }
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  
+  ion-spinner {
+    margin-bottom: 10px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+  }
+}
+
+.error-message {
+  color: var(--ion-color-danger);
+  font-size: 12px;
+  margin-left: 16px;
+  margin-top: 5px;
+}
+
+form {
+  padding: 16px;
+  
+  ion-button {
+    margin-top: 20px;
+  }
+}

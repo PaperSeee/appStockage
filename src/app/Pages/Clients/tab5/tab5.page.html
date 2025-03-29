@@ -17,6 +17,12 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="evolution-content">
+  <!-- Ajoutez cet indicateur de chargement au début de la section de profil -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Chargement de votre profil...</p>
+  </div>
+
   <!-- Stats Summary Cards -->
   <div class="stats-overview">
     <div class="stat-card">
@@ -220,6 +226,77 @@
       <ion-icon name="lock-closed"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+
+  <!-- Modifiez la section formulaire pour utiliser les données chargées -->
+  <form [formGroup]="profileFormGroup" (ngSubmit)="saveProfile()">
+    <!-- Prénom -->
+    <ion-item>
+      <ion-label position="floating">Prénom</ion-label>
+      <ion-input formControlName="firstName" type="text"></ion-input>
+    </ion-item>
+    <div *ngIf="profileFormGroup.get('firstName')?.invalid && profileFormGroup.get('firstName')?.touched" class="error-message">
+      Prénom requis
+    </div>
+
+    <!-- Nom -->
+    <ion-item>
+      <ion-label position="floating">Nom</ion-label>
+      <ion-input formControlName="lastName" type="text"></ion-input>
+    </ion-item>
+    <div *ngIf="profileFormGroup.get('lastName')?.invalid && profileFormGroup.get('lastName')?.touched" class="error-message">
+      Nom requis
+    </div>
+
+    <!-- Email -->
+    <ion-item>
+      <ion-label position="floating">Email</ion-label>
+      <ion-input formControlName="email" type="email" readonly></ion-input>
+    </ion-item>
+
+    <!-- Téléphone -->
+    <ion-item>
+      <ion-label position="floating">Téléphone</ion-label>
+      <ion-input formControlName="phoneNumber" type="tel"></ion-input>
+    </ion-item>
+
+    <!-- Discipline -->
+    <ion-item>
+      <ion-label position="floating">Discipline</ion-label>
+      <ion-select formControlName="discipline">
+        <ion-select-option value="mma">MMA</ion-select-option>
+        <ion-select-option value="boxe">Boxe</ion-select-option>
+        <ion-select-option value="jiu-jitsu">Jiu-Jitsu</ion-select-option>
+        <ion-select-option value="muay-thai">Muay Thai</ion-select-option>
+        <ion-select-option value="autre">Autre</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Niveau -->
+    <ion-item>
+      <ion-label position="floating">Niveau</ion-label>
+      <ion-select formControlName="level">
+        <ion-select-option value="débutant">Débutant</ion-select-option>
+        <ion-select-option value="intermédiaire">Intermédiaire</ion-select-option>
+        <ion-select-option value="avancé">Avancé</ion-select-option>
+        <ion-select-option value="expert">Expert</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Bio -->
+    <ion-item>
+      <ion-label position="floating">Bio</ion-label>
+      <ion-textarea formControlName="bio" rows="4"></ion-textarea>
+    </ion-item>
+
+    <!-- Autres champs comme date de naissance, poids, taille, etc. -->
+    <!-- ... -->
+
+    <!-- Bouton de sauvegarde -->
+    <ion-button expand="block" type="submit" [disabled]="profileFormGroup.invalid || isLoading">
+      <ion-icon name="save-outline" slot="start"></ion-icon>
+      Enregistrer
+    </ion-button>
+  </form>
 </ion-content>
 
 <!-- Modal template for adding training -->

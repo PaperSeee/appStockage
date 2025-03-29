@@ -53,6 +53,23 @@ interface WeeklyData {
   percentage: number;
 }
 
+// Interface pour les données utilisateur
+interface UserProfile {
+  id?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  photo?: string;
+  discipline?: string;
+  level?: string;
+  bio?: string;
+  weight?: number;
+  height?: number;
+  phoneNumber?: string;
+  dateOfBirth?: Date | string;
+  [key: string]: any;
+}
+
 @Component({
   selector: 'app-tab5',
   templateUrl: 'tab5.page.html',
@@ -88,6 +105,13 @@ export class Tab5Page implements OnInit {
   months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
   weekdays = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
+  // Ajoutons les propriétés pour l'utilisateur connecté
+  userId: string | null = null;
+  userProfile: UserProfile = {};
+  isLoading = false;
+  profileFormGroup: FormGroup;
+  hasLoadedProfile = false;
+
   constructor(
     private formBuilder: FormBuilder,
     private actionSheetController: ActionSheetController,
@@ -100,6 +124,20 @@ export class Tab5Page implements OnInit {
     const today = new Date();
     this.selectedMonth = today.getMonth() + 1;
     this.selectedYear = today.getFullYear();
+
+    // Initialisation du formulaire vide d'abord
+    this.profileFormGroup = this.formBuilder.group({
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phoneNumber: [''],
+      discipline: [''],
+      level: [''],
+      bio: [''],
+      dateOfBirth: [''],
+      weight: [''],
+      height: ['']
+    });
   }
 
   async ngOnInit() {
@@ -111,6 +149,102 @@ export class Tab5Page implements OnInit {
     this.generateCalendar();
     this.calculateStats();
     this.generateWeeklyData();
+
+    // Puis charger les données utilisateur
+    await this.loadUserProfile();
+  }
+
+  async loadUserProfile() {
+    this.isLoading = true;
+
+    try {
+      const user = await this.firebaseService.getCurrentUser() as any;
+      
+      if (user && user.uid) {
+        this.userId = user.uid;
+        
+        // Récupérer les données utilisateur depuis Firestore
+        if (this.userId) { // Ajout d'une vérification null
+          const userData = await this.firebaseService.getDocument('users', this.userId) as UserProfile;
+          
+          if (userData) {
+            this.userProfile = userData;
+            this.hasLoadedProfile = true;
+            
+            // Mettre à jour le formulaire avec les données reçues
+            this.profileFormGroup.patchValue({
+              firstName: userData.firstName || '',
+              lastName: userData.lastName || '',
+              email: userData.email || (user.email || ''),  // Utiliser l'email de Firebase Auth si non spécifié dans le profil
+              phoneNumber: userData.phoneNumber || '',
+              discipline: userData.discipline || '',
+              level: userData.level || '',
+              bio: userData.bio || '',
+              dateOfBirth: userData.dateOfBirth || '',
+              weight: userData.weight || '',
+              height: userData.height || ''
+            });
+            
+            console.log('Profil utilisateur chargé avec succès:', userData);
+          } else {
+            // Aucune donnée utilisateur trouvée, mais on a un utilisateur connecté
+            // Créer un profil par défaut
+            this.profileFormGroup.patchValue({
+              email: user.email || ''
+            });
+            console.log('Aucun profil trouvé pour cet utilisateur. Profil vierge créé.');
+          }
+        }
+      } else {
+        console.log('Aucun utilisateur connecté');
+        this.showToast('Vous devez être connecté pour accéder à votre profil');
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement du profil:', error);
+      this.showToast('Erreur lors du chargement de votre profil');
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  async saveProfile() {
+    if (!this.profileFormGroup.valid) {
+      this.showToast('Veuillez remplir correctement tous les champs obligatoires');
+      return;
+    }
+
+    this.isLoading = true;
+
+    try {
+      if (!this.userId) {
+        throw new Error('Utilisateur non connecté');
+      }
+
+      const profileData = {
+        ...this.profileFormGroup.value,
+        updatedAt: new Date()
+      };
+
+      if (this.hasLoadedProfile) {
+        // Mettre à jour le profil existant
+        await this.firebaseService.updateDocument('users', this.userId, profileData);
+      } else {
+        // Créer un nouveau profil
+        // Utilisons addDocument si l'utilisateur n'a pas de profil existant
+        await this.firebaseService.updateDocument('users', this.userId, {
+          ...profileData,
+          createdAt: new Date()
+        });
+        this.hasLoadedProfile = true;
+      }
+
+      this.showToast('Profil enregistré avec succès');
+    } catch (error) {
+      console.error('Erreur lors de l\'enregistrement du profil:', error);
+      this.showToast('Erreur lors de l\'enregistrement du profil');
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   // Initialize form controls
