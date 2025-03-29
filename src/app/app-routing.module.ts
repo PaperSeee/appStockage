@@ -20,7 +20,7 @@ const routes: Routes = [
   {
     path: 'browser',
     loadComponent: () => 
-      import('./pages/browser/browser.page').then(m => m.BrowserPage)
+      import('./Pages/browser/browser.page').then(m => m.BrowserPage)
   },
   {
     path: 'messaging',
