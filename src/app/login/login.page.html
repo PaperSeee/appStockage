@@ -1,12 +1,6 @@
 <ion-content class="login-content">
   <div class="login-container">
-    <div class="login-header">
-      <div class="logo-container">
-        <img src="assets/icon/favicon.png" alt="App Logo" class="app-logo">
-      </div>
-      <h1>Bienvenue</h1>
-      <p>Connectez-vous pour retrouver vos partenaires d'entraînement</p>
-    </div>
+    <h1 class="auth-title">Se connecter chez Steedn</h1>
 
     <form (ngSubmit)="login()" class="login-form">
       <!-- Social Authentication -->
@@ -23,7 +17,7 @@
         
         <div class="social-divider">ou</div>
       </div>
-      
+
       <div class="form-group">
         <ion-item class="custom-item">
           <ion-icon name="mail-outline" slot="start"></ion-icon>
@@ -48,10 +42,11 @@
         <ion-icon name="log-in-outline" slot="start"></ion-icon>
         Se connecter
       </ion-button>
-
-      <div class="register-link">
-        Pas encore de compte ? <a routerLink="/register">S'inscrire</a>
-      </div>
     </form>
+
+    <div class="register-prompt">
+      <p>Vous n'avez pas de compte ?</p>
+      <a routerLink="/register">Créer un compte</a>
+    </div>
   </div>
 </ion-content>
