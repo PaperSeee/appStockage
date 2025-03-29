@@ -163,17 +163,25 @@ export class FirebaseService {
         throw new Error('Authentication required');
       }
 
-      const docRef = await addDoc(collection(this.firestore, collectionName), data);
+      // Ajout d'un timestamp pour faciliter le suivi des données
+      const dataWithTimestamp = {
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const docRef = await addDoc(collection(this.firestore, collectionName), dataWithTimestamp);
+      console.log(`Document ajouté avec succès: ${docRef.id} dans ${collectionName}`);
       return docRef.id;
     } catch (error) {
       console.error('Error adding document:', error);
 
-      // Gestion améliorée des erreurs de permission
+      // Gestion plus robuste des erreurs
       if ((error as { code: string }).code === 'permission-denied') {
-        console.warn('Permission denied on collection:', collectionName);
-        await this.showErrorToast('Accès refusé. Vous n\'avez pas les permissions nécessaires pour effectuer cette action.');
+        console.warn('Permission denied on collection:', collectionName, 'User ID:', (await this.getCurrentUser() as any)?.uid);
+        await this.showErrorToast('Accès refusé. Vérifiez vos permissions ou reconnectez-vous.');
       } else {
-        await this.showErrorToast('Une erreur est survenue lors de l\'ajout du document');
+        await this.showErrorToast('Une erreur est survenue lors de l\'ajout du document. Veuillez réessayer.');
       }
 
       throw error;
