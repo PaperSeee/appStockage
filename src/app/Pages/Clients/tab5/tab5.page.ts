@@ -1203,37 +1203,4 @@ export class Tab5Page implements OnInit {
     
     return date >= this.currentWeekStart && date <= weekEnd;
   }
-
-  // Format just the start date of the current week
-  formatDateStart(): string {
-    const options: Intl.DateTimeFormatOptions = { 
-      day: 'numeric', 
-      month: 'short'
-    };
-    return this.currentWeekStart.toLocaleDateString('fr-FR', options);
-  }
-
-  // Format just the end date of the current week
-  formatDateEnd(): string {
-    const weekEnd = new Date(this.currentWeekStart);
-    weekEnd.setDate(this.currentWeekStart.getDate() + 6);
-    
-    const options: Intl.DateTimeFormatOptions = { 
-      day: 'numeric', 
-      month: 'short',
-      year: 'numeric'
-    };
-    return weekEnd.toLocaleDateString('fr-FR', options);
-  }
-
-  // Check if the current week is the actual current week
-  isCurrentWeek(): boolean {
-    const today = new Date();
-    const currentWeekStart = new Date(today);
-    const day = currentWeekStart.getDay() || 7;
-    currentWeekStart.setDate(currentWeekStart.getDate() - day + 1);
-    currentWeekStart.setHours(0, 0, 0, 0);
-    
-    return this.currentWeekStart.getTime() === currentWeekStart.getTime();
-  }
 }
