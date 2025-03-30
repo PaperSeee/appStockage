@@ -127,6 +127,17 @@ ion-header {
   }
 }
 
+.username-info {
+  margin: 8px 16px 16px;
+  font-size: 12px;
+  line-height: 1.4;
+  
+  ion-icon {
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+}
+
 .form-section {
   background-color: white;
   border-radius: 20px;

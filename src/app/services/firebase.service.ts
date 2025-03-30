@@ -457,4 +457,24 @@ export class FirebaseService {
     // Pour les types primitifs, retourner tel quel
     return data;
   }
+
+  async isUsernameAvailable(username: string, currentUserId?: string): Promise<boolean> {
+    try {
+      const usersCollection = collection(this.firestore, 'users');
+      const usernameQuery = query(usersCollection, where('username', '==', username));
+      const querySnapshot = await getDocs(usernameQuery);
+      
+      // Si currentUserId est fourni, on vérifie que ce n'est pas le même utilisateur
+      if (currentUserId && !querySnapshot.empty) {
+        // Retourne true si le seul document trouvé est celui de l'utilisateur actuel
+        return querySnapshot.docs.length === 1 && 
+               querySnapshot.docs[0].id === currentUserId;
+      }
+      
+      return querySnapshot.empty;
+    } catch (error) {
+      console.error('Erreur lors de la vérification du nom d\'utilisateur:', error);
+      throw error;
+    }
+  }
 }

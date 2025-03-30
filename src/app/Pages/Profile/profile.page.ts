@@ -5,6 +5,22 @@ import { Router } from '@angular/router';
 import { ToastController, IonicModule, LoadingController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 
+// Define interface for user data from Firestore
+interface UserData {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  username?: string;
+  photo?: string;
+  discipline?: string;
+  level?: string;
+  weight?: any;
+  phoneNumber?: string;
+  lastUsernameChange?: any;
+  [key: string]: any; // Allow any other properties
+}
+
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.page.html',
@@ -19,6 +35,8 @@ export class ProfilePage implements OnInit {
   selectedImage: string | null = null;
   selectedFile: File | null = null;
   isLoading = false;
+  canChangeUsername = false;
+  nextUsernameChangeDate: Date | null = null;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -31,6 +49,7 @@ export class ProfilePage implements OnInit {
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
+      username: ['', Validators.required],
       photo: [''],
       discipline: [''],
       level: [''],
@@ -51,9 +70,39 @@ export class ProfilePage implements OnInit {
       if (user) {
         this.userId = user.uid;
         if (this.userId) {
-          const userData = await this.firebaseService.getDocument('users', this.userId);
+          // Use type assertion to properly type the userData
+          const userData = await this.firebaseService.getDocument('users', this.userId) as UserData;
           if (userData) {
-            this.profileForm.patchValue(userData);
+            this.profileForm.patchValue({
+              firstName: userData.firstName || '',
+              lastName: userData.lastName || '',
+              email: userData.email || '',
+              username: userData.username || '',
+              photo: userData.photo || '',
+              discipline: userData.discipline || '',
+              level: userData.level || '',
+              weight: userData.weight || ''
+            });
+
+            // Vérifier si l'utilisateur peut changer son nom d'utilisateur
+            if (userData.lastUsernameChange) {
+              const lastChange = userData.lastUsernameChange.toDate ? 
+                userData.lastUsernameChange.toDate() : new Date(userData.lastUsernameChange);
+              const oneWeekLater = new Date(lastChange);
+              oneWeekLater.setDate(oneWeekLater.getDate() + 7);
+              
+              this.nextUsernameChangeDate = oneWeekLater;
+              this.canChangeUsername = new Date() >= oneWeekLater;
+              
+              // Désactiver le champ username si nécessaire
+              if (!this.canChangeUsername) {
+                this.profileForm.get('username')?.disable();
+              }
+            } else {
+              // Première utilisation, peut changer le nom d'utilisateur
+              this.canChangeUsername = true;
+            }
+
             // Réinitialiser l'état sale du formulaire après le chargement
             this.profileForm.markAsPristine();
           }
@@ -84,39 +133,72 @@ export class ProfilePage implements OnInit {
   }
 
   async saveProfile() {
-    if (this.profileForm.valid && this.userId) {
-      const loading = await this.loadingController.create({
-        message: 'Enregistrement en cours...',
-        spinner: 'circular'
-      });
-      
-      await loading.present();
-      
-      try {
+    if (!this.profileForm.valid) {
+      this.showToast('Veuillez remplir correctement tous les champs requis');
+      return;
+    }
+
+    this.isLoading = true;
+
+    try {
+      const formData = this.profileForm.getRawValue(); // Récupérer même les champs désactivés
+      const usernameChanged = this.profileForm.enabled && 
+                             this.profileForm.get('username')?.dirty && 
+                             this.canChangeUsername;
+
+      // Si le nom d'utilisateur a changé, vérifier sa disponibilité
+      if (usernameChanged && this.userId) {
+        const isAvailable = await this.firebaseService.isUsernameAvailable(formData.username, this.userId);
+        if (!isAvailable) {
+          this.showToast('Ce nom d\'utilisateur est déjà utilisé par quelqu\'un d\'autre', 'danger');
+          this.isLoading = false;
+          return;
+        }
+
+        // Mettre à jour la date de changement du nom d'utilisateur
+        formData.lastUsernameChange = new Date();
+      }
+
+      if (this.userId) {
         // Préparer les données à enregistrer
-        const userData = this.profileForm.value;
-        
         // Si une nouvelle image a été sélectionnée
         if (this.selectedFile) {
-          // Dans un cas réel, vous téléchargeriez le fichier sur Firebase Storage
-          // et obtiendriez une URL
-          userData.photo = this.selectedImage;
-          
+          // Ici, vous pourriez intégrer le code pour télécharger l'image sur Firebase Storage
+          // et obtenir une URL
+          formData.photo = this.selectedImage;
           // Exemple avec un service Firebase (à implémenter):
           // const photoURL = await this.firebaseService.uploadUserPhoto(this.userId, this.selectedFile);
-          // userData.photo = photoURL;
+          // formData.photo = photoURL;
         }
-        
-        await this.firebaseService.updateDocument('users', this.userId, userData);
-        this.profileForm.markAsPristine(); // Réinitialiser l'état sale après sauvegarde
+
+        await this.firebaseService.updateDocument('users', this.userId, formData);
         this.showToast('Profil mis à jour avec succès', 'success');
-      } catch (error) {
-        console.error('Erreur lors de la mise à jour du profil:', error);
-        this.showToast('Erreur lors de la mise à jour du profil', 'danger');
-      } finally {
-        loading.dismiss();
+        this.profileForm.markAsPristine(); // Réinitialiser l'état sale après sauvegarde
+
+        // Mettre à jour l'état de changement du nom d'utilisateur si nécessaire
+        if (usernameChanged) {
+          this.canChangeUsername = false;
+          const nextChangeDate = new Date();
+          nextChangeDate.setDate(nextChangeDate.getDate() + 7);
+          this.nextUsernameChangeDate = nextChangeDate;
+          this.profileForm.get('username')?.disable();
+        }
       }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du profil:', error);
+      this.showToast('Erreur lors de la mise à jour du profil', 'danger');
+    } finally {
+      this.isLoading = false;
     }
+  }
+
+  // Méthode pour formater la date au format local
+  formatDate(date: Date): string {
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
   }
 
   async showToast(message: string, color: string = 'primary') {
@@ -145,7 +227,7 @@ export class ProfilePage implements OnInit {
     
     try {
       await this.firebaseService.logout();
-      this.router.navigate(['/register']);
+      this.router.navigate(['/login']);
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
       this.showToast('Erreur lors de la déconnexion', 'danger');

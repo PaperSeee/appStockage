@@ -61,6 +61,16 @@
             <ion-input [(ngModel)]="user.password" name="password" type="password" required></ion-input>
           </ion-item>
         </div>
+
+        <div class="form-group">
+          <ion-item class="custom-item">
+            <ion-label position="floating">Nom d'utilisateur</ion-label>
+            <ion-input [(ngModel)]="user.username" type="text" required></ion-input>
+          </ion-item>
+          <div *ngIf="!user.username.trim()" class="error-message">
+            Le nom d'utilisateur est obligatoire.
+          </div>
+        </div>
       </div>
 
       <!-- Sport Information -->
