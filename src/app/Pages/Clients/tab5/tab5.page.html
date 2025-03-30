@@ -51,10 +51,22 @@
     </div>
   </div>
 
-  <!-- Weekly Progress Chart - Improved Design -->
+  <!-- Weekly Progress Chart - With Navigation -->
   <div class="chart-section">
     <div class="section-header">
       <h2>Progression hebdomadaire</h2>
+      <div class="week-selector">
+        <ion-button fill="clear" size="small" class="week-nav-btn" (click)="previousWeek()">
+          <ion-icon name="chevron-back"></ion-icon>
+        </ion-button>
+        <div class="current-week" (click)="goToCurrentWeek()">
+          <span>{{ formatWeekRange() }}</span>
+          <ion-icon name="calendar-outline"></ion-icon>
+        </div>
+        <ion-button fill="clear" size="small" class="week-nav-btn" (click)="nextWeek()">
+          <ion-icon name="chevron-forward"></ion-icon>
+        </ion-button>
+      </div>
       <ion-button fill="clear" size="small" (click)="filterWeeklyData()">
         <ion-icon name="filter-outline"></ion-icon>
       </ion-button>
@@ -65,7 +77,7 @@
           <div class="metric-bar-container">
             <div class="metric-bar" [style.height.%]="day.percentage"></div>
           </div>
-          <div class="metric-label" [class.today]="isToday(getDateFromDay(day))">{{day.label}}</div>
+          <div class="metric-label" [class.today]="isToday(day.date)">{{day.label}}</div>
           <div class="metric-value">{{day.hours}}h</div>
         </div>
       </div>
@@ -140,11 +152,11 @@
     </div>
   </div>
 
-  <!-- Recent Competitions -->
+  <!-- Recent Competitions - Fully Dynamic Display -->
   <div class="competitions-section">
     <div class="section-header">
       <h2>Compétitions récentes</h2>
-      <ion-button fill="clear" size="small" (click)="viewAllCompetitions()">
+      <ion-button fill="clear" size="small" (click)="viewAllCompetitions()" [disabled]="competitions.length === 0">
         Voir tout
         <ion-icon name="chevron-forward"></ion-icon>
       </ion-button>

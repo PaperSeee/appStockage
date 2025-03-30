@@ -52,6 +52,7 @@ interface WeeklyData {
   label: string;
   hours: number;
   percentage: number;
+  date?: Date; // Add the date property
 }
 
 // Interface pour les données utilisateur
@@ -113,6 +114,9 @@ export class Tab5Page implements OnInit {
   profileFormGroup: FormGroup;
   hasLoadedProfile = false;
 
+  // Add this property to track the current week
+  currentWeekStart: Date = new Date();
+
   constructor(
     private formBuilder: FormBuilder,
     private actionSheetController: ActionSheetController,
@@ -151,6 +155,9 @@ export class Tab5Page implements OnInit {
     this.generateCalendar();
     this.calculateStats();
     this.generateWeeklyData();
+
+    // Initialize the current week start date
+    this.initializeCurrentWeek();
 
     // Puis charger les données utilisateur
     await this.loadUserProfile();
@@ -334,15 +341,11 @@ export class Tab5Page implements OnInit {
     this.trainingDataService.updateStats(this.trainingStats);
   }
 
-  // Generate data for weekly chart
+  // Generate data for weekly chart based on the current selected week
   generateWeeklyData() {
-    const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Monday
-    
     this.weeklyData = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + i);
+      const date = new Date(this.currentWeekStart);
+      date.setDate(this.currentWeekStart.getDate() + i);
       
       // Get trainings for this day
       const dayTrainings = this.trainings.filter(t => 
@@ -355,7 +358,8 @@ export class Tab5Page implements OnInit {
       return { 
         label: this.weekdays[i], 
         hours, 
-        percentage: Math.min(hours * 20, 100) // Scale to percentage (5h = 100%)
+        percentage: Math.min(hours * 20, 100), // Scale to percentage (5h = 100%)
+        date // Include the actual date for "today" highlighting
       };
     });
   }
@@ -435,7 +439,9 @@ export class Tab5Page implements OnInit {
   }
 
   // Helper to check if date is today
-  isToday(date: Date): boolean {
+  isToday(date: Date | undefined): boolean {
+    if (!date) return false;
+    
     const today = new Date();
     return date.getDate() === today.getDate() &&
       date.getMonth() === today.getMonth() &&
@@ -640,8 +646,10 @@ export class Tab5Page implements OnInit {
   // Refresh all data displays
   refreshData() {
     this.calculateStats();
-    this.generateWeeklyData();
+    this.generateWeeklyData();  // Re-generate weekly data when refreshing
     this.generateCalendar();
+    
+    // Update the recent competitions dynamically
     this.recentCompetitions = [...this.competitions]
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 3);
@@ -1009,6 +1017,9 @@ export class Tab5Page implements OnInit {
       // Update training data service
       this.trainingDataService.setTrainings(this.trainings);
       
+      // Make sure to refresh the data, especially the weekly chart
+      this.refreshData();
+      
       this.modalController.dismiss({
         saved: true
       });
@@ -1033,6 +1044,9 @@ export class Tab5Page implements OnInit {
       
       this.competitions.push(newCompetition);
       this.saveToStorage();
+      
+      // Make sure to refresh the data, especially the recent competitions
+      this.refreshData();
       
       this.modalController.dismiss({
         saved: true
@@ -1139,5 +1153,87 @@ export class Tab5Page implements OnInit {
     });
 
     await alert.present();
+  }
+
+  // Initialize the current week start date (Monday of current week)
+  initializeCurrentWeek() {
+    const today = new Date();
+    this.currentWeekStart = new Date(today);
+    // Set to Monday of current week (1 = Monday, 0 = Sunday)
+    const day = this.currentWeekStart.getDay() || 7;
+    this.currentWeekStart.setDate(this.currentWeekStart.getDate() - day + 1);
+    this.currentWeekStart.setHours(0, 0, 0, 0); // Start of day
+  }
+
+  // Navigate to the previous week
+  previousWeek() {
+    const newWeekStart = new Date(this.currentWeekStart);
+    newWeekStart.setDate(this.currentWeekStart.getDate() - 7);
+    this.currentWeekStart = newWeekStart;
+    this.generateWeeklyData();
+  }
+
+  // Navigate to the next week
+  nextWeek() {
+    const newWeekStart = new Date(this.currentWeekStart);
+    newWeekStart.setDate(this.currentWeekStart.getDate() + 7);
+    this.currentWeekStart = newWeekStart;
+    this.generateWeeklyData();
+  }
+
+  // Return to the current week
+  goToCurrentWeek() {
+    this.initializeCurrentWeek();
+    this.generateWeeklyData();
+  }
+
+  // Format the week range for display (e.g., "1 - 7 Jan 2023")
+  formatWeekRange(): string {
+    const weekEnd = new Date(this.currentWeekStart);
+    weekEnd.setDate(this.currentWeekStart.getDate() + 6);
+    
+    return `${this.currentWeekStart.getDate()} - ${weekEnd.getDate()} ${this.months[this.currentWeekStart.getMonth()].slice(0, 3)} ${this.currentWeekStart.getFullYear()}`;
+  }
+
+  // Check if a date is within the displayed week
+  isInCurrentWeek(date: Date): boolean {
+    const weekEnd = new Date(this.currentWeekStart);
+    weekEnd.setDate(this.currentWeekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+    
+    return date >= this.currentWeekStart && date <= weekEnd;
+  }
+
+  // Format just the start date of the current week
+  formatDateStart(): string {
+    const options: Intl.DateTimeFormatOptions = { 
+      day: 'numeric', 
+      month: 'short'
+    };
+    return this.currentWeekStart.toLocaleDateString('fr-FR', options);
+  }
+
+  // Format just the end date of the current week
+  formatDateEnd(): string {
+    const weekEnd = new Date(this.currentWeekStart);
+    weekEnd.setDate(this.currentWeekStart.getDate() + 6);
+    
+    const options: Intl.DateTimeFormatOptions = { 
+      day: 'numeric', 
+      month: 'short',
+      year: 'numeric'
+    };
+    return weekEnd.toLocaleDateString('fr-FR', options);
+  }
+
+  // Check if the current week is the actual current week
+  isCurrentWeek(): boolean {
+    const today = new Date();
+    const currentWeekStart = new Date(today);
+    const day = currentWeekStart.getDay() || 7;
+    currentWeekStart.setDate(currentWeekStart.getDate() - day + 1);
+    currentWeekStart.setHours(0, 0, 0, 0);
+    
+    return this.currentWeekStart.getTime() === currentWeekStart.getTime();
   }
 }
