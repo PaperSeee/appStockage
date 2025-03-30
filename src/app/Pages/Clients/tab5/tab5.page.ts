@@ -371,7 +371,10 @@ export class Tab5Page implements OnInit {
     // Add days from previous month to fill first week
     const daysFromPrevMonth = firstDayOfWeek - 1;
     if (daysFromPrevMonth > 0) {
-      const prevMonthLastDay = new Date(this.selectedYear, this.selectedMonth - 1, 0).getDate();
+      // Calculate the last day of previous month
+      const prevMonthLastDayDate = new Date(this.selectedYear, this.selectedMonth - 1, 0);
+      const prevMonthLastDay = prevMonthLastDayDate.getDate();
+      
       for (let i = daysFromPrevMonth - 1; i >= 0; i--) {
         const date = new Date(this.selectedYear, this.selectedMonth - 2, prevMonthLastDay - i);
         this.calendarDays.push({
@@ -1057,5 +1060,84 @@ export class Tab5Page implements OnInit {
     } else {
       this.router.navigate(['/login']);
     }
+  }
+
+  // Add this helper method to get a Date object from a weekly data item
+  getDateFromDay(day: WeeklyData): Date {
+    const today = new Date();
+    const currentDay = today.getDay() || 7; // Convert Sunday (0) to 7 for easier calculation
+    const dayIndex = this.weekdays.indexOf(day.label) + 1; // +1 because our weekdays array starts with Monday (index 0)
+    
+    const diff = dayIndex - currentDay;
+    const date = new Date(today);
+    date.setDate(today.getDate() + diff);
+    
+    return date;
+  }
+
+  // Add this method to show a month picker
+  async showMonthPicker() {
+    // Pre-create radio inputs for months
+    const monthRadioInputs = this.months.map((month, index) => ({
+      type: 'radio' as const,
+      name: 'month',
+      value: (index + 1).toString(),
+      label: month,
+      checked: this.selectedMonth === index + 1
+    }));
+    
+    // Pre-create radio inputs for years
+    const yearRadioInputs = Array.from({ length: 5 }, (_, i) => {
+      const year = this.selectedYear - 2 + i;
+      return {
+        type: 'radio' as const,
+        name: 'year',
+        value: year.toString(),
+        label: year.toString(),
+        checked: this.selectedYear === year
+      };
+    });
+
+    const alert = await this.alertController.create({
+      header: 'Sélectionner un mois',
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'OK',
+          handler: (data) => {
+            if (data && data.month && data.year) {
+              this.selectedMonth = parseInt(data.month);
+              this.selectedYear = parseInt(data.year);
+              this.generateCalendar();
+            }
+          }
+        }
+      ],
+      inputs: [
+        // First create a header for months
+        {
+          type: 'radio',
+          value: '',
+          label: 'Mois:',
+          disabled: true
+        },
+        // Add all month options
+        ...monthRadioInputs,
+        // Then create a header for years
+        {
+          type: 'radio',
+          value: '',
+          label: 'Année:',
+          disabled: true
+        },
+        // Add all year options
+        ...yearRadioInputs
+      ]
+    });
+
+    await alert.present();
   }
 }

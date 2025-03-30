@@ -65,9 +65,18 @@
           <div class="metric-bar-container">
             <div class="metric-bar" [style.height.%]="day.percentage"></div>
           </div>
-          <div class="metric-label">{{day.label}}</div>
+          <div class="metric-label" [class.today]="isToday(getDateFromDay(day))">{{day.label}}</div>
           <div class="metric-value">{{day.hours}}h</div>
         </div>
+      </div>
+    </div>
+    <div class="progress-legend">
+      <div class="legend-item">
+        <div class="legend-dot"></div>
+        <span>Heures d'entraînement</span>
+      </div>
+      <div class="progress-target">
+        <span>Objectif: 5h par jour</span>
       </div>
     </div>
   </div>
@@ -80,7 +89,7 @@
         <ion-button fill="clear" size="small" class="month-nav-btn" (click)="prevMonth()">
           <ion-icon name="chevron-back"></ion-icon>
         </ion-button>
-        <div class="current-month">
+        <div class="current-month" (click)="showMonthPicker()">
           <span>{{months[selectedMonth-1]}} {{selectedYear}}</span>
           <ion-icon name="calendar-outline"></ion-icon>
         </div>
@@ -111,8 +120,8 @@
           <div class="day-content">
             <span class="day-number">{{day.date.getDate()}}</span>
             <div class="day-indicators" *ngIf="day.hasTraining || day.hasCompetition">
-              <div class="indicator training" *ngIf="day.hasTraining"></div>
-              <div class="indicator competition" *ngIf="day.hasCompetition"></div>
+              <div class="indicator training" *ngIf="day.hasTraining" title="Entraînement"></div>
+              <div class="indicator competition" *ngIf="day.hasCompetition" title="Compétition"></div>
             </div>
           </div>
         </div>
