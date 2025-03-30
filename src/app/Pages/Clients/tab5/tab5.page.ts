@@ -1038,12 +1038,9 @@ export class Tab5Page implements OnInit {
 
   // Navigation vers la page de profil
   async goToProfile() {
-    // Utiliser la propriété isLoggedIn qui est mise à jour dans ngOnInit
     if (this.isLoggedIn) {
-      // Si l'utilisateur est connecté, naviguer vers la page de profil
       this.router.navigate(['/profile']);
     } else {
-      // Si l'utilisateur n'est pas connecté, naviguer vers la page de connexion
       this.router.navigate(['/login']);
     }
   }

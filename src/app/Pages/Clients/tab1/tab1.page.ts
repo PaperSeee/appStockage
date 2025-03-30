@@ -334,6 +334,15 @@ export class Tab1Page implements OnInit, OnDestroy {
     }
   }
 
+  async goToProfile() {
+    const isLoggedIn = await this.firebaseService.isUserLoggedIn();
+    if (isLoggedIn) {
+      this.router.navigate(['/profile']);
+    } else {
+      this.router.navigate(['/login']);
+    }
+  }
+
   filterByDiscipline(discipline: string) {
     this.disciplineFilter = discipline;
     
