@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { LinkHandlerService } from './link-handler.service';
+import { ShareModalComponent } from '../components/share-modal/share-modal.component';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,14 @@ export class SharingService {
   async share(title: string, text: string, url: string): Promise<boolean> {
     if (navigator.share) {
       try {
+        // Make sure URL is valid
+        if (url && !url.startsWith('http')) {
+          // Fix URL by adding https:// if it doesn't have a protocol
+          if (!url.match(/^[a-zA-Z]+:\/\//)) {
+            url = 'https://' + url;
+          }
+        }
+        
         await navigator.share({
           title,
           text,
@@ -50,20 +59,14 @@ export class SharingService {
   
   // LinkedIn share
   shareOnLinkedIn(url: string, title: string) {
-    const shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+    const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
     this.linkHandler.openUrl(shareUrl);
   }
   
   // Email share
   shareByEmail(subject: string, body: string) {
     const shareUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    // Emails peuvent s'ouvrir dans des apps natives
-    window.location.href = shareUrl;
-  }
-  
-  // Helper method to open share windows
-  private openShareWindow(url: string) {
-    this.linkHandler.openUrl(url);
+    this.linkHandler.openUrl(shareUrl);
   }
   
   // Method to show a share modal with all platform options
@@ -74,7 +77,7 @@ export class SharingService {
     if (!shared) {
       // Si Web Share API n'est pas disponible, montrer notre modal personnalisé
       const modal = await this.modalController.create({
-        component: 'ShareModalComponent',
+        component: ShareModalComponent, // Use the actual component class reference
         componentProps: {
           title,
           text,
