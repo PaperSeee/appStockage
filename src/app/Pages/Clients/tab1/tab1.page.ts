@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { SharingService } from '../../../services/sharing.service';
 import { MessagingService } from '../../../services/messaging.service';
 import { Subscription } from 'rxjs';
+import { TrainingDataService } from '../../../services/training-data.service';
 
 interface Training {
   id: number;
@@ -74,12 +75,23 @@ export class Tab1Page implements OnInit, OnDestroy {
   unreadMessageCount: number = 0;
   private conversationsSub: Subscription | null = null;
   
+  // Add property for training stats
+  trainingStats = {
+    count: 0,
+    totalMinutes: 0,
+    intensity: 0,
+    progress: 65
+  };
+  
+  private trainingSubscription: Subscription | null = null;
+  
   constructor(
     private firebaseService: FirebaseService,
     private alertController: AlertController,
     private router: Router,
     private sharingService: SharingService,
-    private messagingService: MessagingService
+    private messagingService: MessagingService,
+    private trainingDataService: TrainingDataService
   ) {}
 
   ngOnInit() {
@@ -93,6 +105,13 @@ export class Tab1Page implements OnInit, OnDestroy {
     // Subscribe to conversations to get unread count
     this.conversationsSub = this.messagingService.conversations$.subscribe(conversations => {
       this.unreadMessageCount = this.messagingService.getTotalUnreadCount();
+    });
+    
+    // Subscribe to training stats from shared service
+    this.trainingSubscription = this.trainingDataService.stats$.subscribe(stats => {
+      this.trainingStats.count = stats.count;
+      this.trainingStats.totalMinutes = Math.round(stats.hours * 60); // Convert hours to minutes
+      this.trainingStats.intensity = stats.intensity || 0;
     });
   }
 
@@ -245,7 +264,7 @@ export class Tab1Page implements OnInit, OnDestroy {
   shareWeeklySummary() {
     const url = window.location.href;
     const title = 'Mon résumé hebdomadaire d\'entraînement';
-    const text = `Cette semaine: ${this.weeklySummary.sessions} entraînements, ${this.weeklySummary.totalMinutes} minutes, intensité ${this.weeklySummary.intensity}/5.`;
+    const text = `Cette semaine: ${this.trainingStats.count} entraînements, ${this.trainingStats.totalMinutes} minutes, intensité ${this.trainingStats.intensity}/5.`;
     
     this.sharingService.showShareOptions(title, text, url);
   }
@@ -441,6 +460,10 @@ export class Tab1Page implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.conversationsSub) {
       this.conversationsSub.unsubscribe();
+    }
+    
+    if (this.trainingSubscription) {
+      this.trainingSubscription.unsubscribe();
     }
   }
 }

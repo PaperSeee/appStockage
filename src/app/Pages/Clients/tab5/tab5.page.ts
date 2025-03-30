@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ModalContentComponent } from '../../../components/modal-content/modal-content.component';
 import { FirebaseService } from '../../../services/firebase.service';
+import { TrainingDataService } from '../../../services/training-data.service';
 
 // Define interfaces for the data types
 interface Training {
@@ -119,7 +120,8 @@ export class Tab5Page implements OnInit {
     private toastController: ToastController,
     private alertController: AlertController,
     private router: Router,
-    private firebaseService: FirebaseService
+    private firebaseService: FirebaseService,
+    private trainingDataService: TrainingDataService
   ) { 
     const today = new Date();
     this.selectedMonth = today.getMonth() + 1;
@@ -302,6 +304,9 @@ export class Tab5Page implements OnInit {
     this.recentCompetitions = [...this.competitions]
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 3);
+      
+    // Update the training data service
+    this.trainingDataService.setTrainings(this.trainings);
   }
 
   // Save all data to localStorage
@@ -309,6 +314,9 @@ export class Tab5Page implements OnInit {
     localStorage.setItem('trainings', JSON.stringify(this.trainings));
     localStorage.setItem('competitions', JSON.stringify(this.competitions));
     localStorage.setItem('goals', JSON.stringify(this.goals));
+    
+    // Update the training data service
+    this.trainingDataService.setTrainings(this.trainings);
   }
 
   // Calculate statistics based on training and competition data
@@ -321,6 +329,9 @@ export class Tab5Page implements OnInit {
     this.trainingStats.trend = 12;
     this.trainingStats.hoursTrend = 8;
     this.competitionStats.trend = 0;
+    
+    // Update the training data service with stats
+    this.trainingDataService.updateStats(this.trainingStats);
   }
 
   // Generate data for weekly chart
@@ -991,6 +1002,9 @@ export class Tab5Page implements OnInit {
       
       this.trainings.push(newTraining);
       this.saveToStorage();
+      
+      // Update training data service
+      this.trainingDataService.setTrainings(this.trainings);
       
       this.modalController.dismiss({
         saved: true

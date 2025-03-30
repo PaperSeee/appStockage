@@ -214,6 +214,24 @@
   </div>
 </ion-content>
 
+<!-- Add Floating Action Button with Speed Dial -->
+<ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab-button>
+    <ion-icon name="add"></ion-icon>
+  </ion-fab-button>
+  <ion-fab-list side="top">
+    <ion-fab-button color="primary" (click)="addTraining()">
+      <ion-icon name="fitness-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button color="tertiary" (click)="addCompetition()">
+      <ion-icon name="trophy-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button color="success" (click)="addGoal()">
+      <ion-icon name="flag-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab-list>
+</ion-fab>
+
 <!-- Modal template for adding training -->
 <ng-template #addTrainingModal let-formGroup="formGroup">
   <ion-header class="modal-header">
