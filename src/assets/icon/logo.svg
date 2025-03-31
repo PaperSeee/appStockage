@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Fond et cercle principal -->
+  <circle cx="100" cy="100" r="70" fill="#ffb800"/>
+  
+  <!-- Stylized "S" shape that also evokes fighting/movement -->
+  <path d="M125,65 
+           C145,75 135,95 115,95 
+           C90,95 85,105 85,115
+           C85,135 110,135 130,125" 
+        stroke="white" 
+        stroke-width="14" 
+        stroke-linecap="round"
+        fill="none"/>
+  
+  <!-- Small accent that suggests dynamism -->
+  <circle cx="75" cy="75" r="10" fill="white" />
+</svg>
