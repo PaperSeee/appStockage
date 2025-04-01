@@ -270,15 +270,8 @@ export class Tab1Page implements OnInit, OnDestroy {
     const title = 'Mon résumé hebdomadaire d\'entraînement';
     const text = `Cette semaine: ${this.trainingStats.count} entraînements, ${this.trainingStats.totalMinutes} minutes, intensité ${this.trainingStats.intensity}/5.`;
     
-    this.sharingService.showShareOptions(title, text, url);
-  }
-
-  shareTraining(training: Training) {
-    const url = window.location.href;
-    const title = `Séance de ${training.type}: ${training.title}`;
-    const text = `${training.description} - Durée: ${training.duration} min à ${training.location}`;
-    
-    this.sharingService.showShareOptions(title, text, url);
+    // Remove the call to showShareOptions
+    // this.sharingService.showShareOptions(title, text, url);
   }
 
   formatEventDate(date: Date): string {

@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { LinkHandlerService } from './link-handler.service';
-import { ShareModalComponent } from '../components/share-modal/share-modal.component';
 
 @Injectable({
   providedIn: 'root'
@@ -75,17 +74,7 @@ export class SharingService {
     const shared = await this.share(title, text, url);
     
     if (!shared) {
-      // Si Web Share API n'est pas disponible, montrer notre modal personnalisé
-      const modal = await this.modalController.create({
-        component: ShareModalComponent, // Use the actual component class reference
-        componentProps: {
-          title,
-          text,
-          url
-        }
-      });
-      
-      await modal.present();
+      // Remove the fallback to ShareModalComponent
     }
   }
 }
