@@ -25,16 +25,65 @@ export class LoginPage {
   ) {}
 
   async ionViewWillEnter() {
-    // Check for redirect result when page loads
+    console.log('LoginPage - ionViewWillEnter');
+    
+    // Vérifier d'abord si l'utilisateur est déjà connecté
+    const isLoggedIn = await this.firebaseService.isUserLoggedIn();
+    if (isLoggedIn) {
+      console.log('User already logged in, redirecting to main page');
+      this.router.navigate(['/tabs/tab1']);
+      return;
+    }
+    
+    // Ensuite, vérifier si nous revenons d'une redirection d'authentification
     try {
       const user = await this.firebaseService.getRedirectResult();
       if (user) {
-        console.log('Successfully signed in via redirect');
-        // Handle successful sign-in via redirect
-        this.router.navigate(['/tabs/tab1']);
+        console.log('Successfully signed in via redirect, user:', user.uid);
+        
+        // Vérifier si l'utilisateur existe déjà dans Firestore
+        try {
+          const userDoc = await this.firebaseService.getDocument('users', user.uid);
+          
+          if (!userDoc) {
+            console.log('Creating new user document for:', user.uid);
+            // Créer un nouveau document utilisateur
+            await this.firebaseService.addDocument('users', {
+              userId: user.uid,
+              firstName: user.displayName?.split(' ')[0] || '',
+              lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+              email: user.email,
+              photo: user.photoURL,
+              createdAt: new Date()
+            });
+          }
+          
+          console.log('Navigating to main page after auth');
+          this.router.navigate(['/tabs/tab1']);
+        } catch (dbError) {
+          console.error('Error with Firestore:', dbError);
+          this.showToast('Connexion réussie mais erreur de base de données');
+          this.router.navigate(['/tabs/tab1']);
+        }
+      } else {
+        // Vérifier si l'authentification iOS PWA est en attente
+        const pendingAuth = localStorage.getItem('pendingGoogleAuth');
+        if (pendingAuth === 'true') {
+          console.log('Pending Google auth detected, checking auth state...');
+          
+          setTimeout(async () => {
+            const delayed = await this.firebaseService.isUserLoggedIn();
+            if (delayed) {
+              console.log('Delayed auth check successful');
+              this.router.navigate(['/tabs/tab1']);
+            }
+          }, 1000);
+        }
       }
-    } catch (error) {
-      console.error('Error with redirect sign-in:', error);
+    } catch (error: unknown) {
+      console.error('Error with redirect authentication:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      this.showToast('Erreur lors de l\'authentification: ' + errorMessage);
     }
   }
 
@@ -50,9 +99,22 @@ export class LoginPage {
 
   async signInWithGoogle() {
     try {
+      // Ajouter un indicateur visuel de chargement
+      const loading = await this.toastController.create({
+        message: 'Connexion à Google en cours...',
+        duration: 3000,
+        position: 'bottom'
+      });
+      await loading.present();
+      
+      // Tentative de connexion
       const result = await this.firebaseService.signInWithGoogle();
+      
+      // Si nous obtenons directement un résultat (popup ou non PWA)
       if (result) {
-        // Vérifier si l'utilisateur existe déjà dans Firestore
+        loading.dismiss();
+        
+        // Le reste du code pour gérer le résultat immédiat
         const userDoc = await this.firebaseService.getDocument('users', result.uid);
         
         if (!userDoc) {
@@ -62,15 +124,17 @@ export class LoginPage {
             firstName: result.displayName?.split(' ')[0] || '',
             lastName: result.displayName?.split(' ').slice(1).join(' ') || '',
             email: result.email,
-            photo: result.photoURL
+            photo: result.photoURL,
+            createdAt: new Date()
           });
         }
         
         this.router.navigate(['/tabs/tab1']);
       }
-    } catch (error) {
-      console.error('Erreur lors de la connexion avec Google:', error);
-      this.showToast('La connexion avec Google a échoué');
+    } catch (error: unknown) {
+      console.error('Google auth error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      this.showToast('La connexion avec Google a échoué: ' + errorMessage);
     }
   }
 
@@ -118,7 +182,7 @@ export class LoginPage {
         
         this.router.navigate(['/tabs/tab1']);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erreur lors de la connexion avec Apple:', error);
       this.showToast('La connexion avec Apple a échoué');
     }
