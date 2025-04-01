@@ -4,7 +4,7 @@ import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { FirebaseService } from '../../../services/firebase.service';
 import { MessagingService } from '../../../services/messaging.service';
 import { Router } from '@angular/router';
-import { interval, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 interface Partner {
   id: number;
@@ -67,21 +67,13 @@ export class Tab2Page implements OnInit, OnDestroy {
   async ngOnInit() {
     // Load real users from Firebase
     this.loadUsers();
-    this.startAutoRefresh();
     
     // Load friends
     await this.loadFriends();
   }
 
-  private startAutoRefresh() {
-    // Actualiser toutes les 30 secondes
-    this.refreshIntervalSub = interval(30000).subscribe(() => {
-      this.loadUsers();
-    });
-  }
-
   ngOnDestroy() {
-    // Nettoyer l'abonnement à l'intervalle
+    // Cleanup if subscription exists (kept for safety)
     if (this.refreshIntervalSub) {
       this.refreshIntervalSub.unsubscribe();
     }
