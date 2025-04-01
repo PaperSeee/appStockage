@@ -60,11 +60,38 @@ export class FirebaseService {
 
   async signInWithGoogle() {
     try {
-      // Sur mobile, utilisez signInWithRedirect au lieu de signInWithPopup
-      const result = await signInWithPopup(this.auth, this.googleProvider);
-      return result.user;
-    } catch (error) {
+      // Determine if we should use redirect or popup based on environment
+      if (window.matchMedia('(display-mode: standalone)').matches || 
+          (window.navigator as any).standalone || 
+          document.referrer.includes('android-app://')) {
+        // PWA or mobile app environment - use redirect
+        console.log('Using redirect for Google auth (PWA/mobile context)');
+        await signInWithRedirect(this.auth, this.googleProvider);
+        return null; // Will redirect, so no return value
+      } else {
+        // Browser environment - try popup first
+        console.log('Using popup for Google auth (browser context)');
+        try {
+          const result = await signInWithPopup(this.auth, this.googleProvider);
+          return result.user;
+        } catch (popupError: any) {
+          // If popup fails due to unauthorized domain, try redirect
+          if (popupError.code === 'auth/unauthorized-domain') {
+            console.log('Popup failed due to unauthorized domain, trying redirect');
+            await signInWithRedirect(this.auth, this.googleProvider);
+            return null;
+          }
+          throw popupError;
+        }
+      }
+    } catch (error: any) {
       console.error('Error signing in with Google:', error);
+      
+      // Provide more user-friendly error messages
+      if (error.code === 'auth/unauthorized-domain') {
+        throw new Error('Le domaine n\'est pas autorisé pour l\'authentification. Veuillez contacter l\'administrateur ou essayer une autre méthode de connexion.');
+      }
+      
       throw error;
     }
   }

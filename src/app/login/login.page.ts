@@ -24,6 +24,20 @@ export class LoginPage {
     private toastController: ToastController
   ) {}
 
+  async ionViewWillEnter() {
+    // Check for redirect result when page loads
+    try {
+      const user = await this.firebaseService.getRedirectResult();
+      if (user) {
+        console.log('Successfully signed in via redirect');
+        // Handle successful sign-in via redirect
+        this.router.navigate(['/tabs/tab1']);
+      }
+    } catch (error) {
+      console.error('Error with redirect sign-in:', error);
+    }
+  }
+
   async login() {
     try {
       await this.firebaseService.signIn(this.user.email, this.user.password);
@@ -57,6 +71,30 @@ export class LoginPage {
     } catch (error) {
       console.error('Erreur lors de la connexion avec Google:', error);
       this.showToast('La connexion avec Google a échoué');
+    }
+  }
+
+  async loginWithGoogle() {
+    try {
+      const user = await this.firebaseService.signInWithGoogle();
+      
+      // Only navigate if we got a user (not redirected)
+      if (user) {
+        this.router.navigate(['/tabs/tab1']);
+      }
+      // If redirected, the ionViewWillEnter will handle the result
+    } catch (error: any) {
+      console.error('Erreur lors de la connexion avec Google:', error);
+      
+      // Show user-friendly error message
+      const errorMessage = error.message || 'La connexion a échoué. Veuillez réessayer plus tard.';
+      const toast = await this.toastController.create({
+        message: errorMessage,
+        duration: 3000,
+        position: 'bottom',
+        color: 'danger'
+      });
+      toast.present();
     }
   }
 
