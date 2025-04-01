@@ -295,9 +295,24 @@ ion-select::part(text) {
 
 .loading-spinner {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100%;
+  padding: 20px;
+  
+  ion-spinner {
+    width: 48px;
+    height: 48px;
+    color: var(--ion-color-primary);
+    margin-bottom: 20px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    font-size: 1rem;
+    text-align: center;
+  }
 }
 
 @media (max-width: 400px) {

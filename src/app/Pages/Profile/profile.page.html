@@ -10,7 +10,13 @@
 </ion-header>
 
 <ion-content>
-  <div class="profile-container">
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="loading-spinner">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Chargement de votre profil...</p>
+  </div>
+
+  <div class="profile-container" *ngIf="!isLoading">
     <div class="profile-header">
       <div class="photo-container">
         <img [src]="selectedImage || profileForm.get('photo')?.value || 'assets/default-avatar.png'" alt="Photo de profil" class="profile-photo">
@@ -19,8 +25,8 @@
           <ion-icon name="camera"></ion-icon>
         </ion-fab-button>
       </div>
-      <h2>{{ profileForm.get('firstName')?.value }} {{ profileForm.get('lastName')?.value }}</h2>
-      <p>{{ profileForm.get('email')?.value }}</p>
+      <h2>{{ profileForm.get('firstName')?.value || 'Prénom' }} {{ profileForm.get('lastName')?.value || 'Nom' }}</h2>
+      <p>{{ profileForm.get('email')?.value || 'Email' }}</p>
     </div>
 
     <div class="form-section">

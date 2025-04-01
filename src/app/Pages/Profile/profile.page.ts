@@ -21,6 +21,14 @@ interface UserData {
   [key: string]: any; // Allow any other properties
 }
 
+// Define Firebase user type
+interface FirebaseUser {
+  uid: string;
+  email?: string | null;
+  displayName?: string | null;
+  photoURL?: string | null;
+}
+
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.page.html',
@@ -34,9 +42,10 @@ export class ProfilePage implements OnInit {
   userId: string | null = null;
   selectedImage: string | null = null;
   selectedFile: File | null = null;
-  isLoading = false;
+  isLoading = true; // Start with loading state
   canChangeUsername = false;
   nextUsernameChangeDate: Date | null = null;
+  userDataLoaded = false; // Flag to track if user data was loaded
 
   constructor(
     private formBuilder: FormBuilder,
@@ -51,6 +60,7 @@ export class ProfilePage implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       username: ['', Validators.required],
       photo: [''],
+      phoneNumber: [''],
       discipline: [''],
       level: [''],
       weight: ['', [Validators.min(30), Validators.max(200)]]
@@ -58,61 +68,126 @@ export class ProfilePage implements OnInit {
   }
 
   async ngOnInit() {
-    const loading = await this.loadingController.create({
-      message: 'Chargement du profil...',
-      spinner: 'circular'
-    });
-    
-    await loading.present();
+    this.isLoading = true;
     
     try {
-      const user = await this.firebaseService.getCurrentUser() as { uid: string } | null;
-      if (user) {
+      // Get the current authenticated user with proper type casting
+      const user = await this.firebaseService.getCurrentUser() as FirebaseUser | null;
+      console.log("Current user:", user);
+      
+      if (user && user.uid) {
         this.userId = user.uid;
+        console.log("User ID:", this.userId);
+        
         if (this.userId) {
-          // Use type assertion to properly type the userData
-          const userData = await this.firebaseService.getDocument('users', this.userId) as UserData;
-          if (userData) {
-            this.profileForm.patchValue({
-              firstName: userData.firstName || '',
-              lastName: userData.lastName || '',
-              email: userData.email || '',
-              username: userData.username || '',
-              photo: userData.photo || '',
-              discipline: userData.discipline || '',
-              level: userData.level || '',
-              weight: userData.weight || ''
-            });
-
-            // Vérifier si l'utilisateur peut changer son nom d'utilisateur
-            if (userData.lastUsernameChange) {
-              const lastChange = userData.lastUsernameChange.toDate ? 
-                userData.lastUsernameChange.toDate() : new Date(userData.lastUsernameChange);
-              const oneWeekLater = new Date(lastChange);
-              oneWeekLater.setDate(oneWeekLater.getDate() + 7);
+          // Debug: Log before getting the document
+          console.log("Fetching user document from Firestore for ID:", this.userId);
+          
+          try {
+            // Get user data from Firestore with explicit type casting
+            let userData = await this.firebaseService.getDocument('users', this.userId) as UserData;
+            console.log("Raw user data from Firestore:", userData);
+            
+            // If user document doesn't exist, create it with basic info
+            if (!userData) {
+              console.log("Creating new user document in Firestore");
               
-              this.nextUsernameChangeDate = oneWeekLater;
-              this.canChangeUsername = new Date() >= oneWeekLater;
-              
-              // Désactiver le champ username si nécessaire
-              if (!this.canChangeUsername) {
-                this.profileForm.get('username')?.disable();
+              // Extract name parts from display name if available
+              let firstName = '', lastName = '';
+              if (user.displayName) {
+                const nameParts = user.displayName.split(' ');
+                firstName = nameParts[0] || '';
+                lastName = nameParts.slice(1).join(' ') || '';
               }
-            } else {
-              // Première utilisation, peut changer le nom d'utilisateur
-              this.canChangeUsername = true;
-            }
 
-            // Réinitialiser l'état sale du formulaire après le chargement
-            this.profileForm.markAsPristine();
+              // Generate a username from email or uid
+              const username = user.email ? 
+                user.email.split('@')[0] : 
+                `user_${Math.floor(Math.random() * 10000)}`;
+              
+              const newUserData: UserData = {
+                userId: user.uid,
+                firstName: firstName,
+                lastName: lastName,
+                email: user.email || '',
+                username: username,
+                photo: user.photoURL || '',
+                createdAt: new Date()
+              };
+              
+              // Add the document to Firestore
+              await this.firebaseService.setDocument('users', this.userId, newUserData);
+              console.log("Created new user document:", newUserData);
+              
+              // Use the new data
+              userData = await this.firebaseService.getDocument('users', this.userId) as UserData;
+            }
+            
+            if (userData) {
+              this.userDataLoaded = true;
+              
+              // Create a clean data object with optional chaining
+              const formData = {
+                firstName: userData?.firstName || '',
+                lastName: userData?.lastName || '',
+                email: userData?.email || '',
+                username: userData?.username || '',
+                photo: userData?.photo || '',
+                phoneNumber: userData?.phoneNumber || '',
+                discipline: userData?.discipline || '',
+                level: userData?.level || '',
+                weight: userData?.weight || ''
+              };
+              
+              console.log("Processed data to patch form:", formData);
+              
+              // Reset form first to ensure clean state
+              this.profileForm.reset();
+              
+              // Update the form with the user data
+              this.profileForm.patchValue(formData);
+              
+              // Verify form values were updated
+              console.log("Form values after patch:", this.profileForm.value);
+
+              // Check username change ability
+              if (userData?.lastUsernameChange) {
+                const lastChange = userData.lastUsernameChange.toDate ? 
+                  userData.lastUsernameChange.toDate() : new Date(userData.lastUsernameChange);
+                const oneWeekLater = new Date(lastChange);
+                oneWeekLater.setDate(oneWeekLater.getDate() + 7);
+                
+                this.nextUsernameChangeDate = oneWeekLater;
+                this.canChangeUsername = new Date() >= oneWeekLater;
+                
+                if (!this.canChangeUsername) {
+                  this.profileForm.get('username')?.disable();
+                }
+              } else {
+                this.canChangeUsername = true;
+              }
+
+              // Reset form dirty state
+              this.profileForm.markAsPristine();
+            } else {
+              console.error("Failed to create or retrieve user document");
+              this.showToast('Erreur lors de la création du profil', 'danger');
+            }
+          } catch (docError) {
+            console.error("Error fetching user document:", docError);
+            this.showToast('Erreur lors du chargement des données utilisateur', 'danger');
           }
         }
+      } else {
+        console.log("No authenticated user found");
+        this.showToast('Vous devez être connecté pour accéder à votre profil', 'warning');
+        this.router.navigate(['/login']);
       }
     } catch (error) {
-      console.error('Erreur lors du chargement du profil:', error);
+      console.error('Error in profile initialization:', error);
       this.showToast('Erreur lors du chargement du profil', 'danger');
     } finally {
-      loading.dismiss();
+      this.isLoading = false;
     }
   }
 
@@ -194,6 +269,7 @@ export class ProfilePage implements OnInit {
 
   // Méthode pour formater la date au format local
   formatDate(date: Date): string {
+    if (!date) return '';
     return date.toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: 'long',
