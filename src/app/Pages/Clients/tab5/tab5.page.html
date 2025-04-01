@@ -73,7 +73,7 @@
     </div>
     <div class="progress-container">
       <div class="progress-metrics">
-        <div class="metric" *ngFor="let day of weeklyData">
+        <div class="metric" *ngFor="let day of weeklyData; trackBy: trackDayByLabel">
           <div class="metric-bar-container">
             <div class="metric-bar" [style.height.%]="day.percentage"></div>
           </div>
@@ -163,7 +163,7 @@
     </div>
     
     <div class="competition-list">
-      <div class="competition-card" *ngFor="let competition of recentCompetitions">
+      <div class="competition-card" *ngFor="let competition of recentCompetitions; trackBy: trackCompetitionById">
         <div class="competition-medal" [ngClass]="competition.position === 1 ? 'gold' : competition.position === 2 ? 'silver' : competition.position === 3 ? 'bronze' : 'other'">
           <ion-icon name="trophy" *ngIf="competition.position <= 3"></ion-icon>
           <ion-icon name="ribbon" *ngIf="competition.position > 3"></ion-icon>
@@ -199,7 +199,7 @@
     </div>
     
     <div class="goal-timeline">
-      <div class="goal-item" *ngFor="let goal of goals" [ngClass]="goal.status">
+      <div class="goal-item" *ngFor="let goal of goals; trackBy: trackGoalById" [ngClass]="goal.status">
         <div class="goal-icon">
           <ion-icon [name]="goal.status === 'completed' ? 'checkmark-circle' : goal.status === 'in-progress' ? 'time' : 'flag'"></ion-icon>
         </div>

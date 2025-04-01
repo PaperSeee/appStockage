@@ -26,6 +26,9 @@ import { GrService } from './services/gr.service'; // Assurez-vous que ce chemin
 // Import LinkHandlerService
 import { LinkHandlerService } from './services/link-handler.service';
 
+// Import OptimizedImageDirective
+import { OptimizedImageDirective } from './directives/optimized-image.directive';
+
 // Initialize Firebase
 const app = initializeApp(environment.firebaseConfig);
 // Get Firebase service instances
@@ -46,12 +49,13 @@ export function initLinkHandlerFactory(linkHandler: LinkHandlerService) {
 }
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent], // Suppression de OptimizedImageDirective des déclarations
   imports: [
     BrowserModule, 
     IonicModule.forRoot(), 
     AppRoutingModule,
     HttpClientModule, // Add HttpClientModule for HTTP requests
+    OptimizedImageDirective, // Ajout de la directive comme import car elle est standalone
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

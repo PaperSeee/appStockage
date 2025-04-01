@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
+import { Component, OnInit, ViewChild, TemplateRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActionSheetController, ModalController, ToastController, AlertController, IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -7,6 +7,8 @@ import { Router } from '@angular/router';
 import { ModalContentComponent } from '../../../components/modal-content/modal-content.component';
 import { FirebaseService } from '../../../services/firebase.service';
 import { TrainingDataService } from '../../../services/training-data.service';
+import { StorageService } from '../../../services/storage.service';
+import { take } from 'rxjs/operators';
 
 // Define interfaces for the data types
 interface Training {
@@ -77,6 +79,7 @@ interface UserProfile {
   templateUrl: 'tab5.page.html',
   styleUrls: ['tab5.page.scss'],
   standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Tab5Page implements OnInit {
   @ViewChild('addTrainingModal') addTrainingModalTemplate!: TemplateRef<any>;
@@ -125,7 +128,9 @@ export class Tab5Page implements OnInit {
     private alertController: AlertController,
     private router: Router,
     private firebaseService: FirebaseService,
-    private trainingDataService: TrainingDataService
+    private trainingDataService: TrainingDataService,
+    private storageService: StorageService,
+    private cdr: ChangeDetectorRef
   ) { 
     const today = new Date();
     this.selectedMonth = today.getMonth() + 1;
@@ -274,53 +279,61 @@ export class Tab5Page implements OnInit {
     });
   }
 
-  // Load data from localStorage
+  // Load data from storage
   loadData() {
-    const storedTrainings = localStorage.getItem('trainings');
-    const storedCompetitions = localStorage.getItem('competitions');
-    const storedGoals = localStorage.getItem('goals');
-
-    this.trainings = storedTrainings ? JSON.parse(storedTrainings) : [];
-    this.competitions = storedCompetitions ? JSON.parse(storedCompetitions) : [];
-    this.goals = storedGoals ? JSON.parse(storedGoals) : [];
-    
-    // If no data exists, add demo data for presentation
-    if (this.competitions.length === 0) {
-      this.competitions = [
-        {
-          id: '1',
-          name: 'Championnat Régional MMA',
-          date: new Date('2023-06-24').toISOString(),
-          location: 'Paris, France',
-          position: 1,
-          notes: ''
-        },
-        {
-          id: '2',
-          name: 'Tournoi Open de Boxe',
-          date: new Date('2023-06-10').toISOString(),
-          location: 'Lyon, France',
-          position: 2,
-          notes: ''
-        }
-      ];
-      this.saveToStorage();
-    }
-    
-    // Get recent competitions for display
-    this.recentCompetitions = [...this.competitions]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 3);
+    // Charger les données depuis IndexedDB
+    this.storageService.getItems<Training>('trainings').pipe(take(1)).subscribe(trainings => {
+      this.trainings = trainings || [];
       
-    // Update the training data service
-    this.trainingDataService.setTrainings(this.trainings);
+      this.storageService.getItems<Competition>('competitions').pipe(take(1)).subscribe(competitions => {
+        this.competitions = competitions || [];
+        
+        this.storageService.getItems<Goal>('goals').pipe(take(1)).subscribe(goals => {
+          this.goals = goals || [];
+          
+          // Si aucune donnée n'existe, ajouter des données de démo pour la présentation
+          if (this.competitions.length === 0) {
+            this.competitions = [
+              {
+                id: '1',
+                name: 'Championnat Régional MMA',
+                date: new Date('2023-06-24').toISOString(),
+                location: 'Paris, France',
+                position: 1,
+                notes: ''
+              },
+              {
+                id: '2',
+                name: 'Tournoi Open de Boxe',
+                date: new Date('2023-06-10').toISOString(),
+                location: 'Lyon, France',
+                position: 2,
+                notes: ''
+              }
+            ];
+            this.saveToStorage();
+          }
+          
+          // Get recent competitions for display
+          this.recentCompetitions = [...this.competitions]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .slice(0, 3);
+            
+          // Update the training data service
+          this.trainingDataService.setTrainings(this.trainings);
+          
+          // Rafraîchir l'interface
+          this.refreshData();
+        });
+      });
+    });
   }
 
-  // Save all data to localStorage
+  // Save all data to storage
   saveToStorage() {
-    localStorage.setItem('trainings', JSON.stringify(this.trainings));
-    localStorage.setItem('competitions', JSON.stringify(this.competitions));
-    localStorage.setItem('goals', JSON.stringify(this.goals));
+    this.storageService.setItem('trainings', this.trainings).pipe(take(1)).subscribe();
+    this.storageService.setItem('competitions', this.competitions).pipe(take(1)).subscribe();
+    this.storageService.setItem('goals', this.goals).pipe(take(1)).subscribe();
     
     // Update the training data service
     this.trainingDataService.setTrainings(this.trainings);
@@ -631,9 +644,9 @@ export class Tab5Page implements OnInit {
             this.competitions = [];
             this.goals = [];
             
-            localStorage.removeItem('trainings');
-            localStorage.removeItem('competitions');
-            localStorage.removeItem('goals');
+            this.storageService.clearStore('trainings').pipe(take(1)).subscribe();
+            this.storageService.clearStore('competitions').pipe(take(1)).subscribe();
+            this.storageService.clearStore('goals').pipe(take(1)).subscribe();
             
             this.refreshData();
             this.showToast('Données réinitialisées');
@@ -653,6 +666,8 @@ export class Tab5Page implements OnInit {
     this.recentCompetitions = [...this.competitions]
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 3);
+      
+    this.cdr.markForCheck();
   }
 
   // Show action sheet for adding new items
@@ -1199,8 +1214,20 @@ export class Tab5Page implements OnInit {
   isInCurrentWeek(date: Date): boolean {
     const weekEnd = new Date(this.currentWeekStart);
     weekEnd.setDate(this.currentWeekStart.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999);
-    
+    weekEnd.setHours(23, 59, 59, 999); 
     return date >= this.currentWeekStart && date <= weekEnd;
+  }
+
+  // Ajouter des fonctions trackBy
+  trackDayByLabel(index: number, item: WeeklyData): string {
+    return item.label;
+  }
+  
+  trackCompetitionById(index: number, item: Competition): string {
+    return item.id;
+  }
+  
+  trackGoalById(index: number, item: Goal): string {
+    return item.id;
   }
 }

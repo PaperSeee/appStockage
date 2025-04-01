@@ -94,3 +94,17 @@ body.pwa-mode a {
   position: relative !important;
   z-index: 1000 !important;
 }
+
+/* Optimized Images CSS */
+.image-loading {
+  opacity: 0.6;
+  filter: blur(5px);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+  background-color: #f0f0f0;
+}
+
+.image-loaded {
+  opacity: 1;
+  filter: blur(0);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}

@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { StorageService } from './storage.service';
+import { take } from 'rxjs/operators';
 
 export interface Training {
   id: string;
@@ -30,26 +32,26 @@ export class TrainingDataService {
     intensity: 0
   });
 
-  trainings$ = this.trainingsSubject.asObservable();
-  stats$ = this.statsSubject.asObservable();
+  public trainings$: Observable<Training[]> = this.trainingsSubject.asObservable();
+  public stats$: Observable<TrainingStats> = this.statsSubject.asObservable();
 
-  constructor() {
-    this.loadFromLocalStorage();
+  constructor(private storageService: StorageService) {
+    this.loadFromStorage();
   }
 
-  private loadFromLocalStorage() {
-    const storedTrainings = localStorage.getItem('trainings');
-    if (storedTrainings) {
-      const trainings = JSON.parse(storedTrainings);
-      this.trainingsSubject.next(trainings);
-      this.recalculateStats(trainings);
-    }
+  private loadFromStorage() {
+    this.storageService.getItems<Training>('trainings').pipe(take(1)).subscribe(trainings => {
+      if (trainings && trainings.length > 0) {
+        this.trainingsSubject.next(trainings);
+        this.recalculateStats(trainings);
+      }
+    });
   }
 
   setTrainings(trainings: Training[]) {
     this.trainingsSubject.next(trainings);
     this.recalculateStats(trainings);
-    localStorage.setItem('trainings', JSON.stringify(trainings));
+    this.storageService.setItem('trainings', trainings).subscribe();
   }
 
   updateStats(stats: TrainingStats) {

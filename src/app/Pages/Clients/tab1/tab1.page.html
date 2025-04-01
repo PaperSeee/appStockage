@@ -95,7 +95,7 @@
   
   <div class="events-container">
     <div class="events-list">
-      <div class="event-card" *ngFor="let event of filteredEvents">
+      <div class="event-card" *ngFor="let event of filteredEvents; trackBy: trackEventById">
         <div class="event-image-container">
           <img [src]="event.image" [alt]="event.title" class="event-image">
           <div class="event-type-badge">{{event.type}}</div>
@@ -131,7 +131,7 @@
   
   <div class="partners-container">
     <div class="partners-list">
-      <div class="partner-item" *ngFor="let partner of filteredPartners">
+      <div class="partner-item" *ngFor="let partner of filteredPartners; trackBy: trackPartnerById">
         <div class="avatar-container">
           <img [src]="partner.avatar" [alt]="partner.name" class="avatar">
           <div class="status-indicator"></div>
@@ -150,7 +150,7 @@
   </h3>
   
   <div class="activity-feed">
-    <div class="feed-item" *ngFor="let training of filteredTrainings">
+    <div class="feed-item" *ngFor="let training of filteredTrainings; trackBy: trackTrainingById">
       <div class="feed-header">
         <img [src]="training.user.avatar" [alt]="training.user.name" class="user-avatar">
         <div class="user-info">
@@ -165,7 +165,11 @@
         <span class="activity-type">{{training.type}}</span>
       </div>
       
-      <img [src]="training.image" [alt]="training.title" class="activity-image">
+      <img [appOptimizedImage]="training.image" 
+           [width]="400" 
+           [height]="300" 
+           [alt]="training.title" 
+           class="activity-image">
       
       <div class="activity-content">
         <h3 class="activity-title">{{training.title}}</h3>

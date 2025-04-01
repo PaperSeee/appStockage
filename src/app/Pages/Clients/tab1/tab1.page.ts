@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { FirebaseService } from '../../../services/firebase.service';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
@@ -53,6 +53,7 @@ interface Event {
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
   standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Tab1Page implements OnInit, OnDestroy {
   trainings: Training[] = [];
@@ -91,7 +92,8 @@ export class Tab1Page implements OnInit, OnDestroy {
     private router: Router,
     private sharingService: SharingService,
     private messagingService: MessagingService,
-    private trainingDataService: TrainingDataService
+    private trainingDataService: TrainingDataService,
+    private cdr: ChangeDetectorRef // Ajouter le ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -105,6 +107,7 @@ export class Tab1Page implements OnInit, OnDestroy {
     // Subscribe to conversations to get unread count
     this.conversationsSub = this.messagingService.conversations$.subscribe(conversations => {
       this.unreadMessageCount = this.messagingService.getTotalUnreadCount();
+      this.cdr.markForCheck(); // Marquer pour la vérification
     });
     
     // Subscribe to training stats from shared service
@@ -112,6 +115,7 @@ export class Tab1Page implements OnInit, OnDestroy {
       this.trainingStats.count = stats.count;
       this.trainingStats.totalMinutes = Math.round(stats.hours * 60); // Convert hours to minutes
       this.trainingStats.intensity = stats.intensity || 0;
+      this.cdr.markForCheck(); // Marquer pour la vérification
     });
   }
 
@@ -385,7 +389,7 @@ export class Tab1Page implements OnInit, OnDestroy {
     
     // Filter partners by discipline
     this.filteredPartners = this.nearbyPartners.filter(partner => {
-      return partner.discipline.toLowerCase() === discipline.toLowerCase();
+      return partner.discipline.toLowerCase().includes(discipline.toLowerCase());
     });
     
     // Filter trainings by discipline
@@ -398,6 +402,7 @@ export class Tab1Page implements OnInit, OnDestroy {
     if (this.searchTerm) {
       this.applySearchFilter();
     }
+    this.cdr.markForCheck();
   }
   
   // Helper method to apply search filtering to already filtered results
@@ -455,6 +460,19 @@ export class Tab1Page implements OnInit, OnDestroy {
     
     // Then apply search filter
     this.applySearchFilter();
+  }
+
+  // Ajout des fonctions trackBy pour optimiser le rendu des listes
+  trackTrainingById(index: number, item: Training): number {
+    return item.id;
+  }
+  
+  trackEventById(index: number, item: Event): number {
+    return item.id;
+  }
+  
+  trackPartnerById(index: number, item: User): number {
+    return item.id;
   }
 
   ngOnDestroy() {
