@@ -84,6 +84,7 @@ interface UserProfile {
 export class Tab5Page implements OnInit {
   @ViewChild('addTrainingModal') addTrainingModalTemplate!: TemplateRef<any>;
   @ViewChild('addCompetitionModal') addCompetitionModalTemplate!: TemplateRef<any>;
+  @ViewChild('viewAllCompetitionsModal') viewAllCompetitionsModalTemplate!: TemplateRef<any>;
 
   // Forms
   trainingForm!: FormGroup;
@@ -921,30 +922,63 @@ export class Tab5Page implements OnInit {
   }
 
   // View all competitions
-  viewAllCompetitions() {
+  async viewAllCompetitions() {
     if (this.competitions.length === 0) {
       this.showToast('Aucune compétition à afficher');
       return;
     }
     
-    // Create a formatted list of competitions
-    let message = '';
-    [...this.competitions]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .forEach((comp, index) => {
-        const date = new Date(comp.date).toLocaleDateString('fr-FR');
-        message += `<b>${comp.name}</b><br>`;
-        message += `${date} - ${comp.location}<br>`;
-        message += `Position: ${comp.position}${comp.position === 1 ? 'er' : 'ème'}<br>`;
-        if (comp.notes) message += `Notes: ${comp.notes}<br>`;
-        if (index < this.competitions.length - 1) message += '<br>';
-      });
+    // Create and show the modal for viewing all competitions
+    const modal = await this.modalController.create({
+      component: ModalContentComponent,
+      componentProps: {
+        contentTemplate: this.viewAllCompetitionsModalTemplate
+      }
+    });
     
-    this.alertController.create({
-      header: 'Toutes les compétitions',
-      message,
-      buttons: ['Fermer']
-    }).then(alert => alert.present());
+    await modal.present();
+    
+    // Refresh data when modal is dismissed (in case items were deleted)
+    const { data } = await modal.onDidDismiss();
+    if (data?.refresh) {
+      this.refreshData();
+    }
+  }
+
+  // Delete a competition
+  async deleteCompetition(competition: Competition) {
+    // Show confirmation alert before deleting
+    const alert = await this.alertController.create({
+      header: 'Confirmer la suppression',
+      message: `Êtes-vous sûr de vouloir supprimer la compétition "${competition.name}" ?`,
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'Supprimer',
+          role: 'destructive',
+          handler: () => {
+            // Find and remove the competition
+            const index = this.competitions.findIndex(c => c.id === competition.id);
+            if (index !== -1) {
+              this.competitions.splice(index, 1);
+              this.saveToStorage();
+              this.refreshData();
+              this.showToast('Compétition supprimée');
+              
+              // Close the modal and indicate that data was changed
+              this.modalController.dismiss({
+                refresh: true
+              });
+            }
+          }
+        }
+      ]
+    });
+    
+    await alert.present();
   }
 
   // View all goals

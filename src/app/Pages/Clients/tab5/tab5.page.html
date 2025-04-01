@@ -438,3 +438,59 @@
     </form>
   </ion-content>
 </ng-template>
+
+<!-- Modal template for viewing all competitions -->
+<ng-template #viewAllCompetitionsModal>
+  <ion-header class="modal-header">
+    <ion-toolbar>
+      <ion-title>Toutes mes compétitions</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="dismissModal()">
+          <ion-icon name="close-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="modal-content">
+    <div class="competitions-list-container">
+      <ion-list>
+        <ion-item-sliding *ngFor="let competition of competitions; trackBy: trackCompetitionById">
+          <ion-item>
+            <div class="competition-item">
+              <div class="competition-medal" [ngClass]="competition.position === 1 ? 'gold' : competition.position === 2 ? 'silver' : competition.position === 3 ? 'bronze' : 'other'">
+                <ion-icon name="trophy" *ngIf="competition.position <= 3"></ion-icon>
+                <ion-icon name="ribbon" *ngIf="competition.position > 3"></ion-icon>
+              </div>
+              <div class="competition-details">
+                <h3>{{competition.name}}</h3>
+                <p class="competition-date">{{competition.date | date:'d MMMM yyyy'}}</p>
+                <p class="competition-location">
+                  <ion-icon name="location-outline"></ion-icon>
+                  {{competition.location}}
+                </p>
+                <p *ngIf="competition.notes" class="competition-notes">
+                  <ion-icon name="document-text-outline"></ion-icon>
+                  {{competition.notes}}
+                </p>
+              </div>
+              <div class="competition-position">{{competition.position}}{{competition.position === 1 ? 'er' : 'ème'}}</div>
+            </div>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="danger" (click)="deleteCompetition(competition)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      </ion-list>
+      
+      <ion-card *ngIf="competitions.length === 0" class="empty-state">
+        <ion-card-content>
+          <ion-icon name="trophy-outline" class="empty-icon"></ion-icon>
+          <p>Aucune compétition n'a encore été enregistrée</p>
+          <ion-button fill="clear" (click)="addCompetition()">Ajouter une compétition</ion-button>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </ion-content>
+</ng-template>
