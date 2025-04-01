@@ -207,6 +207,7 @@ ion-header {
 
 .button-container {
   margin-top: 36px;
+  margin-bottom: 40px; // Add bottom margin to ensure buttons aren't cut off
   
   .save-button {
     --background: var(--ion-color-primary);
@@ -217,7 +218,7 @@ ion-header {
     font-size: 1rem;
     --border-radius: 12px;
     height: 52px;
-    margin: 0 0 24px 0;
+    margin: 0 0 16px 0; // Increased bottom margin
     --box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb), 0.3);
     letter-spacing: 0.5px;
     
@@ -311,6 +312,14 @@ ion-select::part(text) {
   
   .form-section {
     padding: 20px 16px;
+  }
+  
+  .button-container {
+    margin-bottom: 60px; // Extra margin on small screens
+    
+    .logout-button {
+      margin-bottom: 20px; // Add more bottom margin on mobile
+    }
   }
 }
 

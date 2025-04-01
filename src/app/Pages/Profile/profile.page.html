@@ -111,7 +111,10 @@
             Enregistrer
           </ion-button>
           
-          <div class="logout-link" (click)="logout()">Déconnexion</div>
+          <ion-button expand="block" fill="outline" class="logout-button" (click)="logout()">
+            <ion-icon name="log-out-outline" slot="start"></ion-icon>
+            Déconnexion
+          </ion-button>
         </div>
       </form>
     </div>
