@@ -5,6 +5,7 @@ import { FirebaseService } from '../../../services/firebase.service';
 import { MessagingService } from '../../../services/messaging.service';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { FriendsService } from '../../../services/friends.service';
 
 interface Partner {
   id: number;
@@ -61,7 +62,8 @@ export class Tab2Page implements OnInit, OnDestroy {
     private sanitizer: DomSanitizer,
     private firebaseService: FirebaseService,
     private messagingService: MessagingService, // Add messaging service
-    private router: Router // Add router for navigation
+    private router: Router, // Add router for navigation
+    private friendsService: FriendsService // Ajouter le service ici
   ) {}
 
   async ngOnInit() {
@@ -108,12 +110,12 @@ export class Tab2Page implements OnInit, OnDestroy {
     }
   }
 
-  // Method to load friends
+  // Method to load friends - utiliser le service d'amis
   async loadFriends() {
     try {
       const user = await this.firebaseService.getCurrentUser() as any;
       if (user && user.uid) {
-        const friendsData = await this.firebaseService.getFriends(user.uid);
+        const friendsData = await this.friendsService.getFriends(user.uid);
         if (friendsData) {
           this.friends = friendsData;
         }
@@ -179,7 +181,7 @@ export class Tab2Page implements OnInit, OnDestroy {
       friend.id === user.id || friend.userId === user.userId);
   }
 
-  // Add method to connect with user
+  // Add method to connect with user - utiliser le service d'amis
   async connectWithUser(user: any) {
     const currentUser = await this.firebaseService.getCurrentUser() as any;
     if (!currentUser) {
@@ -195,8 +197,8 @@ export class Tab2Page implements OnInit, OnDestroy {
 
     try {
       if (this.isFriend(user)) {
-        // Remove friend
-        await this.firebaseService.removeFriend(currentUser.uid, user.id || user.userId);
+        // Remove friend using FriendsService
+        await this.friendsService.removeFriend(currentUser.uid, user.id || user.userId);
         this.friends = this.friends.filter(friend => 
           friend.id !== user.id && friend.userId !== user.userId);
         
@@ -207,8 +209,8 @@ export class Tab2Page implements OnInit, OnDestroy {
         });
         await toast.present();
       } else {
-        // Add friend
-        await this.firebaseService.addFriend(currentUser.uid, user);
+        // Add friend using FriendsService
+        await this.friendsService.addFriend(currentUser.uid, user);
         this.friends.push(user);
         
         const toast = await this.toastController.create({

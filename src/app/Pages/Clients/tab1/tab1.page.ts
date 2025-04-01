@@ -6,6 +6,7 @@ import { SharingService } from '../../../services/sharing.service';
 import { MessagingService } from '../../../services/messaging.service';
 import { Subscription } from 'rxjs';
 import { TrainingDataService } from '../../../services/training-data.service';
+import { FriendsService } from '../../../services/friends.service';
 
 interface Training {
   id: number;
@@ -85,6 +86,7 @@ export class Tab1Page implements OnInit, OnDestroy {
   };
   
   private trainingSubscription: Subscription | null = null;
+  private friendsSubscription: Subscription | null = null;
   friends: any[] = [];
   filteredFriends: any[] = [];
   loadingFriends = true;
@@ -96,6 +98,7 @@ export class Tab1Page implements OnInit, OnDestroy {
     private sharingService: SharingService,
     private messagingService: MessagingService,
     private trainingDataService: TrainingDataService,
+    private friendsService: FriendsService, // Ajouter le service ici
     private cdr: ChangeDetectorRef // Ajouter le ChangeDetectorRef
   ) {}
 
@@ -122,6 +125,12 @@ export class Tab1Page implements OnInit, OnDestroy {
       this.trainingStats.totalMinutes = Math.round(stats.hours * 60); // Convert hours to minutes
       this.trainingStats.intensity = stats.intensity || 0;
       this.cdr.markForCheck(); // Marquer pour la vérification
+    });
+
+    // S'abonner aux mises à jour des amis
+    this.friendsSubscription = this.friendsService.friendsUpdated$.subscribe(() => {
+      console.log('Friends updated, refreshing friends list in tab1');
+      this.loadFriends();
     });
   }
 
@@ -501,18 +510,36 @@ export class Tab1Page implements OnInit, OnDestroy {
     if (this.trainingSubscription) {
       this.trainingSubscription.unsubscribe();
     }
+    
+    // Désabonner de la souscription aux amis
+    if (this.friendsSubscription) {
+      this.friendsSubscription.unsubscribe();
+    }
   }
 
-  // Load friends from Firebase
+  // Load friends from Firebase using FriendsService
   async loadFriends() {
     this.loadingFriends = true;
     try {
       const user = await this.firebaseService.getCurrentUser() as any;
       if (user && user.uid) {
-        const friendsData = await this.firebaseService.getFriends(user.uid);
+        const friendsData = await this.friendsService.getFriends(user.uid);
         if (friendsData) {
           this.friends = friendsData;
-          this.filteredFriends = [...this.friends];
+          
+          // Si un filtre de discipline est actif, l'appliquer
+          if (this.disciplineFilter !== 'all') {
+            this.filteredFriends = this.friends.filter(friend => 
+              friend.discipline && friend.discipline.toLowerCase().includes(this.disciplineFilter.toLowerCase())
+            );
+          } else {
+            this.filteredFriends = [...this.friends];
+          }
+          
+          // Si un terme de recherche est actif, l'appliquer
+          if (this.searchTerm) {
+            this.applySearchFilter();
+          }
         }
       }
     } catch (error) {
