@@ -224,7 +224,6 @@ export class Tab2Page implements OnInit, OnDestroy {
 
   // Handle image loading errors
   handleImageError(event: any) {
-    // Set a default image if loading fails
-    event.target.src = 'assets/default-profile.jpg';
+    event.target.src = 'assets/par défaut.jpg';
   }
 }

@@ -111,7 +111,7 @@ export class MessagingService {
                 conversation.participantsInfo[participantId] = {
                   firstName: userDoc.firstName || '',
                   lastName: userDoc.lastName || '',
-                  photo: userDoc.photo || ''
+                  photo: userDoc.photo || 'assets/par défaut.jpg'
                 };
               }
             }

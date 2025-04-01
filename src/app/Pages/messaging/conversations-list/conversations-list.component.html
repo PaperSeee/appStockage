@@ -36,9 +36,9 @@
       <div class="active-conversation" *ngFor="let conversation of sortedConversations()" 
            (click)="openChat(conversation)">
         <div class="avatar-container" [class.has-unread]="getUnreadCount(conversation) > 0">
-          <img [src]="getOtherParticipantInfo(conversation).photo" 
+          <img [src]="getOtherParticipantInfo(conversation).photo || 'assets/par défaut.jpg'" 
                alt="Avatar"
-               onError="this.src='assets/default-avatar.png'">
+               onError="this.src='assets/par défaut.jpg'">
           <span class="unread-badge" *ngIf="getUnreadCount(conversation) > 0">
             {{ getUnreadCount(conversation) }}
           </span>
@@ -63,7 +63,7 @@
 
     <ion-item *ngFor="let conversation of conversations" button detail="false" (click)="openChat(conversation)" [class.unread]="getUnreadCount(conversation) > 0">
       <ion-avatar slot="start">
-        <img [src]="getOtherParticipantInfo(conversation).photo || 'assets/default-avatar.png'" alt="Avatar" onError="this.src='assets/default-avatar.png'">
+        <img [src]="getOtherParticipantInfo(conversation).photo || 'assets/par défaut.jpg'" alt="Avatar" onError="this.src='assets/par défaut.jpg'">
       </ion-avatar>
       
       <ion-label>

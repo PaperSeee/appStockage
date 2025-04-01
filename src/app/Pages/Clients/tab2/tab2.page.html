@@ -78,7 +78,7 @@
     <div class="partner-card" *ngFor="let user of filteredUsers; trackBy: trackUserById">
       <div class="card-top">
         <div class="partner-avatar">
-          <img [src]="user.photo || 'assets/default-profile.jpg'" 
+          <img [src]="user.photo || 'assets/par défaut.jpg'" 
               (error)="handleImageError($event)" 
               alt="Photo de {{getUserFullName(user)}}">
           <div class="status-indicator online"></div>
