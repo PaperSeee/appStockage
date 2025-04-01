@@ -27,6 +27,9 @@ import { GrService } from './services/gr.service'; // Assurez-vous que ce chemin
 // Import LinkHandlerService
 import { LinkHandlerService } from './services/link-handler.service';
 
+// Import ServiceWorkerModule
+import { ServiceWorkerModule } from '@angular/service-worker';
+
 // Initialize Firebase
 const app = initializeApp(environment.firebaseConfig);
 // Get Firebase service instances
@@ -59,6 +62,12 @@ export function initLinkHandlerFactory(linkHandler: LinkHandlerService) {
         useFactory: HttpLoaderFactory,
         deps: [HttpClient]
       }
+    }),
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: environment.production,
+      // Register the ServiceWorker as soon as the application is stable
+      // or after 30 seconds (whichever comes first).
+      registrationStrategy: 'registerWhenStable:30000'
     })
   ],
   providers: [
@@ -82,5 +91,9 @@ export class AppModule {
       { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
       FirebaseService,
     ]);
+    // Initialiser Capacitor au démarrage de l'application
+    import('../utils/capacitor-init').then(module => {
+      module.CapacitorInit.init();
+    });
   }
 }
