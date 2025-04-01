@@ -47,35 +47,6 @@
     </div>
   </div>
 
-  <!-- Discipline Filter -->
-  <div class="discipline-filter">
-    <div 
-      class="filter-item" 
-      [class.active]="selectedFilter === 'all'" 
-      (click)="filterPosts('all')"
-    >Tous</div>
-    <div 
-      class="filter-item" 
-      [class.active]="selectedFilter === 'mma'" 
-      (click)="filterPosts('mma')"
-    >MMA</div>
-    <div 
-      class="filter-item" 
-      [class.active]="selectedFilter === 'boxe'" 
-      (click)="filterPosts('boxe')"
-    >Boxe</div>
-    <div 
-      class="filter-item" 
-      [class.active]="selectedFilter === 'jiu-jitsu'" 
-      (click)="filterPosts('jiu-jitsu')"
-    >Jiu-Jitsu</div>
-    <div 
-      class="filter-item" 
-      [class.active]="selectedFilter === 'muay-thai'" 
-      (click)="filterPosts('muay-thai')"
-    >Muay Thai</div>
-  </div>
-
   <!-- Après le bloc des filtres -->
   <div class="profile-indicator" *ngIf="selectedFilter === 'user'">
     <ion-button fill="clear" (click)="resetFeed()">
