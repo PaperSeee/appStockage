@@ -81,3 +81,551 @@ ion-modal ion-content {
   --padding-top: 16px;
   --padding-bottom: 16px;
 }
+
+// Variables
+$primary-color: var(--ion-color-primary);
+$secondary-color: var(--ion-color-secondary);
+$tertiary-color: var(--ion-color-tertiary);
+$success-color: var(--ion-color-success);
+$warning-color: var(--ion-color-warning);
+$danger-color: var(--ion-color-danger);
+$light-bg: #f9fafb;
+$card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+$card-radius: 16px;
+
+// General styles
+.gamification-content {
+  --background: #f5f7fa;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 16px;
+  --padding-bottom: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+}
+
+.section-container {
+  margin-bottom: 24px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--ion-color-dark);
+  }
+}
+
+// Fighter Status Card
+.fighter-card {
+  background: white;
+  border-radius: $card-radius;
+  padding: 20px;
+  box-shadow: $card-shadow;
+  margin-bottom: 24px;
+}
+
+.fighter-profile {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.avatar-container {
+  position: relative;
+  margin-right: 16px;
+}
+
+.fighter-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid $primary-color;
+}
+
+.level-badge {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: $warning-color;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 3px 6px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.fighter-info {
+  flex: 1;
+}
+
+.fighter-name {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--ion-color-dark);
+}
+
+.fighter-title {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  margin: 0 0 8px;
+}
+
+.xp-container {
+  width: 100%;
+}
+
+.xp-bar {
+  --buffer-background: #e4e9f2;
+  --progress-background: $primary-color;
+  height: 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.xp-text {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+}
+
+.featured-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: $light-bg;
+  padding: 8px;
+  border-radius: 12px;
+  margin-left: 16px;
+  
+  ion-icon {
+    font-size: 24px;
+    color: $warning-color;
+    margin-bottom: 4px;
+  }
+  
+  span {
+    font-size: 12px;
+    color: var(--ion-color-dark);
+    font-weight: 600;
+    text-align: center;
+  }
+}
+
+.stats-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+  
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--ion-color-dark);
+  }
+  
+  .stat-label {
+    font-size: 13px;
+    color: var(--ion-color-medium);
+  }
+}
+
+// Challenges
+.challenges-list {
+  margin-bottom: 16px;
+}
+
+.challenge-card {
+  margin: 0 0 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.challenge-content {
+  display: flex;
+  padding: 16px;
+}
+
+.challenge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  margin-right: 16px;
+  
+  ion-icon {
+    font-size: 24px;
+    color: white;
+  }
+}
+
+.challenge-details {
+  flex: 1;
+}
+
+.challenge-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  margin: 0 0 4px;
+}
+
+.challenge-description {
+  font-size: 14px;
+  color: var(--ion-color-medium);
+  margin: 0 0 10px;
+}
+
+.challenge-progress {
+  --buffer-background: #e4e9f2;
+  --progress-background: $primary-color;
+  height: 6px;
+  border-radius: 3px;
+  margin-bottom: 8px;
+}
+
+.challenge-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  
+  .progress-text {
+    color: var(--ion-color-dark);
+    font-weight: 500;
+  }
+  
+  .reward-text {
+    color: $success-color;
+    font-weight: 500;
+  }
+}
+
+.track-button {
+  --border-radius: 12px;
+  margin: 0;
+  --box-shadow: 0 4px 8px rgba(var(--ion-color-primary-rgb), 0.25);
+  height: 44px;
+  font-weight: 600;
+}
+
+// Leaderboard
+.segment-control {
+  margin-top: 8px;
+  
+  ion-segment {
+    background: $light-bg;
+    border-radius: 8px;
+    --background: transparent;
+    
+    ion-segment-button {
+      --color: var(--ion-color-medium);
+      --color-checked: var(--ion-color-primary);
+      --indicator-color: white;
+      min-height: 32px;
+      
+      ion-label {
+        font-size: 12px;
+        text-transform: none;
+      }
+    }
+  }
+}
+
+.leaderboard-card {
+  margin: 0;
+  box-shadow: $card-shadow;
+  border-radius: $card-radius;
+  overflow: hidden;
+}
+
+.leaderboard-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 0;
+  
+  ion-avatar {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+  }
+  
+  ion-label {
+    h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+      margin: 0 0 2px;
+    }
+    
+    p {
+      font-size: 12px;
+      color: var(--ion-color-medium);
+      margin: 0;
+    }
+  }
+  
+  .rank {
+    background: #eef1f5;
+    color: var(--ion-color-medium);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    margin-right: 12px;
+    
+    &.gold {
+      background: linear-gradient(135deg, #f9d423, #f6b03d);
+      color: white;
+    }
+    
+    &.silver {
+      background: linear-gradient(135deg, #c9d6df, #a3b1bd);
+      color: white;
+    }
+    
+    &.bronze {
+      background: linear-gradient(135deg, #cd7f32, #bb6527);
+      color: white;
+    }
+    
+    &.user-rank {
+      background: $primary-color;
+      color: white;
+    }
+  }
+  
+  .points {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ion-color-dark);
+    display: flex;
+    align-items: center;
+    
+    ion-icon {
+      margin-left: 4px;
+      font-size: 14px;
+    }
+  }
+  
+  &.highlighted {
+    --background: rgba(var(--ion-color-primary-rgb), 0.08);
+  }
+}
+
+.leaderboard-footer {
+  padding: 12px 16px;
+  text-align: center;
+  background: $light-bg;
+  border-top: 1px solid #e4e9f2;
+  
+  p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--ion-color-medium);
+    line-height: 1.5;
+    
+    ion-icon {
+      vertical-align: middle;
+      margin-right: 2px;
+    }
+  }
+}
+
+// Badge Gallery
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.badge-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  
+  &.unlocked {
+    background: linear-gradient(135deg, #4c8dff, #3478f6);
+    box-shadow: 0 4px 8px rgba(var(--ion-color-primary-rgb), 0.3);
+    
+    ion-icon {
+      font-size: 30px;
+      color: white;
+    }
+  }
+  
+  &.locked {
+    background: #e4e9f2;
+    
+    ion-icon {
+      font-size: 30px;
+      color: #a0a8b1;
+    }
+  }
+}
+
+.badge-name {
+  font-size: 12px;
+  color: var(--ion-color-dark);
+  text-align: center;
+  font-weight: 500;
+}
+
+// Challenge CTA
+.cta-card {
+  margin: 0;
+  box-shadow: $card-shadow;
+  border-radius: $card-radius;
+  background: linear-gradient(135deg, #4c8dff, #3478f6);
+}
+
+.cta-content {
+  padding: 20px;
+  text-align: center;
+}
+
+.cta-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px;
+}
+
+.cta-description {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 16px;
+}
+
+.cta-button {
+  --background: white;
+  --color: var(--ion-color-primary);
+  --border-radius: 12px;
+  --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+}
+
+// Streak & Mini-stats
+.streak-container {
+  margin-bottom: 24px;
+}
+
+.streak-card {
+  background: white;
+  border-radius: $card-radius;
+  padding: 16px;
+  box-shadow: $card-shadow;
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.streak-flame {
+  position: relative;
+  margin-right: 16px;
+  
+  ion-icon {
+    font-size: 40px;
+    color: $danger-color;
+  }
+  
+  .streak-count {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+  }
+}
+
+.streak-text {
+  flex: 1;
+  
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    margin: 0 0 4px;
+  }
+  
+  p {
+    font-size: 14px;
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+.mini-stats {
+  background: white;
+  border-radius: $card-radius;
+  padding: 16px;
+  box-shadow: $card-shadow;
+}
+
+.mini-stat-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  margin-bottom: 12px;
+}
+
+.mini-stat-items {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.mini-stat-item {
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+  margin-bottom: 8px;
+  
+  ion-icon {
+    font-size: 16px;
+    color: $primary-color;
+    margin-right: 6px;
+  }
+  
+  span {
+    font-size: 13px;
+    color: var(--ion-color-medium);
+  }
+}
+
+// FAB Styling
+ion-fab-button {
+  --box-shadow: 0 4px 16px rgba(var(--ion-color-primary-rgb), 0.3);
+}
+
+ion-fab-list ion-fab-button {
+  margin-bottom: 8px;
+}
