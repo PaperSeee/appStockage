@@ -54,12 +54,56 @@ export class FirebaseService {
   }
 
   // Authentication methods
-  async signIn(email: string, password: string) {
+  async signIn(usernameOrEmail: string, password: string) {
     try {
-      const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
+      let loginEmail = usernameOrEmail;
+      
+      // Si l'entrée ne contient pas '@', on considère que c'est un nom d'utilisateur
+      if (!usernameOrEmail.includes('@')) {
+        console.log('Tentative de connexion avec nom d\'utilisateur:', usernameOrEmail);
+        
+        // Rechercher l'email associé au nom d'utilisateur dans Firestore
+        const usersCollection = collection(this.firestore, 'users');
+        const usernameQuery = query(usersCollection, where('username', '==', usernameOrEmail));
+        const querySnapshot = await getDocs(usernameQuery);
+        
+        if (querySnapshot.empty) {
+          await this.showErrorToast('Nom d\'utilisateur introuvable');
+          throw new Error('username_not_found');
+        }
+        
+        // Récupérer l'email du document utilisateur
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data();
+        loginEmail = userData['email'];
+        
+        if (!loginEmail) {
+          await this.showErrorToast('Email associé au nom d\'utilisateur introuvable');
+          throw new Error('email_not_found');
+        }
+        
+        console.log('Email trouvé pour le nom d\'utilisateur:', loginEmail);
+      }
+      
+      // Procéder à l'authentification avec l'email
+      const userCredential = await signInWithEmailAndPassword(this.auth, loginEmail, password);
       return userCredential.user;
-    } catch (error) {
-      console.error('Error signing in:', error);
+    } catch (error: any) {
+      console.error('Erreur lors de la connexion:', error);
+      
+      // Afficher un message d'erreur approprié si l'erreur n'est pas déjà gérée
+      if (error.message !== 'username_not_found' && error.message !== 'email_not_found') {
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+          await this.showErrorToast('Email/nom d\'utilisateur ou mot de passe incorrect');
+        } else if (error.code === 'auth/too-many-requests') {
+          await this.showErrorToast('Trop de tentatives échouées. Veuillez réessayer plus tard.');
+        } else if (error.code === 'auth/invalid-email') {
+          await this.showErrorToast('Format d\'email invalide');
+        } else {
+          await this.showErrorToast('Erreur lors de la connexion. Veuillez réessayer.');
+        }
+      }
+      
       throw error;
     }
   }
