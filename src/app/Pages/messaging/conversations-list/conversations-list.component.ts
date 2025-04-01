@@ -32,13 +32,16 @@ export class ConversationsListComponent implements OnInit, OnDestroy {
       const user = await this.firebaseService.getCurrentUser() as any;
       this.currentUserId = user ? user.uid : null;
       
-      // Subscribe to conversations
+      // Écouter les conversations
       this.conversationsSub = this.messagingService.conversations$.subscribe(conversations => {
         this.conversations = conversations;
         this.loading = false;
       });
+
+      // Initialiser l'écoute des conversations
+      this.messagingService.initCurrentUser();
     } catch (error) {
-      console.error('Error loading conversations:', error);
+      console.error('Erreur lors du chargement des conversations :', error);
       this.loading = false;
     }
   }
