@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ToastController, AlertController } from '@ionic/angular';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { FirebaseService } from '../../../services/firebase.service';
 import { MessagingService } from '../../../services/messaging.service';
 import { Router } from '@angular/router';
+import { interval, Subscription } from 'rxjs';
 
 interface Partner {
   id: number;
@@ -32,7 +33,7 @@ interface Filters {
   styleUrls: ['tab2.page.scss'],
   standalone: false,
 })
-export class Tab2Page implements OnInit {
+export class Tab2Page implements OnInit, OnDestroy {
   partners: Partner[] = [];
 
   filteredPartners: Partner[] = [];
@@ -41,6 +42,7 @@ export class Tab2Page implements OnInit {
   isFilterModalOpen = false;
   loading = true; // Add loading property
   creatingConversation = false; // Flag to prevent multiple clicks
+  private refreshIntervalSub: Subscription | null = null;
 
   filters: Filters = {
     discipline: [],
@@ -60,6 +62,21 @@ export class Tab2Page implements OnInit {
   ngOnInit() {
     // Load real users from Firebase
     this.loadUsers();
+    this.startAutoRefresh();
+  }
+
+  private startAutoRefresh() {
+    // Actualiser toutes les 30 secondes
+    this.refreshIntervalSub = interval(30000).subscribe(() => {
+      this.loadUsers();
+    });
+  }
+
+  ngOnDestroy() {
+    // Nettoyer l'abonnement à l'intervalle
+    if (this.refreshIntervalSub) {
+      this.refreshIntervalSub.unsubscribe();
+    }
   }
 
   // Modified method to load only real users from Firebase
