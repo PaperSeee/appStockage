@@ -41,11 +41,33 @@ export class CapacitorInit {
   
   private static initializePwa(): void {
     if (this.isPwa()) {
-      // Add PWA specific initialization
       console.log('Running as PWA');
       
       // Apply PWA specific styles
       document.body.classList.add('pwa-mode');
+      
+      // Fix iOS PWA scrolling issues
+      if ((window.navigator as any).standalone === true) {
+        document.body.classList.add('pwa-ios');
+        
+        // Add handler for iOS navigation
+        document.addEventListener('click', (e) => {
+          const target = e.target as HTMLElement;
+          const anchor = target.closest('a') as HTMLAnchorElement;
+          
+          if (anchor && anchor.href && !anchor.getAttribute('target') && 
+              anchor.href.indexOf('http') === 0 && anchor.href.indexOf(window.location.origin) === 0) {
+            e.preventDefault();
+            window.location.href = anchor.href;
+          }
+        });
+      }
+      
+      // Register unload handlers to save state
+      window.addEventListener('beforeunload', () => {
+        // Sauvegarde de l'état si nécessaire avant déchargement
+        console.log('PWA: saving state before unload');
+      });
     }
   }
 }

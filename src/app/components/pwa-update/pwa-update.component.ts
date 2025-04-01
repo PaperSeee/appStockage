@@ -6,7 +6,8 @@ import { ToastController } from '@ionic/angular';
 @Component({
   selector: 'app-pwa-update',
   template: '',
-  styles: []
+  styles: [],
+  standalone: false // Ajout de cette propriété pour explicitement indiquer que ce n'est pas un composant standalone
 })
 export class PwaUpdateComponent implements OnInit {
   constructor(

@@ -5,8 +5,24 @@
   "background_color": "#ffffff",
   "display": "standalone",
   "scope": "./",
-  "start_url": "./",
+  "start_url": "./index.html",
   "orientation": "portrait",
+  "categories": ["productivity", "utilities"],
+  "description": "Application de stockage et de gestion de données",
+  "screenshots": [
+    {
+      "src": "assets/screenshots/screen1.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Accueil",
+      "url": "/tabs/tab1",
+      "icons": [{ "src": "assets/icons/icon-96x96.png", "sizes": "96x96" }]
+    }
+  ],
   "icons": [
     {
       "src": "assets/icons/icon-72x72.png",

@@ -40,3 +40,54 @@
   --ion-color-primary: #ffb800; // Jaune intense
   --ion-color-primary-contrast: #000000; // Texte noir
 }
+
+/* Styles spécifiques pour la PWA */
+.pwa-mode {
+  /* Éviter le débordement pour les PWA */
+  overflow-x: hidden;
+  
+  /* Correction de la hauteur en mode PWA */
+  height: 100%;
+  width: 100%;
+  
+  /* Animation de transition smoother */
+  transition: all 0.3s ease;
+  
+  /* Empêcher le bounce effect sur iOS */
+  position: fixed;
+  
+  /* Empêcher le défilement de rebond sur iOS */
+  overscroll-behavior-y: none;
+}
+
+/* Corrections spécifiques pour iOS PWA */
+.pwa-ios {
+  /* Adapter pour la barre d'état */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  
+  /* Correction pour le clavier */
+  .ios-pwa-input:focus {
+    position: relative;
+    z-index: 1;
+    transform: translateY(-10vh);
+    transition: transform 0.3s ease-out;
+  }
+  
+  /* Réinitialiser la position après le focus */
+  .ios-pwa-input:not(:focus) {
+    transform: translateY(0);
+    transition: transform 0.3s ease-in;
+  }
+}
+
+/* Animation de chargement pour PWA */
+@keyframes pwa-loading {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.pwa-loading {
+  animation: pwa-loading 1.5s infinite;
+}
