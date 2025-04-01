@@ -67,52 +67,58 @@
     </ng-template>
   </ion-modal>
 
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="loading-container ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Chargement des partenaires...</p>
+  </div>
+
   <!-- Ultra modern partners list -->
-  <div class="partners-container" *ngIf="filteredPartners.length > 0">
-    <div class="partner-card" *ngFor="let partner of filteredPartners">
+  <div class="partners-container" *ngIf="!loading && filteredUsers.length > 0">
+    <div class="partner-card" *ngFor="let user of filteredUsers; trackBy: trackUserById">
       <div class="card-top">
         <div class="partner-avatar">
-          <img [src]="partner.photo || 'assets/default-profile.jpg'" 
+          <img [src]="user.photo || 'assets/default-profile.jpg'" 
               (error)="handleImageError($event)" 
-              alt="Photo de {{partner.name}}">
+              alt="Photo de {{getUserFullName(user)}}">
           <div class="status-indicator online"></div>
         </div>
         
         <div class="partner-basic-info">
-          <h2>{{partner.name}} <span class="age">{{partner.age}}</span></h2>
+          <h2>{{getUserFullName(user)}} <span class="age" *ngIf="user.age">{{user.age}}</span></h2>
           <div class="partner-badges">
-            <span class="badge level">{{partner.level}}</span>
-            <span class="badge distance">{{partner.distance}} km</span>
+            <span class="badge level">{{user.level || 'Débutant'}}</span>
+            <span class="badge distance" *ngIf="user.distance">{{user.distance}} km</span>
           </div>
         </div>
       </div>
       
       <div class="partner-details">
-        <div class="location-info">
+        <div class="location-info" *ngIf="user.city">
           <ion-icon name="location-outline"></ion-icon>
-          <span>{{partner.city}}</span>
+          <span>{{user.city}}</span>
         </div>
         
-        <div class="discipline-info">
+        <div class="discipline-info" *ngIf="user.discipline">
           <ion-icon name="fitness-outline"></ion-icon>
-          <span>{{partner.mainDiscipline}}</span>
+          <span>{{user.discipline}}</span>
         </div>
       </div>
       
-      <div class="disciplines-container">
-        <div class="tag" *ngFor="let discipline of partner.disciplines">
+      <div class="disciplines-container" *ngIf="user.disciplines && user.disciplines.length > 0">
+        <div class="tag" *ngFor="let discipline of user.disciplines">
           {{discipline}}
         </div>
       </div>
       
-      <p class="bio">{{partner.bio}}</p>
+      <p class="bio" *ngIf="user.bio">{{user.bio}}</p>
       
       <div class="action-buttons">
-        <button class="action-btn message-btn" (click)="sendMessage(partner)">
+        <button class="action-btn message-btn" (click)="sendMessage(user)">
           <ion-icon name="chatbubble-outline"></ion-icon>
           <span>Message</span>
         </button>
-        <button class="action-btn connect-btn">
+        <button class="action-btn connect-btn" (click)="connectWithUser(user)">
           <ion-icon name="person-add-outline"></ion-icon>
           <span>Connecter</span>
         </button>
@@ -121,7 +127,7 @@
   </div>
 
   <!-- Modern empty state -->
-  <div class="empty-state-container" *ngIf="filteredPartners.length === 0">
+  <div class="empty-state-container" *ngIf="!loading && filteredUsers.length === 0">
     <div class="empty-illustration">
       <ion-icon name="search-outline"></ion-icon>
     </div>

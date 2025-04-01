@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
+import { FirebaseService } from '../../../services/firebase.service';
 
 interface Partner {
   id: number;
@@ -30,78 +31,14 @@ interface Filters {
   standalone: false,
 })
 export class Tab2Page implements OnInit {
-  // Mock data for partners with updated image URLs
-  partners: Partner[] = [
-    {
-      id: 1,
-      name: 'Thomas',
-      age: 28,
-      gender: 'homme',
-      photo: 'https://randomuser.me/api/portraits/men/32.jpg',
-      bio: 'Passionné de boxe anglaise depuis 5 ans. Cherche des sparrings techniques pour progresser.',
-      level: 'Intermédiaire',
-      mainDiscipline: 'Boxe',
-      disciplines: ['Boxe', 'MMA'],
-      distance: 3,
-      city: 'Paris'
-    },
-    {
-      id: 2,
-      name: 'Sophie',
-      age: 24,
-      gender: 'femme',
-      photo: 'https://randomuser.me/api/portraits/women/44.jpg',
-      bio: 'Pratiquante de BJJ depuis 2 ans. Ceinture bleue. Je cherche des partenaires pour des rolls techniques.',
-      level: 'Intermédiaire',
-      mainDiscipline: 'Jiu-jitsu',
-      disciplines: ['Jiu-jitsu', 'MMA'],
-      distance: 5,
-      city: 'Lyon'
-    },
-    {
-      id: 3,
-      name: 'Mathieu',
-      age: 32,
-      gender: 'homme',
-      photo: 'https://randomuser.me/api/portraits/men/67.jpg',
-      bio: 'Champion régional de Muay Thai. Disponible pour des sparrings techniques ou intensifs.',
-      level: 'Avancé',
-      mainDiscipline: 'Muay Thai',
-      disciplines: ['Muay Thai', 'Boxe', 'K1'],
-      distance: 8,
-      city: 'Marseille'
-    },
-    {
-      id: 4,
-      name: 'Emma',
-      age: 26,
-      gender: 'femme',
-      photo: 'https://randomuser.me/api/portraits/women/22.jpg',
-      bio: 'Débutante en MMA, je cherche à progresser dans tous les domaines avec des partenaires patients.',
-      level: 'Débutant',
-      mainDiscipline: 'MMA',
-      disciplines: ['MMA', 'Boxe'],
-      distance: 2,
-      city: 'Bordeaux'
-    },
-    {
-      id: 5,
-      name: 'Alexandre',
-      age: 30,
-      gender: 'homme',
-      photo: 'https://randomuser.me/api/portraits/men/91.jpg',
-      bio: 'Judoka reconverti au BJJ. Je recherche des échanges techniques et des sparrings légers.',
-      level: 'Intermédiaire',
-      mainDiscipline: 'Judo',
-      disciplines: ['Judo', 'Jiu-jitsu'],
-      distance: 10,
-      city: 'Lille'
-    }
-  ];
+  // We'll keep the interface definition but not use this hardcoded data
+  partners: Partner[] = [];
 
   filteredPartners: Partner[] = [];
+  filteredUsers: any[] = []; // For Firebase users
   currentPartnerIndex = 0;
   isFilterModalOpen = false;
+  loading = true; // Add loading property
 
   filters: Filters = {
     discipline: [],
@@ -112,12 +49,55 @@ export class Tab2Page implements OnInit {
 
   constructor(
     private toastController: ToastController,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private firebaseService: FirebaseService
   ) {}
 
   ngOnInit() {
-    // Initialize filtered partners with all partners
-    this.applyFilters();
+    // Load real users from Firebase
+    this.loadUsers();
+  }
+
+  // Modified method to load only real users from Firebase
+  async loadUsers() {
+    this.loading = true;
+    try {
+      const users = await this.firebaseService.getAllDocuments('users') as any[];
+      this.filteredUsers = users.map(user => ({
+        ...user,
+        disciplines: user.disciplines || [user.discipline].filter(Boolean),
+        distance: user.distance || Math.floor(Math.random() * 20) + 1 // Random distance for demo
+      }));
+      console.log('Loaded users:', this.filteredUsers);
+    } catch (error) {
+      console.error('Error loading users:', error);
+      // Initialize with empty array instead of falling back to mock data
+      this.filteredUsers = [];
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  // Add method to get user's full name
+  getUserFullName(user: any): string {
+    if (user.name) return user.name;
+    return `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Utilisateur';
+  }
+
+  // Add method for tracking users in ngFor
+  trackUserById(index: number, user: any): string {
+    return user.id || user.userId || index.toString();
+  }
+
+  // Add method to connect with user
+  async connectWithUser(user: any) {
+    const toast = await this.toastController.create({
+      message: `Demande de connexion envoyée à ${this.getUserFullName(user)}`,
+      duration: 2000,
+      position: 'bottom',
+      color: 'success'
+    });
+    await toast.present();
   }
 
   openFilters() {
@@ -129,21 +109,25 @@ export class Tab2Page implements OnInit {
   }
 
   applyFilters() {
-    this.filteredPartners = this.partners.filter(partner => {
+    // Only filter the Firebase users
+    const allUsers = [...this.filteredUsers];
+    
+    this.filteredUsers = allUsers.filter(user => {
       // Filter by gender
-      if (this.filters.gender !== 'tous' && partner.gender !== this.filters.gender) {
+      if (this.filters.gender !== 'tous' && user.gender !== this.filters.gender) {
         return false;
       }
 
       // Filter by level
-      if (this.filters.level && partner.level.toLowerCase() !== this.filters.level) {
+      if (this.filters.level && user.level?.toLowerCase() !== this.filters.level) {
         return false;
       }
 
       // Filter by discipline
       if (this.filters.discipline && this.filters.discipline.length > 0) {
-        const hasMatchingDiscipline = partner.disciplines.some(d => 
-          this.filters.discipline.includes(d.toLowerCase())
+        const userDisciplines = user.disciplines || [user.discipline];
+        const hasMatchingDiscipline = userDisciplines.some((d: string) => 
+          d && this.filters.discipline.includes(d.toLowerCase())
         );
         if (!hasMatchingDiscipline) {
           return false;
@@ -151,68 +135,24 @@ export class Tab2Page implements OnInit {
       }
 
       // Filter by distance
-      if (partner.distance > this.filters.distance) {
+      if (user.distance > this.filters.distance) {
         return false;
       }
 
       return true;
     });
 
-    this.currentPartnerIndex = 0;
     this.closeFilters();
   }
 
-  swipeLeft() {
-    // Pass action
-    if (this.currentPartnerIndex < this.filteredPartners.length - 1) {
-      this.currentPartnerIndex++;
-    } else {
-      // No more partners available
-      this.filteredPartners = [];
-    }
-  }
-
-  async sendMessage(partner: Partner) {
-    // In a real app, this would open a chat window with the partner
+  async sendMessage(user: any) {
     const toast = await this.toastController.create({
-      message: `Message envoyé à ${partner.name}`,
+      message: `Message envoyé à ${this.getUserFullName(user)}`,
       duration: 2000,
       position: 'bottom',
       color: 'success'
     });
-    toast.present();
-    
-    // Proceed to the next profile
-    if (this.currentPartnerIndex < this.filteredPartners.length - 1) {
-      this.currentPartnerIndex++;
-    } else {
-      // No more partners available
-      this.filteredPartners = [];
-    }
-  }
-
-  swipeRight(partner: Partner) {
-    // Like action - in a real app, this would send a match request
-    console.log('Matched with:', partner.name);
-    // For now, just proceed to the next profile
-    if (this.currentPartnerIndex < this.filteredPartners.length - 1) {
-      this.currentPartnerIndex++;
-    } else {
-      // No more partners available
-      this.filteredPartners = [];
-    }
-  }
-
-  // Improved method to safely set the background image
-  getSafeBackground(photoUrl: string): SafeStyle {
-    // Check if the URL is valid
-    if (!photoUrl || photoUrl.trim() === '') {
-      photoUrl = 'assets/default-profile.jpg'; // Default image from local assets
-    }
-    
-    // Create the CSS value and sanitize it
-    const style = `url('${photoUrl}') center center / cover no-repeat`;
-    return this.sanitizer.bypassSecurityTrustStyle(style);
+    await toast.present();
   }
 
   // Handle image loading errors
