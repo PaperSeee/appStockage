@@ -20,7 +20,9 @@
     <div class="composer-container">
       <div class="user-avatar">
         <ion-avatar>
-          <img [src]="currentUser?.avatar || 'assets/par défaut.jpg'" alt="Avatar">
+          <img [src]="currentUser?.avatar || 'assets/par défaut.jpg'" 
+               alt="Avatar" 
+               (error)="handleImageError($event)">
         </ion-avatar>
       </div>
       

@@ -59,13 +59,25 @@ export class PostCreatorComponent implements OnInit {
         this.currentUser = {
           id: user.uid,
           name: `${userData?.firstName || ''} ${userData?.lastName || ''}`,
-          avatar: userData?.photo || 'assets/default-avatar.png',
+          avatar: userData?.photo || 'assets/par défaut.jpg', // Consistent path with HTML
           discipline: userData?.discipline
         };
       }
     } catch (error) {
       console.error('Error getting current user:', error);
+      // Set default user if there's an error
+      this.currentUser = {
+        id: 'unknown',
+        name: 'Utilisateur',
+        avatar: 'assets/par défaut.jpg',
+        discipline: ''
+      };
     }
+  }
+  
+  // Add method to handle image loading errors
+  handleImageError(event: any) {
+    event.target.src = 'assets/par défaut.jpg';
   }
   
   async addPhoto() {
