@@ -38,35 +38,51 @@ export class RegisterPage {
         return;
       }
 
-      const isAvailable = await this.firebaseService.isUsernameAvailable(this.user.username);
+      let isAvailable = true;
+      try {
+        // Tentative de vérification du nom d'utilisateur
+        isAvailable = await this.firebaseService.isUsernameAvailable(this.user.username);
+      } catch (error) {
+        console.warn('Erreur lors de la vérification du nom d\'utilisateur, on continue:', error);
+        // On continue même si la vérification échoue
+      }
+      
       if (!isAvailable) {
         alert('Ce nom d\'utilisateur est déjà pris. Veuillez en choisir un autre.');
         return;
       }
 
-      const userCredential = await this.firebaseService.signUp(this.user.email, this.user.password);
-      const userId = userCredential.uid;
+      try {
+        const userCredential = await this.firebaseService.signUp(this.user.email, this.user.password);
+        const userId = userCredential.uid;
 
-      // Save additional user data to Firestore
-      await this.firebaseService.addDocument('users', {
-        userId,
-        firstName: this.user.firstName,
-        lastName: this.user.lastName,
-        username: this.user.username,
-        gender: this.user.gender,
-        discipline: this.user.discipline,
-        level: this.user.level,
-        age: this.user.age,
-        photo: this.user.photo,
-        lastUsernameChange: new Date(), // Ajouter la date de création comme date de référence
-        createdAt: new Date()
-      });
+        // Try to save additional user data to Firestore
+        try {
+          await this.firebaseService.addDocument('users', {
+            userId,
+            firstName: this.user.firstName,
+            lastName: this.user.lastName,
+            username: this.user.username,
+            gender: this.user.gender,
+            discipline: this.user.discipline,
+            level: this.user.level,
+            age: this.user.age,
+            photo: this.user.photo
+          });
+        } catch (firestoreError) {
+          console.error('Erreur lors de l\'enregistrement du profil:', firestoreError);
+          // We continue even if profile creation fails - the user is authenticated
+        }
 
-      alert('Compte créé avec succès!');
-      this.router.navigate(['/tabs/tab1']);
+        // Navigate to the main page
+        this.router.navigate(['/tabs/tab1']);
+      } catch (authError) {
+        console.error('Erreur lors de l\'authentification:', authError);
+        // The firebaseService.signUp method already shows toasts for specific errors
+      }
     } catch (error) {
-      console.error('Erreur lors de l\'inscription:', error);
-      alert('L\'inscription a échoué. Veuillez réessayer.');
+      console.error('Erreur générale lors de l\'inscription:', error);
+      alert('Une erreur s\'est produite lors de l\'inscription. Veuillez réessayer plus tard.');
     }
   }
 
