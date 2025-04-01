@@ -1,28 +1,12 @@
 {
-  "name": "App Stockage",
-  "short_name": "AppStockage",
-  "theme_color": "#3880ff",
-  "background_color": "#ffffff",
+  "name": "App Fight",
+  "short_name": "Fight",
+  "theme_color": "#ffb800",
+  "background_color": "#000000",
   "display": "standalone",
   "scope": "./",
-  "start_url": "./index.html",
+  "start_url": "./",
   "orientation": "portrait",
-  "categories": ["productivity", "utilities"],
-  "description": "Application de stockage et de gestion de données",
-  "screenshots": [
-    {
-      "src": "assets/screenshots/screen1.png",
-      "sizes": "1280x720",
-      "type": "image/png"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Accueil",
-      "url": "/tabs/tab1",
-      "icons": [{ "src": "assets/icons/icon-96x96.png", "sizes": "96x96" }]
-    }
-  ],
   "icons": [
     {
       "src": "assets/icons/icon-72x72.png",
@@ -71,6 +55,22 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Events",
+      "short_name": "Events",
+      "description": "View upcoming events",
+      "url": "/tabs/tab4",
+      "icons": [{ "src": "assets/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Profile",
+      "short_name": "Profile",
+      "description": "View your profile",
+      "url": "/tabs/tab5",
+      "icons": [{ "src": "assets/icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ]
 }

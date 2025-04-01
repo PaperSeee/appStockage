@@ -41,53 +41,56 @@
   --ion-color-primary-contrast: #000000; // Texte noir
 }
 
-/* Styles spécifiques pour la PWA */
-.pwa-mode {
-  /* Éviter le débordement pour les PWA */
-  overflow-x: hidden;
-  
-  /* Correction de la hauteur en mode PWA */
-  height: 100%;
-  width: 100%;
-  
-  /* Animation de transition smoother */
-  transition: all 0.3s ease;
-  
-  /* Empêcher le bounce effect sur iOS */
+/* PWA Specific Styles */
+body.pwa-mode {
+  /* Remove browser UI artifacts that might still be visible */
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Fix for iOS PWA input focus issues */
+body.ios-pwa {
+  /* Prevent elastic scrolling */
   position: fixed;
-  
-  /* Empêcher le défilement de rebond sur iOS */
-  overscroll-behavior-y: none;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
-/* Corrections spécifiques pour iOS PWA */
-.pwa-ios {
-  /* Adapter pour la barre d'état */
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  
-  /* Correction pour le clavier */
-  .ios-pwa-input:focus {
-    position: relative;
-    z-index: 1;
-    transform: translateY(-10vh);
-    transition: transform 0.3s ease-out;
-  }
-  
-  /* Réinitialiser la position après le focus */
-  .ios-pwa-input:not(:focus) {
-    transform: translateY(0);
-    transition: transform 0.3s ease-in;
-  }
+body.ios-pwa ion-app {
+  /* Allow scrolling within the app container */
+  height: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Animation de chargement pour PWA */
-@keyframes pwa-loading {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+/* Fix iOS PWA input styling */
+body.ios-pwa input,
+body.ios-pwa textarea,
+body.ios-pwa ion-input,
+body.ios-pwa ion-textarea {
+  font-size: 16px !important; /* iOS will zoom if less than 16px */
 }
 
-.pwa-loading {
-  animation: pwa-loading 1.5s infinite;
+/* Style when keyboard is open */
+body.keyboard-is-open {
+  /* Adjust for keyboard */
+  padding-bottom: 270px;
+}
+
+/* Improve touch targets in PWA mode */
+body.pwa-mode ion-button,
+body.pwa-mode button,
+body.pwa-mode a {
+  min-height: 44px; /* Apple's recommended minimum touch target size */
+}
+
+/* Ensure inputs are properly visible when focused */
+.ios-pwa-input:focus {
+  position: relative !important;
+  z-index: 1000 !important;
 }

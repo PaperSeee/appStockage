@@ -1,18 +1,17 @@
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA, APP_INITIALIZER } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA, APP_INITIALIZER, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
-
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 // Import Firebase modules
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import { environment } from '../environments/environment';
 
 // Import FirebaseService
 import { FirebaseService } from './services/firebase.service';
@@ -26,14 +25,6 @@ import { GrService } from './services/gr.service'; // Assurez-vous que ce chemin
 
 // Import LinkHandlerService
 import { LinkHandlerService } from './services/link-handler.service';
-
-// Import ServiceWorkerModule
-import { ServiceWorkerModule } from '@angular/service-worker';
-
-// Import PwaUpdateComponent and PwaInstallService
-import { PwaUpdateComponent } from './components/pwa-update/pwa-update.component';
-import { PwaInstallService } from './services/pwa-install.service';
-import { PwaInstallComponent } from './components/pwa-install/pwa-install.component';
 
 // Initialize Firebase
 const app = initializeApp(environment.firebaseConfig);
@@ -55,11 +46,7 @@ export function initLinkHandlerFactory(linkHandler: LinkHandlerService) {
 }
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    PwaUpdateComponent,
-    PwaInstallComponent // Ajout du composant d'installation PWA
-  ],
+  declarations: [AppComponent],
   imports: [
     BrowserModule, 
     IonicModule.forRoot(), 
@@ -73,10 +60,10 @@ export function initLinkHandlerFactory(linkHandler: LinkHandlerService) {
       }
     }),
     ServiceWorkerModule.register('ngsw-worker.js', {
-      enabled: environment.production,
+      enabled: !isDevMode(),
       // Register the ServiceWorker as soon as the application is stable
       // or after 30 seconds (whichever comes first).
-      registrationStrategy: 'registerImmediately' // Changé pour s'enregistrer immédiatement
+      registrationStrategy: 'registerWhenStable:30000'
     })
   ],
   providers: [
@@ -89,21 +76,16 @@ export function initLinkHandlerFactory(linkHandler: LinkHandlerService) {
       useFactory: initLinkHandlerFactory,
       deps: [LinkHandlerService],
       multi: true
-    },
-    PwaInstallService
+    }
   ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA] // Ajoutez ceci
 })
 export class AppModule {
-  constructor(private pwaInstallService: PwaInstallService) {
+  constructor() {
     console.log('AppModule providers:', [
       { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
       FirebaseService,
     ]);
-    // Initialiser Capacitor au démarrage de l'application
-    import('../utils/capacitor-init').then(module => {
-      module.CapacitorInit.init();
-    });
   }
 }
