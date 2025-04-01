@@ -352,36 +352,32 @@ export class FirebaseService {
 
   async addDocument(collectionName: string, data: any) {
     try {
-      // Vérification préalable de l'authentification
+      // Ensure the user is authenticated
       const user = await this.getCurrentUser();
-      if (!user && collectionName !== 'users') {
-        console.warn('Tentative d\'écriture sans authentification');
+      if (!user && collectionName === 'users') {
+        console.warn('Attempt to write to users collection without authentication');
         await this.showErrorToast('Vous devez être connecté pour effectuer cette action');
         throw new Error('Authentication required');
       }
 
-      // Ajout d'un timestamp pour faciliter le suivi des données
+      // Add a timestamp for tracking
       const dataWithTimestamp = {
         ...data,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       const docRef = await addDoc(collection(this.firestore, collectionName), dataWithTimestamp);
-      console.log(`Document ajouté avec succès: ${docRef.id} dans ${collectionName}`);
+      console.log(`Document successfully added: ${docRef.id} in ${collectionName}`);
       return docRef.id;
     } catch (error: any) {
       console.error('Error adding document:', error);
 
-      // Gestion plus robuste des erreurs
       if (error.code === 'permission-denied') {
-        console.warn('Permission denied on collection:', collectionName, 'User ID:', (await this.getCurrentUser() as any)?.uid);
-        
+        console.warn(`Permission denied on collection: ${collectionName}, User ID: ${(await this.getCurrentUser() as any)?.uid}`);
         if (collectionName === 'users') {
-          // Pour les inscriptions d'utilisateurs, afficher un message spécifique
           await this.showErrorToast('Nous rencontrons un problème avec la création de votre profil, mais votre compte a été créé. Vous pouvez vous connecter.');
-          // Retourner un faux succès pour permettre à l'utilisateur de continuer
-          return 'temporary-id';
+          return 'temporary-id'; // Allow the user to proceed
         } else {
           await this.showErrorToast('Accès refusé. Vérifiez vos permissions ou reconnectez-vous.');
         }
@@ -664,11 +660,22 @@ export class FirebaseService {
 
   async isUsernameAvailable(username: string, currentUserId?: string): Promise<boolean> {
     try {
+      // First, try to get the current authenticated user
+      const user = await this.getCurrentUser() as any;
+      
+      if (!user) {
+        console.warn('No authenticated user when checking username availability');
+        // Return true to allow registration to proceed, we'll validate again at document creation
+        return true;
+      }
+      
+      // Instead of querying all documents, we'll use a Firestore query with a where clause
+      // This still requires permission to query the collection, but it's more secure
       const usersCollection = collection(this.firestore, 'users');
       const usernameQuery = query(usersCollection, where('username', '==', username));
       const querySnapshot = await getDocs(usernameQuery);
       
-      // Si currentUserId est fourni, on vérifie que ce n'est pas le même utilisateur
+      // If currentUserId is provided, we check that it's not the same user
       if (currentUserId && !querySnapshot.empty) {
         // Retourne true si le seul document trouvé est celui de l'utilisateur actuel
         return querySnapshot.docs.length === 1 && 

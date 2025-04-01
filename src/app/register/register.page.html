@@ -64,12 +64,13 @@
 
         <div class="form-group">
           <ion-item class="custom-item">
+            <ion-icon name="person-outline" slot="start"></ion-icon>
             <ion-label position="floating">Nom d'utilisateur</ion-label>
-            <ion-input [(ngModel)]="user.username" type="text" required></ion-input>
+            <ion-input [(ngModel)]="user.username" name="username" type="text" required></ion-input>
           </ion-item>
-          <div *ngIf="!user.username.trim()" class="error-message">
+          <ion-note *ngIf="!user.username || !user.username.trim()" color="danger">
             Le nom d'utilisateur est obligatoire.
-          </div>
+          </ion-note>
         </div>
       </div>
 

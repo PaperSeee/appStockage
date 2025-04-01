@@ -23,7 +23,7 @@ export class RegisterPage {
     level: '',
     age: null as number | null,
     photo: null as string | null,
-    username: ''
+    username: '' // Assurez-vous que ce champ est bien initialisé
   };
 
   constructor(
@@ -58,7 +58,8 @@ export class RegisterPage {
 
         // Try to save additional user data to Firestore
         try {
-          await this.firebaseService.addDocument('users', {
+          // Use setDocument instead of addDocument to ensure document ID equals user UID
+          await this.firebaseService.setDocument('users', userId, {
             userId,
             firstName: this.user.firstName,
             lastName: this.user.lastName,
@@ -67,7 +68,8 @@ export class RegisterPage {
             discipline: this.user.discipline,
             level: this.user.level,
             age: this.user.age,
-            photo: this.user.photo
+            photo: this.user.photo,
+            createdAt: new Date()
           });
         } catch (firestoreError) {
           console.error('Erreur lors de l\'enregistrement du profil:', firestoreError);
@@ -97,14 +99,12 @@ export class RegisterPage {
           if (!userDoc) {
             try {
               console.log('Création d\'un nouveau profil utilisateur pour:', result.uid);
-              // Attendre 1 seconde pour s'assurer que l'authentification est bien propagée
-              await new Promise(resolve => setTimeout(resolve, 1000));
               
               // Générer un nom d'utilisateur unique
               const baseUsername = (result.displayName || 'user').toLowerCase().replace(/[^a-z0-9]/g, '');
               const username = `${baseUsername}${Math.floor(Math.random() * 1000)}`;
               
-              // Utiliser setDocument au lieu de addDocument pour définir l'ID explicitement
+              // Always use setDocument with the UID as document ID
               await this.firebaseService.setDocument('users', result.uid, {
                 userId: result.uid,
                 firstName: result.displayName?.split(' ')[0] || '',
@@ -147,7 +147,8 @@ export class RegisterPage {
           const username = `${baseUsername}${Math.floor(Math.random() * 1000)}`;
           
           // Si l'utilisateur n'existe pas, créer un nouveau document
-          await this.firebaseService.addDocument('users', {
+          // Use setDocument here too
+          await this.firebaseService.setDocument('users', result.uid, {
             userId: result.uid,
             firstName: result.displayName?.split(' ')[0] || '',
             lastName: result.displayName?.split(' ').slice(1).join(' ') || '',
