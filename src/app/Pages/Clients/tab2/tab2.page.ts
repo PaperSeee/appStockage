@@ -99,10 +99,26 @@ export class Tab2Page implements OnInit, OnDestroy {
     }
   }
 
-  // Add method to get user's full name
+  // Improved method to get user's full name
   getUserFullName(user: any): string {
-    if (user.name) return user.name;
-    return `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Utilisateur';
+    // First check if name property exists
+    if (user.name && typeof user.name === 'string' && user.name.trim()) 
+      return user.name;
+    
+    // Next try firstName and lastName (the format used in our Firestore database)
+    const firstName = user.firstName || '';
+    const lastName = user.lastName || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+    
+    // If we have either a firstName or lastName, return the combined name
+    if (fullName) return fullName;
+    
+    // If we have a username, use that instead of the generic "Utilisateur"
+    if (user.username && typeof user.username === 'string' && user.username.trim())
+      return user.username;
+    
+    // Last resort fallback
+    return 'Utilisateur';
   }
 
   // Add method for tracking users in ngFor
