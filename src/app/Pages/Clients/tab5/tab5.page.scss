@@ -1,13 +1,23 @@
-// Common variables (at top to reduce repetition)
-$card-radius: 16px;
-$card-padding: 20px;
-$card-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-$section-margin: 28px;
-$transition-standard: all 0.3s ease;
+// Import shared styles
+@import '../shared-styles.scss';
 
-// Base styles
-ion-content {
-  --background: #f5f7fa;
+// Variables
+$primary-color: var(--ion-color-primary);
+$secondary-color: var(--ion-color-secondary);
+$tertiary-color: var(--ion-color-tertiary);
+$success-color: var(--ion-color-success);
+$warning-color: var(--ion-color-warning);
+$danger-color: var(--ion-color-danger);
+$dark-color: var(--ion-color-dark);
+$medium-color: var(--ion-color-medium);
+$light-color: var(--ion-color-light);
+$light-bg: #f5f7fa;
+$card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+$card-radius: 16px;
+
+// General styling
+.tracking-content {
+  --background: #{$light-bg};
   --padding-start: 16px;
   --padding-end: 16px;
   --padding-top: 16px;
@@ -15,961 +25,491 @@ ion-content {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
 }
 
-// Shared card styles
-%card-base {
-  background: white;
-  border-radius: $card-radius;
-  padding: $card-padding;
-  box-shadow: $card-shadow;
-  margin-bottom: $section-margin;
+// Card styling
+ion-card {
+  @extend %card-base;
 }
 
 // Section headers
 .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
-
-  h2 {
-    font-size: 20px;
-    font-weight: 700;
-    margin: 0;
-    color: #000;
-    letter-spacing: -0.3px;
-  }
+  @extend %section-header;
 }
 
-// Header styling
-ion-header {
-  ion-toolbar {
-    --background: white;
-    --border-style: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    
-    ion-title {
-      font-weight: 700;
-      font-size: 18px;
-      color: #000;
-      text-align: center;
-    }
-    
-    ion-button {
-      --color: #000;
-      
-      ion-icon {
-        font-size: 20px;
-      }
-    }
-  }
-}
-
-// Stats Overview
-.stats-overview {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin-bottom: $section-margin;
-}
-
-.stat-card {
-  @extend %card-base;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 20px 16px;
-  transition: $transition-standard;
-  margin-bottom: 0;
+// Form section styling
+.form-section {
+  margin-bottom: 20px;
   
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-  }
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 4px;
-  color: var(--ion-color-primary);
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.stat-trend {
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-
-  &.positive { color: #4caf50; }
-  &.negative { color: #f44336; }
-  &.neutral { color: #9e9e9e; }
-
-  ion-icon { margin-right: 4px; }
-}
-
-// Charts & progress
-.chart-section {
-  @extend %card-base;
-}
-
-// Calendar section
-.calendar-section {
-  @extend %card-base;
-  overflow: hidden;
-}
-
-// Competition section
-.competitions-section {
-  @extend %card-base;
-}
-
-// Goals section
-.goals-section {
-  @extend %card-base;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-// Rest of the more specific styling 
-.placeholder-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  height: 100%;
-  padding: 0 32px;
-  
-  ion-icon {
-    font-size: 80px;
-    color: #ffb800;
-    margin-bottom: 16px;
-  }
-  
-  h2 {
-    font-size: 22px;
-    font-weight: 700;
-    color: #404040;
-    margin-bottom: 12px;
-  }
-  
-  p {
-    font-size: 16px;
-    color: #757575;
-    max-width: 300px;
-    line-height: 1.5;
-  }
-}
-
-// Calendar styling
-.modern-calendar {
-  margin-top: 20px;
-}
-
-.calendar-weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.weekday {
-  text-align: center;
-  font-weight: 600;
-  font-size: 13px;
-  color: #555;
-  padding: 10px 0;
-  text-transform: uppercase;
-}
-
-.calendar-body {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-}
-
-.calendar-day {
-  aspect-ratio: 1;
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  user-select: none;
-  background: #f5f7fa;
-  
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    z-index: 1;
-  }
-  
-  .day-content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 8px;
-  }
-  
-  .day-number {
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-    align-self: flex-start;
-  }
-  
-  .day-indicators {
-    display: flex;
-    justify-content: center;
-    gap: 4px;
-    margin-bottom: 4px;
-    
-    .indicator {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      
-      &.training {
-        background-color: var(--ion-color-primary);
-      }
-      
-      &.competition {
-        background-color: #ff3d00;
-      }
-    }
-  }
-  
-  &.inactive {
-    opacity: 0.4;
-    
-    .day-number {
-      color: #999;
-    }
-  }
-  
-  &.today {
-    .day-number {
-      background: var(--ion-color-primary);
-      color: white;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-  }
-  
-  &.trained {
-    background: rgba(var(--ion-color-primary-rgb), 0.15);
-    border: 1px solid rgba(var(--ion-color-primary-rgb), 0.3);
-  }
-  
-  &.competition {
-    background: rgba(255, 61, 0, 0.15);
-    border: 1px solid rgba(255, 61, 0, 0.3);
-  }
-  
-  &.has-events {
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-  }
-  
-  &.trained.competition {
-    background: linear-gradient(135deg, 
-      rgba(var(--ion-color-primary-rgb), 0.2) 0%, 
-      rgba(var(--ion-color-primary-rgb), 0.2) 50%, 
-      rgba(255, 61, 0, 0.2) 50%, 
-      rgba(255, 61, 0, 0.2) 100%);
-  }
-}
-
-.calendar-legend {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  margin-top: 20px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  font-size: 13px;
-  color: #555;
-}
-
-.legend-color {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  margin-right: 8px;
-
-  &.trained {
-    background-color: rgba(var(--ion-color-primary-rgb), 0.6);
-    box-shadow: 0 2px 5px rgba(var(--ion-color-primary-rgb), 0.3);
-  }
-
-  &.competition {
-    background-color: rgba(255, 61, 0, 0.6);
-    box-shadow: 0 2px 5px rgba(255, 61, 0, 0.3);
-  }
-}
-
-// Competition cards
-.competition-card {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  border-radius: 12px;
-  background: #f8f9fc;
-  margin-bottom: 16px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid #eaecf0;
-  animation: fadeIn 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-  }
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.competition-medal {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-right: 18px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-  
-  &:hover {
-    transform: scale(1.1) rotate(5deg);
-  }
-
-  &.gold {
-    background: linear-gradient(145deg, #ffd700, #ffc107);
-  }
-
-  &.silver {
-    background: linear-gradient(145deg, #e0e0e0, #c0c0c0);
-  }
-
-  &.bronze {
-    background: linear-gradient(145deg, #cd7f32, #be7023);
-  }
-
-  &.other {
-    background: linear-gradient(145deg, #b0b0b0, #a0a0a0);
-  }
-
-  ion-icon {
-    color: white;
-    font-size: 24px;
-    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
-  }
-}
-
-.competition-details {
-  flex: 1;
-
-  h3 {
-    margin: 0 0 4px;
+  h5 {
     font-size: 16px;
     font-weight: 600;
+    color: $dark-color;
+    margin-top: 0;
+    margin-bottom: 8px;
   }
 
-  .competition-date, .competition-location {
-    margin: 0;
-    font-size: 12px;
-    color: #666;
-    display: flex;
-    align-items: center;
-
-    ion-icon {
-      margin-right: 4px;
-    }
-  }
-}
-
-.competition-position {
-  font-weight: 700;
-  color: #333;
-  font-size: 16px;
-}
-
-// Goals styling
-.goal-timeline {
-  position: relative;
-}
-
-.goal-item {
-  display: flex;
-  margin-bottom: 16px;
-  position: relative;
-  align-items: flex-start;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  &.completed {
-    .goal-icon {
-      background-color: #4caf50;
-    }
-  }
-
-  &.in-progress {
-    .goal-icon {
-      background-color: var(--ion-color-primary);
-    }
-  }
-
-  &.upcoming {
-    .goal-icon {
-      background-color: #9e9e9e;
-    }
-  }
-}
-
-.goal-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-right: 16px;
-  flex-shrink: 0;
-
-  ion-icon {
-    color: white;
-    font-size: 16px;
-  }
-}
-
-.goal-content {
-  flex: 1;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  padding: 12px;
-}
-
-.goal-title {
-  font-weight: 600;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.goal-date {
-  font-size: 12px;
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.goal-progress {
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  .progress-bar {
-    flex: 1;
-    height: 6px;
-    background-color: #eee;
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .progress {
-    height: 100%;
-    background-color: var(--ion-color-primary);
-    border-radius: 3px;
-    transition: width 0.3s ease;
-  }
-
-  span {
-    font-size: 12px;
-    color: #666;
-    white-space: nowrap;
-  }
-}
-
-.goal-badge {
-  display: inline-flex;
-  align-items: center;
-  background-color: #f0f0f0;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  
-  ion-icon {
-    margin-right: 4px;
-    color: var(--ion-color-primary);
-  }
-}
-
-.view-all-btn {
-  margin-top: 16px;
-}
-
-// Empty state styling
-.empty-state {
-  text-align: center;
-  padding: 24px 16px;
-  
-  .empty-icon {
-    font-size: 48px;
-    color: #ccc;
-    margin-bottom: 12px;
-  }
-  
-  p {
-    color: #666;
-    margin-bottom: 16px;
-  }
-}
-
-// FAB Button styling
-ion-fab {
-  ion-fab-button {
-    --box-shadow: 0 6px 20px rgba(var(--ion-color-primary-rgb), 0.4);
-    
-    &:hover {
-      --box-shadow: 0 8px 24px rgba(var(--ion-color-primary-rgb), 0.5);
-    }
-  }
-  
-  ion-fab-list {
-    ion-fab-button {
-      --background: var(--ion-color-light);
-      --color: var(--ion-color-dark);
-      position: relative;
-      transition: $transition-standard;
-      
-      &:hover {
-        transform: scale(1.1);
-      }
-      
-      &[color="primary"], &[color="tertiary"], &[color="success"] {
-        --color: var(--ion-color-light);
-      }
-      
-      &[color="primary"] { --background: var(--ion-color-primary); }
-      &[color="tertiary"] { --background: var(--ion-color-tertiary); }
-      &[color="success"] { --background: var(--ion-color-success); }
-    }
-  }
-}
-
-// Modal styling
-.modal-header {
-  ion-toolbar {
-    --background: linear-gradient(120deg, var(--ion-color-primary), #4a8bfc);
-    
-    ion-title {
-      color: white;
-      font-weight: 600;
-      font-size: 18px;
-    }
-    
-    ion-button {
-      --color: white;
-    }
-  }
-}
-
-.modal-content {
-  --background: #f5f7fa;
-}
-
-.form-container {
-  padding: 20px 16px;
-}
-
-.form-section {
-  background-color: white;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-ion-item {
-  --background: #f9f9f9;
-  --border-radius: 8px;
-  --padding-start: 12px;
-  --padding-end: 12px;
-  margin-bottom: 12px;
-  
-  ion-label {
-    color: #555;
-    font-weight: 500;
-    margin-bottom: 6px;
-  }
-  
-  ion-input, ion-textarea, ion-select {
+  ion-item {
+    --background: #{$light-bg};
+    --border-radius: 8px;
     --padding-start: 12px;
     --padding-end: 12px;
-    --background: #f9f9f9;
-    font-size: 15px;
-  }
-}
-
-.date-item {
-  display: block;
-  
-  ion-datetime-button {
     margin-top: 8px;
-    width: 100%;
-    --background: #f0f0f0;
-    --border-radius: 8px;
-    --box-shadow: none;
   }
 }
 
-.training-type-selector {
-  margin-bottom: 12px;
+// Form grid layout for two column layout
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+// START BUTTON AND TIMER SECTION
+.start-section {
+  margin-bottom: 24px;
   
-  ion-segment {
-    --background: #f0f0f0;
-    border-radius: 8px;
+  ion-card-content {
+    padding: 20px;
+  }
+}
+
+.timer-display {
+  text-align: center;
+  margin-bottom: 16px;
+  
+  .timer {
+    font-size: 48px;
+    font-weight: 700;
+    color: $dark-color;
+    font-family: monospace;
+  }
+  
+  .session-label {
+    font-size: 14px;
+    color: $medium-color;
+    margin-top: 4px;
+  }
+}
+
+.start-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  
+  .start-button {
+    --background: #{$danger-color};
+    --color: white;
+    --border-radius: 12px;
+    --box-shadow: 0 4px 12px rgba(var(--ion-color-danger-rgb), 0.4);
+    height: 50px;
+    font-size: 16px;
+    font-weight: 600;
     
-    ion-segment-button {
-      --background-checked: var(--ion-color-primary);
-      --color-checked: white;
-      --indicator-color: transparent;
-      --border-radius: 8px;
-      --padding-top: 8px;
-      --padding-bottom: 8px;
-      min-width: 90px;
+    ion-icon {
+      font-size: 20px;
+      margin-right: 8px;
+    }
+  }
+  
+  .manual-button {
+    --border-color: #{$medium-color};
+    --color: #{$medium-color};
+    --border-radius: 12px;
+    height: 44px;
+    font-weight: 500;
+  }
+  
+  .active-session-controls {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    
+    ion-button {
+      --border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      --padding-start: 0;
+      --padding-end: 0;
+      margin: 0;
       
       ion-icon {
+        font-size: 24px;
+      }
+    }
+  }
+}
+
+// QUICK POST-SESSION FORM
+.session-form {
+  ion-card-header {
+    padding: 16px 16px 0 16px;
+    
+    ion-card-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    ion-card-subtitle {
+      color: $medium-color;
+      margin-top: 4px;
+    }
+  }
+  
+  ion-card-content {
+    padding: 16px;
+  }
+  
+  .activity-segment {
+    background: $light-bg;
+    border-radius: 8px;
+    margin-top: 8px;
+    
+    ion-segment-button {
+      --color: #{$medium-color};
+      --color-checked: #{$primary-color};
+      --indicator-color: white;
+      min-height: 40px;
+      
+      ion-icon {
+        font-size: 18px;
         margin-bottom: 4px;
       }
       
       ion-label {
         font-size: 12px;
-        text-transform: none;
       }
     }
   }
-}
-
-.submit-button {
-  margin-top: 10px;
-  --border-radius: 10px;
-  --box-shadow: 0 4px 10px rgba(var(--ion-color-primary-rgb), 0.3);
-  height: 48px;
-  font-weight: 600;
   
-  ion-icon {
-    font-size: 18px;
-    margin-right: 8px;
-  }
-}
-
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  
-  ion-spinner {
-    margin-bottom: 10px;
-  }
-  
-  p {
-    color: var(--ion-color-medium);
-  }
-}
-
-.error-message {
-  color: var(--ion-color-danger);
-  font-size: 12px;
-  margin-left: 16px;
-  margin-top: 5px;
-}
-
-// Progress Chart Improvements
-.progress-container {
-  overflow-x: auto;
-  padding: 20px 0;
-  margin: 0 -5px;
-  
-  &::-webkit-scrollbar {
-    height: 4px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: #f0f0f0;
-    border-radius: 2px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: var(--ion-color-primary);
-    border-radius: 2px;
-  }
-}
-
-.progress-metrics {
-  display: flex;
-  justify-content: space-between;
-  min-width: calc(100% - 20px);
-  height: 220px;
-  padding: 10px 0;
-  margin: 0 10px;
-}
-
-.metric {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  min-width: 40px;
-  position: relative;
-}
-
-.metric-bar-container {
-  width: 28px;
-  height: 180px;
-  background: #eef0f5;
-  border-radius: 14px;
-  margin-bottom: 12px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.metric-bar {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  background: linear-gradient(to top, var(--ion-color-primary), #4a8bfc);
-  border-radius: 14px;
-  transition: height 0.4s ease;
-  z-index: 2;
-}
-
-.metric-label {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: #444;
-  
-  &.today {
-    color: var(--ion-color-primary);
-    position: relative;
-    
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 6px;
-      height: 6px;
-      background: var(--ion-color-primary);
-      border-radius: 50%;
-    }
-  }
-}
-
-.metric-value {
-  font-size: 13px;
-  color: #666;
-  font-weight: 500;
-}
-
-.progress-legend {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 12px;
-  margin-top: 12px;
-  font-size: 13px;
-  color: #666;
-}
-
-// Week and month selector styles
-.week-selector, .month-selector {
-  display: flex;
-  align-items: center;
-  
-  .week-nav-btn, .month-nav-btn {
-    --padding-start: 6px;
-    --padding-end: 6px;
-    
-    ion-icon {
-      font-size: 18px;
-      color: var(--ion-color-primary);
-    }
-  }
-  
-  .current-week, .current-month {
+  .round-control {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    color: #333;
-    background: #f5f7fa;
-    padding: 6px 12px;
-    border-radius: 16px;
-    transition: background 0.2s ease;
-    cursor: pointer;
+    justify-content: center;
+    margin: 8px 0;
     
-    &:hover {
-      background: #eef0f5;
-    }
-    
-    ion-icon {
-      color: var(--ion-color-primary);
-      font-size: 16px;
-    }
-  }
-}
-
-// Responsive calendar adjustments for small screens
-@media (max-width: 360px) {
-  .calendar-weekdays,
-  .calendar-body {
-    gap: 4px;
-  }
-  
-  .calendar-day {
-    border-radius: 8px;
-    
-    .day-content {
-      padding: 4px;
-    }
-    
-    .day-number {
-      font-size: 12px;
-    }
-  }
-}
-
-// Styles for the competitions list in the modal
-.competitions-list-container {
-  padding: 12px;
-  
-  ion-list {
-    border-radius: 8px;
-    overflow: hidden;
-    
-    ion-item-sliding {
-      margin-bottom: 8px;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    
-    ion-item {
-      --padding-start: 0;
-      --inner-padding-end: 0;
-    }
-  }
-  
-  .competition-item {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding: 12px;
-    
-    .competition-medal {
-      flex-shrink: 0;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 16px;
-      
-      &.gold {
-        background-color: rgba(255, 215, 0, 0.7);
-        box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
-      }
-      
-      &.silver {
-        background-color: rgba(192, 192, 192, 0.7);
-        box-shadow: 0 0 8px rgba(192, 192, 192, 0.5);
-      }
-      
-      &.bronze {
-        background-color: rgba(205, 127, 50, 0.7);
-        box-shadow: 0 0 8px rgba(205, 127, 50, 0.5);
-      }
-      
-      &.other {
-        background-color: rgba(100, 149, 237, 0.7);
-        box-shadow: 0 0 8px rgba(100, 149, 237, 0.5);
-      }
+    ion-button {
+      --color: #{$primary-color};
+      margin: 0;
       
       ion-icon {
-        color: white;
-        font-size: 20px;
+        font-size: 24px;
       }
     }
     
-    .competition-details {
+    .round-value {
+      font-size: 24px;
+      font-weight: 700;
+      width: 40px;
+      text-align: center;
+    }
+  }
+  
+  ion-range {
+    --bar-background: #d7d8da;
+    --bar-background-active: #{$primary-color};
+    --bar-height: 4px;
+    --knob-background: #{$primary-color};
+    --knob-size: 20px;
+    padding: 0;
+    margin-top: 0;
+  }
+  
+  .strike-presets {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    
+    ion-button {
+      --border-color: #{$medium-color};
+      --color: #{$dark-color};
+      margin: 0;
+      height: 32px;
+      font-weight: 600;
+    }
+  }
+  
+  ion-select {
+    --placeholder-color: #{$medium-color};
+    --placeholder-opacity: 1;
+    background: $light-bg;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 8px;
+  }
+  
+  .partner-sharing {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    padding: 0 12px;
+    
+    ion-checkbox {
+      margin-right: 8px;
+    }
+  }
+  
+  .submit-button {
+    --background: #{$primary-color};
+    --color: white;
+    --border-radius: 12px;
+    --box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.4);
+    margin-top: 24px;
+    height: 48px;
+    font-weight: 600;
+  }
+}
+
+// FEEDBACK SECTION
+.feedback-section {
+  ion-card-header {
+    padding: 16px 16px 0 16px;
+    
+    ion-card-title {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      
+      ion-icon {
+        margin-right: 8px;
+        font-size: 24px;
+      }
+    }
+  }
+  
+  ion-card-content {
+    padding: 16px;
+  }
+  
+  .session-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    
+    .summary-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: $light-bg;
+      border-radius: 8px;
+      padding: 12px;
+      min-width: 70px;
       flex: 1;
       
-      h3 {
-        margin: 0 0 4px;
-        font-size: 16px;
-        font-weight: 600;
+      ion-icon {
+        font-size: 24px;
+        color: $primary-color;
+        margin-bottom: 4px;
       }
       
-      p {
-        display: flex;
-        align-items: center;
-        margin: 2px 0;
+      span {
         font-size: 14px;
-        color: var(--ion-color-medium);
+        font-weight: 600;
+        color: $dark-color;
+      }
+    }
+  }
+  
+  .xp-gained {
+    background: $light-bg;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 20px;
+    
+    .xp-label {
+      font-size: 14px;
+      color: $medium-color;
+      margin-bottom: 4px;
+    }
+    
+    .xp-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: $success-color;
+    }
+  }
+  
+  .achievement-progress {
+    margin-bottom: 20px;
+    
+    h5 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+    
+    .challenge-item {
+      margin-bottom: 12px;
+      
+      .challenge-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
         
-        ion-icon {
-          margin-right: 4px;
-          font-size: 16px;
+        .challenge-name {
+          font-size: 14px;
+          color: $dark-color;
+        }
+        
+        .challenge-progress {
+          font-size: 14px;
+          font-weight: 600;
+          color: $primary-color;
         }
       }
       
-      .competition-notes {
-        font-style: italic;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        max-width: 200px;
+      ion-progress-bar {
+        --buffer-background: #{$light-bg};
+        --progress-background: #{$primary-color};
+        height: 6px;
+        border-radius: 3px;
       }
     }
+  }
+  
+  .feedback-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     
-    .competition-position {
-      font-weight: bold;
-      font-size: 18px;
-      margin-left: 8px;
-      color: var(--ion-color-dark);
+    ion-button {
+      margin: 0;
+      height: 44px;
     }
   }
+}
+
+// RECENT HISTORY
+.history-section {
+  ion-list {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 16px;
+  }
+  
+  ion-item {
+    --background: white;
+    --border-color: transparent;
+    --border-radius: 12px;
+    --padding-start: 0;
+    --padding-end: 0;
+    --inner-padding-end: 0;
+    margin-bottom: 8px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  .session-entry {
+    display: flex;
+    width: 100%;
+    padding: 12px 16px;
+  }
+  
+  .session-date {
+    background: $light-bg;
+    border-radius: 8px;
+    width: 60px;
+    text-align: center;
+    padding: 8px 0;
+    margin-right: 12px;
+    
+    .day {
+      font-size: 12px;
+      font-weight: 600;
+      color: $medium-color;
+      margin-bottom: 2px;
+    }
+    
+    .time {
+      font-size: 12px;
+      color: $primary-color;
+      font-weight: 500;
+    }
+  }
+  
+  .session-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    .session-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: $dark-color;
+      margin-bottom: 4px;
+    }
+    
+    .session-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 12px;
+      color: $medium-color;
+      
+      span {
+        background: $light-bg;
+        border-radius: 4px;
+        padding: 2px 6px;
+      }
+    }
+  }
+  
+  .session-intensity {
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
+    
+    ion-icon {
+      font-size: 20px;
+    }
+    
+    &.intensity-low {
+      color: $medium-color;
+    }
+    
+    &.intensity-medium {
+      color: $warning-color;
+    }
+    
+    &.intensity-high {
+      color: $danger-color;
+    }
+  }
+  
+  .empty-history {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 0;
+    width: 100%;
+    
+    ion-icon {
+      font-size: 48px;
+      color: $medium-color;
+      opacity: 0.5;
+      margin-bottom: 8px;
+    }
+    
+    p {
+      font-size: 14px;
+      color: $medium-color;
+      margin: 0;
+    }
+  }
+}
+
+// FAB Button
+ion-fab-button {
+  --background: #{$primary-color};
+  --background-activated: var(--ion-color-primary-shade);
+  --background-hover: var(--ion-color-primary-tint);
 }

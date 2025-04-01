@@ -1,0 +1,46 @@
+// Common variables and styles to be imported in tab pages
+$primary-color: var(--ion-color-primary);
+$secondary-color: var(--ion-color-secondary);
+$tertiary-color: var(--ion-color-tertiary);
+$success-color: var(--ion-color-success);
+$warning-color: var(--ion-color-warning);
+$danger-color: var(--ion-color-danger);
+$dark-color: var(--ion-color-dark);
+$medium-color: var(--ion-color-medium);
+$light-color: var(--ion-color-light);
+$light-bg: #f5f7fa;
+$card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+$card-radius: 16px;
+
+// Common card styling
+%card-base {
+  box-shadow: $card-shadow;
+  border-radius: $card-radius;
+  margin-bottom: 20px;
+  background: white;
+}
+
+// Common headers
+%section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    color: $dark-color;
+  }
+}
+
+// Common list items
+%list-item-base {
+  --background: white;
+  --border-color: transparent;
+  --border-radius: 12px;
+  --padding-start: 0;
+  --padding-end: 0;
+  margin-bottom: 8px;
+}

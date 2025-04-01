@@ -1,548 +1,418 @@
-import { Component, OnInit, ViewChild, TemplateRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ActionSheetController, ModalController, ToastController, AlertController, IonicModule } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActionSheetController, ToastController, ModalController, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { ModalContentComponent } from '../../../components/modal-content/modal-content.component';
 import { FirebaseService } from '../../../services/firebase.service';
-import { TrainingDataService } from '../../../services/training-data.service';
-import { StorageService } from '../../../services/storage.service';
-import { take } from 'rxjs/operators';
+import { Subscription, interval } from 'rxjs';
+import { SharingService } from '../../../services/sharing.service';
 
-// Define interfaces for the data types
-interface Training {
+// Define interfaces for data models
+interface TrainingSession {
   id: string;
-  date: string;
+  date: Date;
   duration: number;
-  type: string;
+  activityType: string;
+  rounds: number;
+  strikes: number;
+  submissions: number;
+  intensity: string;
+  location: string;
   notes?: string;
+  sparringPartnerId?: string;
+  shareWithPartner?: boolean;
 }
 
-interface Competition {
+interface SparringPartner {
   id: string;
   name: string;
-  date: string;
-  location: string;
-  position: number;
-  notes?: string;
 }
 
-interface Goal {
+interface Challenge {
   id: string;
-  title: string;
-  status: 'completed' | 'in-progress' | 'upcoming';
-  completedDate?: string;
-  dueDate?: string;
-  current?: number;
-  target?: number;
-  progress?: number;
-  unit?: string;
-  badge?: string;
-  badgeIcon?: string;
-}
-
-interface CalendarDay {
-  date: Date;
-  isCurrentMonth: boolean;
-  hasTraining: boolean;
-  hasCompetition: boolean;
-  isToday: boolean;
-}
-
-interface WeeklyData {
-  label: string;
-  hours: number;
-  percentage: number;
-  date?: Date; // Add the date property
-}
-
-// Interface pour les données utilisateur
-interface UserProfile {
-  id?: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  photo?: string;
-  discipline?: string;
-  level?: string;
-  bio?: string;
-  weight?: number;
-  height?: number;
-  phoneNumber?: string;
-  dateOfBirth?: Date | string;
-  [key: string]: any;
+  name: string;
+  progress: number;
+  target: number;
+  type: string;
 }
 
 @Component({
   selector: 'app-tab5',
-  templateUrl: 'tab5.page.html',
-  styleUrls: ['tab5.page.scss'],
-  standalone: false,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  templateUrl: './tab5.page.html',
+  styleUrls: ['./tab5.page.scss'],
+  standalone: false  // Explicitly specify this is not a standalone component
 })
-export class Tab5Page implements OnInit {
-  @ViewChild('addTrainingModal') addTrainingModalTemplate!: TemplateRef<any>;
-  @ViewChild('addCompetitionModal') addCompetitionModalTemplate!: TemplateRef<any>;
-  @ViewChild('viewAllCompetitionsModal') viewAllCompetitionsModalTemplate!: TemplateRef<any>;
-
-  // Forms
-  trainingForm!: FormGroup;
-  competitionForm!: FormGroup;
-
-  // Authentication state
-  isLoggedIn: boolean = false;
-
-  // Statistics
-  trainingStats = { count: 0, trend: 0, hours: 0, hoursTrend: 0 };
-  competitionStats = { count: 0, trend: 0 };
+export class Tab5Page implements OnInit, OnDestroy {
+  // Session state
+  isSessionActive: boolean = false;
+  isPaused: boolean = false;
+  sessionTimer: number = 0;
+  sessionDuration: number = 0;
+  timerSubscription: Subscription | null = null;
+  startTime: Date = new Date();
   
-  // Data collections
-  weeklyData: WeeklyData[] = [];
-  calendarDays: CalendarDay[] = [];
-  trainings: Training[] = [];
-  competitions: Competition[] = [];
-  recentCompetitions: Competition[] = [];
-  goals: Goal[] = [];
-
-  // Calendar navigation
-  selectedMonth: number;
-  selectedYear: number;
-  months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-  weekdays = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-
-  // Ajoutons les propriétés pour l'utilisateur connecté
-  userId: string | null = null;
-  userProfile: UserProfile = {};
-  isLoading = false;
-  profileFormGroup: FormGroup;
-  hasLoadedProfile = false;
-
-  // Add this property to track the current week
-  currentWeekStart: Date = new Date();
+  // Form state
+  showSessionForm: boolean = false;
+  sessionForm!: FormGroup;
+  
+  // Feedback state
+  showFeedback: boolean = false;
+  xpGained: number = 0;
+  lastSession!: TrainingSession;
+  
+  // Sparring partners
+  hasSparringPartners: boolean = false;
+  sparringPartners: SparringPartner[] = [];
+  
+  // Recent sessions history
+  recentSessions: TrainingSession[] = [];
+  
+  // Challenges
+  currentChallenges: Challenge[] = [];
 
   constructor(
     private formBuilder: FormBuilder,
     private actionSheetController: ActionSheetController,
-    private modalController: ModalController,
     private toastController: ToastController,
+    private modalController: ModalController,
     private alertController: AlertController,
-    private router: Router,
     private firebaseService: FirebaseService,
-    private trainingDataService: TrainingDataService,
-    private storageService: StorageService,
-    private cdr: ChangeDetectorRef
-  ) { 
-    const today = new Date();
-    this.selectedMonth = today.getMonth() + 1;
-    this.selectedYear = today.getFullYear();
+    private router: Router,
+    private sharingService: SharingService
+  ) {
+    this.initForm();
+  }
 
-    // Initialisation du formulaire vide d'abord
-    this.profileFormGroup = this.formBuilder.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      phoneNumber: [''],
-      discipline: [''],
-      level: [''],
-      bio: [''],
-      dateOfBirth: [''],
-      weight: [''],
-      height: ['']
+  ngOnInit() {
+    this.loadSparringPartners();
+    this.loadRecentSessions();
+    this.loadChallenges();
+  }
+
+  ngOnDestroy() {
+    this.stopTimer();
+  }
+
+  // Navigation methods
+  goToProfile() {
+    this.router.navigate(['/profile']);
+  }
+
+  openSettings() {
+    // Implementation for settings would go here
+    this.showToast('Paramètres bientôt disponibles');
+  }
+
+  // Initialize the session form
+  initForm() {
+    this.sessionForm = this.formBuilder.group({
+      activityType: ['sparring', Validators.required],
+      rounds: [3, [Validators.required, Validators.min(0), Validators.max(20)]],
+      strikes: [0, [Validators.min(0)]],
+      submissions: [0, [Validators.required, Validators.min(0)]],
+      intensity: ['medium', Validators.required],
+      location: ['', Validators.required],
+      notes: [''],
+      sparringPartner: [''],
+      shareWithPartner: [false]
     });
   }
 
-  async ngOnInit() {
-    // Vérifier si l'utilisateur est connecté
-    this.isLoggedIn = await this.firebaseService.isUserLoggedIn();
-    
-    this.initForms();
-    this.loadData();
-    this.generateCalendar();
-    this.calculateStats();
-    this.generateWeeklyData();
-
-    // Initialize the current week start date
-    this.initializeCurrentWeek();
-
-    // Puis charger les données utilisateur
-    await this.loadUserProfile();
+  // Timer functions
+  startSession() {
+    this.isSessionActive = true;
+    this.isPaused = false;
+    this.sessionTimer = 0;
+    this.startTime = new Date();
+    this.startTimer();
   }
 
-  async loadUserProfile() {
-    this.isLoading = true;
+  pauseSession() {
+    this.isPaused = true;
+    this.stopTimer();
+  }
 
-    try {
-      const user = await this.firebaseService.getCurrentUser() as any;
-      
-      if (user && user.uid) {
-        this.userId = user.uid;
-        
-        // Récupérer les données utilisateur depuis Firestore
-        if (this.userId) { // Ajout d'une vérification null
-          const userData = await this.firebaseService.getDocument('users', this.userId) as UserProfile;
-          
-          if (userData) {
-            this.userProfile = userData;
-            this.hasLoadedProfile = true;
-            
-            // Mettre à jour le formulaire avec les données reçues
-            this.profileFormGroup.patchValue({
-              firstName: userData.firstName || '',
-              lastName: userData.lastName || '',
-              email: userData.email || (user.email || ''),  // Utiliser l'email de Firebase Auth si non spécifié dans le profil
-              phoneNumber: userData.phoneNumber || '',
-              discipline: userData.discipline || '',
-              level: userData.level || '',
-              bio: userData.bio || '',
-              dateOfBirth: userData.dateOfBirth || '',
-              weight: userData.weight || '',
-              height: userData.height || ''
-            });
-            
-            console.log('Profil utilisateur chargé avec succès:', userData);
-          } else {
-            // Aucune donnée utilisateur trouvée, mais on a un utilisateur connecté
-            // Créer un profil par défaut
-            this.profileFormGroup.patchValue({
-              email: user.email || ''
-            });
-            console.log('Aucun profil trouvé pour cet utilisateur. Profil vierge créé.');
-          }
-        }
-      } else {
-        console.log('Aucun utilisateur connecté');
-        this.showToast('Vous devez être connecté pour accéder à votre profil');
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement du profil:', error);
-      this.showToast('Erreur lors du chargement de votre profil');
-    } finally {
-      this.isLoading = false;
+  resumeSession() {
+    this.isPaused = false;
+    this.startTimer();
+  }
+
+  stopSession() {
+    this.stopTimer();
+    this.sessionDuration = this.sessionTimer;
+    this.isSessionActive = false;
+    this.showSessionForm = true;
+  }
+
+  private startTimer() {
+    this.timerSubscription = interval(1000).subscribe(() => {
+      this.sessionTimer++;
+    });
+  }
+
+  private stopTimer() {
+    if (this.timerSubscription) {
+      this.timerSubscription.unsubscribe();
+      this.timerSubscription = null;
     }
   }
 
-  async saveProfile() {
-    if (!this.profileFormGroup.valid) {
-      this.showToast('Veuillez remplir correctement tous les champs obligatoires');
+  // Form manipulation functions
+  showManualEntry() {
+    this.showSessionForm = true;
+    this.sessionDuration = 0;
+  }
+
+  incrementRounds() {
+    const roundsControl = this.sessionForm.get('rounds');
+    if (roundsControl) {
+      const currentValue = roundsControl.value;
+      if (currentValue < 20) {
+        this.sessionForm.patchValue({ rounds: currentValue + 1 });
+      }
+    }
+  }
+
+  decrementRounds() {
+    const roundsControl = this.sessionForm.get('rounds');
+    if (roundsControl) {
+      const currentValue = roundsControl.value;
+      if (currentValue > 0) {
+        this.sessionForm.patchValue({ rounds: currentValue - 1 });
+      }
+    }
+  }
+
+  setStrikes(value: number) {
+    this.sessionForm.patchValue({ strikes: value });
+  }
+
+  async getCurrentLocation() {
+    try {
+      // In a real app, you would use Geolocation API
+      // For simplicity, we just set a mock location
+      const location = 'Dojo Paris 10';
+      this.sessionForm.patchValue({ location });
+      
+      this.showToast('Position actuelle utilisée');
+    } catch (error) {
+      console.error('Error getting location', error);
+      this.showToast('Impossible d\'obtenir la position actuelle', 'danger');
+    }
+  }
+
+  // Session saving and feedback
+  async saveSession() {
+    if (!this.sessionForm.valid) {
+      this.showToast('Veuillez remplir tous les champs requis', 'warning');
       return;
     }
 
-    this.isLoading = true;
+    const formData = this.sessionForm.value;
+    
+    // Create session object
+    this.lastSession = {
+      id: Date.now().toString(),
+      date: new Date(),
+      duration: this.sessionDuration || 30, // Default to 30 minutes if manual entry
+      activityType: formData.activityType,
+      rounds: formData.rounds,
+      strikes: formData.strikes,
+      submissions: formData.submissions,
+      intensity: formData.intensity,
+      location: formData.location,
+      notes: formData.notes,
+      sparringPartnerId: formData.sparringPartner,
+      shareWithPartner: formData.shareWithPartner
+    };
 
     try {
-      if (!this.userId) {
-        throw new Error('Utilisateur non connecté');
+      // Save session to database or storage
+      await this.saveSessionToStorage(this.lastSession);
+      
+      // Calculate XP gained
+      this.calculateXpGained();
+      
+      // Update challenges
+      this.updateChallenges();
+      
+      // Show feedback
+      this.showSessionForm = false;
+      this.showFeedback = true;
+      
+      // Reset form for next use
+      this.sessionForm.reset({
+        activityType: 'sparring',
+        rounds: 3,
+        strikes: 0,
+        submissions: 0,
+        intensity: 'medium',
+        location: '',
+        notes: '',
+        sparringPartner: '',
+        shareWithPartner: false
+      });
+      
+      // If sharing with partner is enabled, send notification
+      if (formData.shareWithPartner && formData.sparringPartner) {
+        this.notifySparringPartner(formData.sparringPartner);
       }
-
-      const profileData = {
-        ...this.profileFormGroup.value,
-        updatedAt: new Date()
-      };
-
-      if (this.hasLoadedProfile) {
-        // Mettre à jour le profil existant
-        await this.firebaseService.updateDocument('users', this.userId, profileData);
-      } else {
-        // Créer un nouveau profil
-        // Utilisons addDocument si l'utilisateur n'a pas de profil existant
-        await this.firebaseService.updateDocument('users', this.userId, {
-          ...profileData,
-          createdAt: new Date()
-        });
-        this.hasLoadedProfile = true;
-      }
-
-      this.showToast('Profil enregistré avec succès');
     } catch (error) {
-      console.error('Erreur lors de l\'enregistrement du profil:', error);
-      this.showToast('Erreur lors de l\'enregistrement du profil');
-    } finally {
-      this.isLoading = false;
+      console.error('Error saving session', error);
+      this.showToast('Erreur lors de l\'enregistrement de la séance', 'danger');
     }
   }
 
-  // Initialize form controls
-  initForms() {
-    this.trainingForm = this.formBuilder.group({
-      date: [new Date().toISOString(), Validators.required],
-      duration: [1, [Validators.required, Validators.min(0.5)]],
-      type: ['technique', Validators.required],
-      notes: ['']
-    });
-
-    this.competitionForm = this.formBuilder.group({
-      name: ['', Validators.required],
-      date: [new Date().toISOString(), Validators.required],
-      location: ['', Validators.required],
-      position: [1, [Validators.required, Validators.min(1)]],
-      notes: ['']
-    });
-  }
-
-  // Load data from storage
-  loadData() {
-    // Charger les données depuis IndexedDB
-    this.storageService.getItems<Training>('trainings').pipe(take(1)).subscribe(trainings => {
-      this.trainings = trainings || [];
-      
-      this.storageService.getItems<Competition>('competitions').pipe(take(1)).subscribe(competitions => {
-        this.competitions = competitions || [];
-        
-        this.storageService.getItems<Goal>('goals').pipe(take(1)).subscribe(goals => {
-          this.goals = goals || [];
-          
-          // Si aucune donnée n'existe, ajouter des données de démo pour la présentation
-          if (this.competitions.length === 0) {
-            this.competitions = [
-              {
-                id: '1',
-                name: 'Championnat Régional MMA',
-                date: new Date('2023-06-24').toISOString(),
-                location: 'Paris, France',
-                position: 1,
-                notes: ''
-              },
-              {
-                id: '2',
-                name: 'Tournoi Open de Boxe',
-                date: new Date('2023-06-10').toISOString(),
-                location: 'Lyon, France',
-                position: 2,
-                notes: ''
-              }
-            ];
-            this.saveToStorage();
-          }
-          
-          // Get recent competitions for display
-          this.recentCompetitions = [...this.competitions]
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .slice(0, 3);
-            
-          // Update the training data service
-          this.trainingDataService.setTrainings(this.trainings);
-          
-          // Rafraîchir l'interface
-          this.refreshData();
-        });
-      });
-    });
-  }
-
-  // Save all data to storage
-  saveToStorage() {
-    this.storageService.setItem('trainings', this.trainings).pipe(take(1)).subscribe();
-    this.storageService.setItem('competitions', this.competitions).pipe(take(1)).subscribe();
-    this.storageService.setItem('goals', this.goals).pipe(take(1)).subscribe();
+  private async saveSessionToStorage(session: TrainingSession) {
+    // In a real app, you would save this to Firebase or other storage
+    // For now, we'll just store in localStorage
+    const sessionsString = localStorage.getItem('training-sessions');
+    let sessions = sessionsString ? JSON.parse(sessionsString) : [];
+    sessions.unshift(session); // Add to beginning of array
+    localStorage.setItem('training-sessions', JSON.stringify(sessions));
     
-    // Update the training data service
-    this.trainingDataService.setTrainings(this.trainings);
+    // Refresh the recent sessions list
+    this.loadRecentSessions();
   }
 
-  // Calculate statistics based on training and competition data
-  calculateStats() {
-    this.trainingStats.count = this.trainings.length;
-    this.trainingStats.hours = this.trainings.reduce((sum, t) => sum + t.duration, 0);
-    this.competitionStats.count = this.competitions.length;
+  private calculateXpGained() {
+    // Simple XP calculation based on session metrics
+    let xp = 0;
     
-    // Calculate trends (dummy values for now, can be improved to calculate real trends)
-    this.trainingStats.trend = 12;
-    this.trainingStats.hoursTrend = 8;
-    this.competitionStats.trend = 0;
+    // Base XP for activity
+    xp += 50;
     
-    // Update the training data service with stats
-    this.trainingDataService.updateStats(this.trainingStats);
+    // XP for duration (10 XP per 5 minutes)
+    xp += Math.floor(this.lastSession.duration / 300) * 10;
+    
+    // XP for rounds (15 XP per round)
+    xp += this.lastSession.rounds * 15;
+    
+    // XP for strikes (1 XP per 10 strikes)
+    xp += Math.floor(this.lastSession.strikes / 10);
+    
+    // XP for submissions (20 XP per submission)
+    xp += this.lastSession.submissions * 20;
+    
+    // Intensity multiplier
+    const intensityMultiplier = this.lastSession.intensity === 'high' ? 1.5 : 
+                               this.lastSession.intensity === 'medium' ? 1.2 : 1;
+    
+    xp = Math.floor(xp * intensityMultiplier);
+    
+    this.xpGained = xp;
   }
 
-  // Generate data for weekly chart based on the current selected week
-  generateWeeklyData() {
-    this.weeklyData = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(this.currentWeekStart);
-      date.setDate(this.currentWeekStart.getDate() + i);
-      
-      // Get trainings for this day
-      const dayTrainings = this.trainings.filter(t => 
-        new Date(t.date).toDateString() === date.toDateString()
+  private updateChallenges() {
+    // Update progress on relevant challenges
+    this.currentChallenges.forEach(challenge => {
+      if (challenge.type === 'rounds') {
+        challenge.progress += this.lastSession.rounds;
+      } else if (challenge.type === 'submissions' && this.lastSession.submissions > 0) {
+        challenge.progress += this.lastSession.submissions;
+      } else if (challenge.type === 'strikes' && this.lastSession.strikes > 0) {
+        challenge.progress += this.lastSession.strikes;
+      }
+    });
+    
+    // Save updated challenges
+    localStorage.setItem('current-challenges', JSON.stringify(this.currentChallenges));
+  }
+
+  dismissFeedback() {
+    this.showFeedback = false;
+  }
+
+  async shareSession() {
+    const sessionType = this.getActivityLabel(this.lastSession.activityType);
+    const sessionStats = `${this.lastSession.rounds} rounds, ${this.lastSession.strikes} coups, ${this.lastSession.submissions} soumissions`;
+    
+    try {
+      // Use SharingService instead of Capacitor Share
+      const shared = await this.sharingService.share(
+        'Ma séance de ' + sessionType,
+        `Je viens de compléter une séance de ${sessionType} (${sessionStats}) et j'ai gagné ${this.xpGained} XP! 💪`,
+        'https://appfight.com/share'
       );
       
-      // Calculate total hours
-      const hours = dayTrainings.reduce((sum, t) => sum + t.duration, 0);
-      
-      return { 
-        label: this.weekdays[i], 
-        hours, 
-        percentage: Math.min(hours * 20, 100), // Scale to percentage (5h = 100%)
-        date // Include the actual date for "today" highlighting
-      };
-    });
-  }
-
-  // Generate calendar days for current month view
-  generateCalendar() {
-    const firstDay = new Date(this.selectedYear, this.selectedMonth - 1, 1);
-    const lastDay = new Date(this.selectedYear, this.selectedMonth, 0);
-    const firstDayOfWeek = firstDay.getDay() || 7; // 1-7 (Monday-Sunday)
-    
-    this.calendarDays = [];
-    
-    // Add days from previous month to fill first week
-    const daysFromPrevMonth = firstDayOfWeek - 1;
-    if (daysFromPrevMonth > 0) {
-      // Calculate the last day of previous month
-      const prevMonthLastDayDate = new Date(this.selectedYear, this.selectedMonth - 1, 0);
-      const prevMonthLastDay = prevMonthLastDayDate.getDate();
-      
-      for (let i = daysFromPrevMonth - 1; i >= 0; i--) {
-        const date = new Date(this.selectedYear, this.selectedMonth - 2, prevMonthLastDay - i);
-        this.calendarDays.push({
-          date,
-          isCurrentMonth: false,
-          hasTraining: this.checkHasTraining(date),
-          hasCompetition: this.checkHasCompetition(date),
-          isToday: this.isToday(date)
-        });
+      if (!shared) {
+        // If web share API is not available, use alternative sharing methods
+        this.showSharingOptions(sessionType, sessionStats);
       }
-    }
-    
-    // Add current month days
-    for (let i = 1; i <= lastDay.getDate(); i++) {
-      const date = new Date(this.selectedYear, this.selectedMonth - 1, i);
-      this.calendarDays.push({
-        date,
-        isCurrentMonth: true,
-        hasTraining: this.checkHasTraining(date),
-        hasCompetition: this.checkHasCompetition(date),
-        isToday: this.isToday(date)
-      });
-    }
-    
-    // Add days from next month to fill remaining grid
-    const totalCalendarDays = 42; // 6 rows of 7 days
-    const remainingDays = totalCalendarDays - this.calendarDays.length;
-    for (let i = 1; i <= remainingDays; i++) {
-      const date = new Date(this.selectedYear, this.selectedMonth, i);
-      this.calendarDays.push({
-        date,
-        isCurrentMonth: false,
-        hasTraining: this.checkHasTraining(date),
-        hasCompetition: this.checkHasCompetition(date),
-        isToday: this.isToday(date)
-      });
+    } catch (error) {
+      console.error('Error sharing session', error);
+      this.showToast('Impossible de partager la séance', 'danger');
     }
   }
 
-  // Helper to check if date has training
-  checkHasTraining(date: Date): boolean {
-    return this.trainings.some(t => {
-      const trainingDate = new Date(t.date);
-      return trainingDate.getDate() === date.getDate() &&
-        trainingDate.getMonth() === date.getMonth() &&
-        trainingDate.getFullYear() === date.getFullYear();
-    });
-  }
-
-  // Helper to check if date has competition
-  checkHasCompetition(date: Date): boolean {
-    return this.competitions.some(c => {
-      const competitionDate = new Date(c.date);
-      return competitionDate.getDate() === date.getDate() &&
-        competitionDate.getMonth() === date.getMonth() &&
-        competitionDate.getFullYear() === date.getFullYear();
-    });
-  }
-
-  // Helper to check if date is today
-  isToday(date: Date | undefined): boolean {
-    if (!date) return false;
-    
-    const today = new Date();
-    return date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear();
-  }
-
-  // Calendar navigation methods
-  prevMonth() {
-    if (this.selectedMonth === 1) {
-      this.selectedMonth = 12;
-      this.selectedYear--;
-    } else {
-      this.selectedMonth--;
-    }
-    this.generateCalendar();
-  }
-
-  nextMonth() {
-    if (this.selectedMonth === 12) {
-      this.selectedMonth = 1;
-      this.selectedYear++;
-    } else {
-      this.selectedMonth++;
-    }
-    this.generateCalendar();
-  }
-
-  changeMonth() {
-    this.generateCalendar();
-  }
-
-  // Handle day selection in calendar
-  selectDay(day: CalendarDay) {
-    // For now, show a simple alert about the selected day
-    const dateStr = day.date.toLocaleDateString('fr-FR', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-    
-    const message = day.hasTraining || day.hasCompetition
-      ? `Vous avez ${day.hasTraining ? 'un entraînement' : ''}${day.hasTraining && day.hasCompetition ? ' et ' : ''}${day.hasCompetition ? 'une compétition' : ''} ce jour.`
-      : 'Aucun événement prévu ce jour. Voulez-vous en ajouter un?';
-    
-    this.alertController.create({
-      header: dateStr,
-      message,
+  private showSharingOptions(sessionType: string, sessionStats: string) {
+    // Show a list of sharing options as fallback
+    this.actionSheetController.create({
+      header: 'Partager sur',
       buttons: [
         {
-          text: 'Fermer',
+          text: 'Facebook',
+          icon: 'logo-facebook',
+          handler: () => {
+            this.sharingService.shareOnFacebook('https://appfight.com/share');
+          }
+        },
+        {
+          text: 'Twitter',
+          icon: 'logo-twitter',
+          handler: () => {
+            const text = `Je viens de compléter une séance de ${sessionType} (${sessionStats}) et j'ai gagné ${this.xpGained} XP! 💪`;
+            this.sharingService.shareOnTwitter(text, 'https://appfight.com/share');
+          }
+        },
+        {
+          text: 'WhatsApp',
+          icon: 'logo-whatsapp',
+          handler: () => {
+            const text = `Je viens de compléter une séance de ${sessionType} (${sessionStats}) et j'ai gagné ${this.xpGained} XP! 💪`;
+            this.sharingService.shareOnWhatsApp(text, 'https://appfight.com/share');
+          }
+        },
+        {
+          text: 'Email',
+          icon: 'mail-outline',
+          handler: () => {
+            const subject = 'Ma séance de ' + sessionType;
+            const body = `Je viens de compléter une séance de ${sessionType} (${sessionStats}) et j'ai gagné ${this.xpGained} XP! 💪\n\nhttps://appfight.com/share`;
+            this.sharingService.shareByEmail(subject, body);
+          }
+        },
+        {
+          text: 'Annuler',
+          icon: 'close',
           role: 'cancel'
-        },
-        ...(day.hasTraining || day.hasCompetition ? [] : [
-          {
-            text: 'Ajouter',
-            handler: () => this.presentActionSheet()
-          }
-        ])
+        }
       ]
-    }).then(alert => alert.present());
+    }).then(actionSheet => actionSheet.present());
   }
 
-  // Show settings options
-  async openSettings() {
+  async showQuickActions() {
     const actionSheet = await this.actionSheetController.create({
-      header: 'Paramètres',
+      header: 'Actions rapides',
       buttons: [
         {
-          text: 'Exporter les données',
-          icon: 'download-outline',
+          text: 'Démarrer une séance',
+          icon: 'play',
           handler: () => {
-            this.exportData();
+            this.startSession();
           }
         },
         {
-          text: 'Importer des données',
-          icon: 'upload-outline',
+          text: 'Saisie manuelle',
+          icon: 'create-outline',
           handler: () => {
-            this.importData();
+            this.showManualEntry();
           }
         },
         {
-          text: 'Réinitialiser les données',
-          icon: 'trash-outline',
-          role: 'destructive',
+          text: 'Voir mes statistiques',
+          icon: 'stats-chart-outline',
           handler: () => {
-            this.resetData();
+            this.router.navigate(['/stats']);
           }
         },
         {
@@ -552,716 +422,162 @@ export class Tab5Page implements OnInit {
         }
       ]
     });
+    
     await actionSheet.present();
   }
 
-  // Export data as JSON file
-  exportData() {
-    const data = {
-      trainings: this.trainings,
-      competitions: this.competitions,
-      goals: this.goals
+  // Data loading methods
+  private loadSparringPartners() {
+    // In a real app, you would load this from a service
+    // For now, we'll use mock data
+    this.sparringPartners = [
+      { id: '1', name: 'Thomas D.' },
+      { id: '2', name: 'Julie M.' },
+      { id: '3', name: 'Karim L.' }
+    ];
+    
+    this.hasSparringPartners = this.sparringPartners.length > 0;
+  }
+
+  private loadRecentSessions() {
+    // In a real app, you would load this from a service
+    // For now, we'll load from localStorage or use mock data if not available
+    const sessionsString = localStorage.getItem('training-sessions');
+    
+    if (sessionsString) {
+      const allSessions = JSON.parse(sessionsString);
+      
+      // Convert string dates to Date objects
+      allSessions.forEach((session: any) => {
+        session.date = new Date(session.date);
+      });
+      
+      this.recentSessions = allSessions.slice(0, 5);
+    } else {
+      // Mock data
+      this.recentSessions = [
+        {
+          id: '1',
+          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+          duration: 3600, // 1 hour in seconds
+          activityType: 'sparring',
+          rounds: 5,
+          strikes: 120,
+          submissions: 2,
+          intensity: 'high',
+          location: 'Dojo Paris'
+        },
+        {
+          id: '2',
+          date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+          duration: 1800, // 30 minutes in seconds
+          activityType: 'bag',
+          rounds: 3,
+          strikes: 250,
+          submissions: 0,
+          intensity: 'medium',
+          location: 'Fight Club Paris'
+        }
+      ];
+    }
+  }
+
+  private loadChallenges() {
+    // In a real app, you would load this from a service
+    // For now, we'll load from localStorage or use mock data if not available
+    const challengesString = localStorage.getItem('current-challenges');
+    
+    if (challengesString) {
+      this.currentChallenges = JSON.parse(challengesString);
+    } else {
+      // Mock data
+      this.currentChallenges = [
+        {
+          id: '1',
+          name: 'Marathon de rounds',
+          progress: 12,
+          target: 20,
+          type: 'rounds'
+        },
+        {
+          id: '2',
+          name: 'Maître de la soumission',
+          progress: 3,
+          target: 10,
+          type: 'submissions'
+        }
+      ];
+      
+      // Save mock data to localStorage
+      localStorage.setItem('current-challenges', JSON.stringify(this.currentChallenges));
+    }
+  }
+
+  private async notifySparringPartner(partnerId: string) {
+    // In a real app, you would send a notification through your backend
+    console.log(`Notifying partner with ID ${partnerId}`);
+    this.showToast('Invitation envoyée au partenaire', 'success');
+  }
+
+  // Utility methods
+  viewAllSessions() {
+    // Navigate to full history view
+    this.router.navigate(['/sessions-history']);
+  }
+  
+  formatTime(seconds: number): string {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hrs > 0) {
+      return `${hrs}h ${mins.toString().padStart(2, '0')}m ${secs.toString().padStart(2, '0')}s`;
+    } else {
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+  }
+  
+  formatDay(date: Date): string {
+    // Get day name
+    const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    const dayName = dayNames[date.getDay()];
+    
+    // Get day and month
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    
+    return `${dayName} ${day}/${month}`;
+  }
+  
+  getActivityLabel(activityType: string): string {
+    const labels: Record<string, string> = {
+      'sparring': 'Sparring',
+      'bag': 'Travail au sac',
+      'shadow': 'Shadowboxing',
+      'grappling': 'Grappling'
     };
     
-    const dataStr = JSON.stringify(data);
-    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = 'evolution_data.json';
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    
-    this.showToast('Données exportées avec succès');
+    return labels[activityType] || activityType;
   }
-
-  // Import data from JSON file
-  async importData() {
-    this.alertController.create({
-      header: 'Importer des données',
-      message: 'Cette action remplacera toutes vos données existantes.',
-      buttons: [
-        {
-          text: 'Annuler',
-          role: 'cancel'
-        },
-        {
-          text: 'Importer',
-          handler: () => {
-            // Create and trigger file input
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = '.json';
-            fileInput.onchange = (e) => {
-              const target = e.target as HTMLInputElement;
-              const file = target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                  try {
-                    const result = e.target?.result as string;
-                    const data = JSON.parse(result);
-                    
-                    if (data.trainings && data.competitions && data.goals) {
-                      this.trainings = data.trainings;
-                      this.competitions = data.competitions;
-                      this.goals = data.goals;
-                      
-                      this.saveToStorage();
-                      this.refreshData();
-                      this.showToast('Données importées avec succès');
-                    } else {
-                      this.showToast('Format de fichier invalide', 'danger');
-                    }
-                  } catch (error) {
-                    this.showToast('Erreur lors de l\'importation', 'danger');
-                  }
-                };
-                reader.readAsText(file);
-              }
-            };
-            fileInput.click();
-          }
-        }
-      ]
-    }).then(alert => alert.present());
+  
+  getIntensityIcon(intensity: string): string {
+    const icons: Record<string, string> = {
+      'low': 'battery-half-outline',
+      'medium': 'battery-charging-outline',
+      'high': 'flash-outline'
+    };
+    
+    return icons[intensity] || 'pulse-outline';
   }
-
-  // Reset all data
-  async resetData() {
-    this.alertController.create({
-      header: 'Réinitialiser les données',
-      message: 'Êtes-vous sûr de vouloir supprimer toutes vos données?',
-      buttons: [
-        {
-          text: 'Annuler',
-          role: 'cancel'
-        },
-        {
-          text: 'Confirmer',
-          handler: () => {
-            this.trainings = [];
-            this.competitions = [];
-            this.goals = [];
-            
-            this.storageService.clearStore('trainings').pipe(take(1)).subscribe();
-            this.storageService.clearStore('competitions').pipe(take(1)).subscribe();
-            this.storageService.clearStore('goals').pipe(take(1)).subscribe();
-            
-            this.refreshData();
-            this.showToast('Données réinitialisées');
-          }
-        }
-      ]
-    }).then(alert => alert.present());
-  }
-
-  // Refresh all data displays
-  refreshData() {
-    this.calculateStats();
-    this.generateWeeklyData();  // Re-generate weekly data when refreshing
-    this.generateCalendar();
-    
-    // Update the recent competitions dynamically
-    this.recentCompetitions = [...this.competitions]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 3);
-      
-    this.cdr.markForCheck();
-  }
-
-  // Show action sheet for adding new items
-  async presentActionSheet() {
-    // Vérifier si l'utilisateur est connecté
-    if (!this.isLoggedIn) {
-      this.promptLogin();
-      return;
-    }
-
-    const actionSheet = await this.actionSheetController.create({
-      header: 'Ajouter',
-      buttons: [
-        {
-          text: 'Entraînement',
-          icon: 'fitness-outline',
-          handler: () => {
-            this.addTraining();
-          }
-        },
-        {
-          text: 'Compétition',
-          icon: 'trophy-outline',
-          handler: () => {
-            this.addCompetition();
-          }
-        },
-        {
-          text: 'Objectif',
-          icon: 'flag-outline',
-          handler: () => {
-            this.addGoal();
-          }
-        },
-        {
-          text: 'Annuler',
-          icon: 'close',
-          role: 'cancel'
-        }
-      ]
-    });
-    await actionSheet.present();
-  }
-
-  // Filter weekly data by training type
-  async filterWeeklyData() {
-    const actionSheet = await this.actionSheetController.create({
-      header: 'Filtrer par type',
-      buttons: [
-        {
-          text: 'Tous les types',
-          handler: () => {
-            this.generateWeeklyData();
-          }
-        },
-        {
-          text: 'Cardio',
-          handler: () => {
-            this.filterWeeklyDataByType('cardio');
-          }
-        },
-        {
-          text: 'Musculation',
-          handler: () => {
-            this.filterWeeklyDataByType('strength');
-          }
-        },
-        {
-          text: 'Technique',
-          handler: () => {
-            this.filterWeeklyDataByType('technique');
-          }
-        },
-        {
-          text: 'Sparring',
-          handler: () => {
-            this.filterWeeklyDataByType('sparring');
-          }
-        },
-        {
-          text: 'Annuler',
-          role: 'cancel'
-        }
-      ]
-    });
-    await actionSheet.present();
-  }
-
-  // Apply filter to weekly data by training type
-  filterWeeklyDataByType(type: string) {
-    const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Monday
-    
-    this.weeklyData = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + i);
-      
-      // Get trainings for this day with the specific type
-      const dayTrainings = this.trainings.filter(t => 
-        new Date(t.date).toDateString() === date.toDateString() &&
-        t.type === type
-      );
-      
-      // Calculate total hours
-      const hours = dayTrainings.reduce((sum, t) => sum + t.duration, 0);
-      
-      return { 
-        label: this.weekdays[i], 
-        hours, 
-        percentage: Math.min(hours * 20, 100) // Scale to percentage (5h = 100%)
-      };
-    });
-  }
-
-  // Add a new training
-  async addTraining() {
-    // Vérifier si l'utilisateur est connecté
-    if (!this.isLoggedIn) {
-      this.promptLogin();
-      return;
-    }
-    
-    // Reset form to default values
-    this.trainingForm.reset({
-      date: new Date().toISOString(),
-      duration: 1,
-      type: 'technique',
-      notes: ''
-    });
-    
-    // Create and show the modal
-    const modal = await this.modalController.create({
-      component: ModalContentComponent,
-      componentProps: {
-        contentTemplate: this.addTrainingModalTemplate,
-        formGroup: this.trainingForm
-      }
-    });
-    
-    await modal.present();
-    
-    const { data } = await modal.onDidDismiss();
-    if (data?.saved) {
-      this.refreshData();
-      this.showToast('Entraînement ajouté');
-    }
-  }
-
-  // Add a new competition
-  async addCompetition() {
-    // Vérifier si l'utilisateur est connecté
-    if (!this.isLoggedIn) {
-      this.promptLogin();
-      return;
-    }
-    
-    // Reset form to default values
-    this.competitionForm.reset({
-      name: '',
-      date: new Date().toISOString(),
-      location: '',
-      position: 1,
-      notes: ''
-    });
-    
-    // Create and show the modal
-    const modal = await this.modalController.create({
-      component: ModalContentComponent,
-      componentProps: {
-        contentTemplate: this.addCompetitionModalTemplate,
-        formGroup: this.competitionForm
-      }
-    });
-    
-    await modal.present();
-    
-    const { data } = await modal.onDidDismiss();
-    if (data?.saved) {
-      this.refreshData();
-      this.showToast('Compétition ajoutée');
-    }
-  }
-
-  // Add a new goal
-  async addGoal() {
-    // Vérifier si l'utilisateur est connecté
-    if (!this.isLoggedIn) {
-      this.promptLogin();
-      return;
-    }
-    
-    const alert = await this.alertController.create({
-      header: 'Ajouter un objectif',
-      inputs: [
-        {
-          name: 'title',
-          type: 'text',
-          placeholder: 'Titre de l\'objectif',
-          value: ''
-        },
-        {
-          name: 'target',
-          type: 'number',
-          placeholder: 'Objectif (nombre)',
-          min: 1,
-          value: 10
-        },
-        {
-          name: 'unit',
-          type: 'text',
-          placeholder: 'Unité (ex: heures, séances...)',
-          value: ''
-        }
-      ],
-      buttons: [
-        {
-          text: 'Annuler',
-          role: 'cancel'
-        },
-        {
-          text: 'Ajouter',
-          handler: (data) => {
-            // Validate inputs
-            if (!data.title || !data.target) {
-              this.showToast('Veuillez remplir tous les champs requis', 'warning');
-              return;
-            }
-            
-            // Create new goal
-            const newGoal: Goal = {
-              id: Date.now().toString(),
-              title: data.title,
-              status: 'upcoming',
-              target: parseInt(data.target),
-              current: 0,
-              progress: 0,
-              unit: data.unit,
-              dueDate: new Date(Date.now() + 30*24*60*60*1000).toISOString() // 30 days from now
-            };
-            
-            this.goals.push(newGoal);
-            this.saveToStorage();
-            this.showToast('Objectif ajouté');
-          }
-        }
-      ]
-    });
-    
-    await alert.present();
-  }
-
-  // View all competitions
-  async viewAllCompetitions() {
-    if (this.competitions.length === 0) {
-      this.showToast('Aucune compétition à afficher');
-      return;
-    }
-    
-    // Create and show the modal for viewing all competitions
-    const modal = await this.modalController.create({
-      component: ModalContentComponent,
-      componentProps: {
-        contentTemplate: this.viewAllCompetitionsModalTemplate
-      }
-    });
-    
-    await modal.present();
-    
-    // Refresh data when modal is dismissed (in case items were deleted)
-    const { data } = await modal.onDidDismiss();
-    if (data?.refresh) {
-      this.refreshData();
-    }
-  }
-
-  // Delete a competition
-  async deleteCompetition(competition: Competition) {
-    // Show confirmation alert before deleting
-    const alert = await this.alertController.create({
-      header: 'Confirmer la suppression',
-      message: `Êtes-vous sûr de vouloir supprimer la compétition "${competition.name}" ?`,
-      buttons: [
-        {
-          text: 'Annuler',
-          role: 'cancel'
-        },
-        {
-          text: 'Supprimer',
-          role: 'destructive',
-          handler: () => {
-            // Find and remove the competition
-            const index = this.competitions.findIndex(c => c.id === competition.id);
-            if (index !== -1) {
-              this.competitions.splice(index, 1);
-              this.saveToStorage();
-              this.refreshData();
-              this.showToast('Compétition supprimée');
-              
-              // Close the modal and indicate that data was changed
-              this.modalController.dismiss({
-                refresh: true
-              });
-            }
-          }
-        }
-      ]
-    });
-    
-    await alert.present();
-  }
-
-  // View all goals
-  viewAllGoals() {
-    if (this.goals.length === 0) {
-      this.showToast('Aucun objectif à afficher');
-      return;
-    }
-    
-    // Create a formatted list of goals
-    let message = '';
-    this.goals.forEach((goal, index) => {
-      const statusText = 
-        goal.status === 'completed' ? 'Accompli' : 
-        goal.status === 'in-progress' ? 'En cours' : 
-        'À venir';
-      
-      message += `<b>${goal.title}</b><br>`;
-      message += `Statut: ${statusText}<br>`;
-      
-      if (goal.status === 'completed' && goal.completedDate) {
-        message += `Accompli le: ${new Date(goal.completedDate).toLocaleDateString('fr-FR')}<br>`;
-      } else {
-        message += `Progression: ${goal.current || 0}/${goal.target} ${goal.unit || ''}<br>`;
-        if (goal.dueDate) {
-          message += `Échéance: ${new Date(goal.dueDate).toLocaleDateString('fr-FR')}<br>`;
-        }
-      }
-      
-      if (index < this.goals.length - 1) message += '<br>';
-    });
-    
-    this.alertController.create({
-      header: 'Tous les objectifs',
-      message,
-      buttons: ['Fermer']
-    }).then(alert => alert.present());
-  }
-
-  // Demander à l'utilisateur de se connecter
-  async promptLogin() {
-    const alert = await this.alertController.create({
-      header: 'Connexion requise',
-      message: 'Vous devez être connecté pour ajouter ou modifier des données.',
-      buttons: [
-        {
-          text: 'Annuler',
-          role: 'cancel'
-        },
-        {
-          text: 'Se connecter',
-          handler: () => {
-            this.router.navigateByUrl('/login');
-          }
-        }
-      ]
-    });
-    
-    await alert.present();
-  }
-
-  // Dismiss modal
-  dismissModal() {
-    this.modalController.dismiss({
-      saved: false
-    });
-  }
-
-  // Save training from form
-  saveTraining() {
-    if (this.trainingForm.valid) {
-      const formValue = this.trainingForm.value;
-      
-      const newTraining: Training = {
-        id: Date.now().toString(),
-        date: formValue.date,
-        duration: formValue.duration,
-        type: formValue.type,
-        notes: formValue.notes
-      };
-      
-      this.trainings.push(newTraining);
-      this.saveToStorage();
-      
-      // Update training data service
-      this.trainingDataService.setTrainings(this.trainings);
-      
-      // Make sure to refresh the data, especially the weekly chart
-      this.refreshData();
-      
-      this.modalController.dismiss({
-        saved: true
-      });
-    } else {
-      this.showToast('Veuillez remplir tous les champs correctement', 'warning');
-    }
-  }
-
-  // Save competition from form
-  saveCompetition() {
-    if (this.competitionForm.valid) {
-      const formValue = this.competitionForm.value;
-      
-      const newCompetition: Competition = {
-        id: Date.now().toString(),
-        name: formValue.name,
-        date: formValue.date,
-        location: formValue.location,
-        position: formValue.position,
-        notes: formValue.notes
-      };
-      
-      this.competitions.push(newCompetition);
-      this.saveToStorage();
-      
-      // Make sure to refresh the data, especially the recent competitions
-      this.refreshData();
-      
-      this.modalController.dismiss({
-        saved: true
-      });
-    } else {
-      this.showToast('Veuillez remplir tous les champs correctement', 'warning');
-    }
-  }
-
-  // Display toast message
-  async showToast(message: string, color: string = 'success') {
+  
+  private async showToast(message: string, color: string = 'primary') {
     const toast = await this.toastController.create({
       message,
       duration: 2000,
-      color,
-      position: 'bottom'
+      position: 'bottom',
+      color
     });
+    
     await toast.present();
-  }
-
-  // Navigation vers la page de profil
-  async goToProfile() {
-    if (this.isLoggedIn) {
-      this.router.navigate(['/profile']);
-    } else {
-      this.router.navigate(['/login']);
-    }
-  }
-
-  // Add this helper method to get a Date object from a weekly data item
-  getDateFromDay(day: WeeklyData): Date {
-    const today = new Date();
-    const currentDay = today.getDay() || 7; // Convert Sunday (0) to 7 for easier calculation
-    const dayIndex = this.weekdays.indexOf(day.label) + 1; // +1 because our weekdays array starts with Monday (index 0)
-    
-    const diff = dayIndex - currentDay;
-    const date = new Date(today);
-    date.setDate(today.getDate() + diff);
-    
-    return date;
-  }
-
-  // Add this method to show a month picker
-  async showMonthPicker() {
-    // Pre-create radio inputs for months
-    const monthRadioInputs = this.months.map((month, index) => ({
-      type: 'radio' as const,
-      name: 'month',
-      value: (index + 1).toString(),
-      label: month,
-      checked: this.selectedMonth === index + 1
-    }));
-    
-    // Pre-create radio inputs for years
-    const yearRadioInputs = Array.from({ length: 5 }, (_, i) => {
-      const year = this.selectedYear - 2 + i;
-      return {
-        type: 'radio' as const,
-        name: 'year',
-        value: year.toString(),
-        label: year.toString(),
-        checked: this.selectedYear === year
-      };
-    });
-
-    const alert = await this.alertController.create({
-      header: 'Sélectionner un mois',
-      buttons: [
-        {
-          text: 'Annuler',
-          role: 'cancel'
-        },
-        {
-          text: 'OK',
-          handler: (data) => {
-            if (data && data.month && data.year) {
-              this.selectedMonth = parseInt(data.month);
-              this.selectedYear = parseInt(data.year);
-              this.generateCalendar();
-            }
-          }
-        }
-      ],
-      inputs: [
-        // First create a header for months
-        {
-          type: 'radio',
-          value: '',
-          label: 'Mois:',
-          disabled: true
-        },
-        // Add all month options
-        ...monthRadioInputs,
-        // Then create a header for years
-        {
-          type: 'radio',
-          value: '',
-          label: 'Année:',
-          disabled: true
-        },
-        // Add all year options
-        ...yearRadioInputs
-      ]
-    });
-
-    await alert.present();
-  }
-
-  // Initialize the current week start date (Monday of current week)
-  initializeCurrentWeek() {
-    const today = new Date();
-    this.currentWeekStart = new Date(today);
-    // Set to Monday of current week (1 = Monday, 0 = Sunday)
-    const day = this.currentWeekStart.getDay() || 7;
-    this.currentWeekStart.setDate(this.currentWeekStart.getDate() - day + 1);
-    this.currentWeekStart.setHours(0, 0, 0, 0); // Start of day
-  }
-
-  // Navigate to the previous week
-  previousWeek() {
-    const newWeekStart = new Date(this.currentWeekStart);
-    newWeekStart.setDate(this.currentWeekStart.getDate() - 7);
-    this.currentWeekStart = newWeekStart;
-    this.generateWeeklyData();
-  }
-
-  // Navigate to the next week
-  nextWeek() {
-    const newWeekStart = new Date(this.currentWeekStart);
-    newWeekStart.setDate(this.currentWeekStart.getDate() + 7);
-    this.currentWeekStart = newWeekStart;
-    this.generateWeeklyData();
-  }
-
-  // Return to the current week
-  goToCurrentWeek() {
-    this.initializeCurrentWeek();
-    this.generateWeeklyData();
-  }
-
-  // Format the week range for display (e.g., "1 - 7 Jan 2023")
-  formatWeekRange(): string {
-    const weekEnd = new Date(this.currentWeekStart);
-    weekEnd.setDate(this.currentWeekStart.getDate() + 6);
-    
-    return `${this.currentWeekStart.getDate()} - ${weekEnd.getDate()} ${this.months[this.currentWeekStart.getMonth()].slice(0, 3)} ${this.currentWeekStart.getFullYear()}`;
-  }
-
-  // Check if a date is within the displayed week
-  isInCurrentWeek(date: Date): boolean {
-    const weekEnd = new Date(this.currentWeekStart);
-    weekEnd.setDate(this.currentWeekStart.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999); 
-    return date >= this.currentWeekStart && date <= weekEnd;
-  }
-
-  // Ajouter des fonctions trackBy
-  trackDayByLabel(index: number, item: WeeklyData): string {
-    return item.label;
-  }
-  
-  trackCompetitionById(index: number, item: Competition): string {
-    return item.id;
-  }
-  
-  trackGoalById(index: number, item: Goal): string {
-    return item.id;
   }
 }
