@@ -9,6 +9,21 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
+  
+  <!-- Modern floating tabs replacing the old segment control -->
+  <div class="floating-tabs-container">
+    <div class="floating-tabs">
+      <div class="tab-button" [class.active]="!showingFriends" (click)="switchToAllView()">
+        <ion-icon name="people-outline"></ion-icon>
+        <span>Tous</span>
+      </div>
+      <div class="tab-button" [class.active]="showingFriends" (click)="switchToFriendsView()">
+        <ion-icon name="heart"></ion-icon>
+        <span>Mes Amis</span>
+        <div class="badge" *ngIf="friends.length > 0">{{friends.length}}</div>
+      </div>
+    </div>
+  </div>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ultra-modern-content">
@@ -118,16 +133,31 @@
           <ion-icon name="chatbubble-outline"></ion-icon>
           <span>Message</span>
         </button>
-        <button class="action-btn connect-btn" (click)="connectWithUser(user)">
-          <ion-icon name="person-add-outline"></ion-icon>
-          <span>Connecter</span>
+        <button class="action-btn connect-btn" 
+                [class.connected]="isFriend(user)"
+                (click)="connectWithUser(user)">
+          <ion-icon [name]="isFriend(user) ? 'person-remove-outline' : 'person-add-outline'"></ion-icon>
+          <span>{{ isFriend(user) ? 'Déconnecter' : 'Connecter' }}</span>
         </button>
       </div>
     </div>
   </div>
 
+  <!-- Empty state for friends view -->
+  <div class="empty-state-container" *ngIf="!loading && showingFriends && friends.length === 0">
+    <div class="empty-illustration">
+      <ion-icon name="people-outline"></ion-icon>
+    </div>
+    <h3>Aucun ami</h3>
+    <p>Vous n'avez pas encore connecté avec d'autres utilisateurs</p>
+    <button class="action-btn primary-btn" (click)="switchToAllView()">
+      <ion-icon name="search-outline"></ion-icon>
+      <span>Trouver des partenaires</span>
+    </button>
+  </div>
+
   <!-- Modern empty state -->
-  <div class="empty-state-container" *ngIf="!loading && filteredUsers.length === 0">
+  <div class="empty-state-container" *ngIf="!loading && filteredUsers.length === 0 && (!showingFriends || friends.length > 0)">
     <div class="empty-illustration">
       <ion-icon name="search-outline"></ion-icon>
     </div>

@@ -697,4 +697,106 @@ export class FirebaseService {
       throw error;
     }
   }
+
+  // Add a user as a friend
+  async addFriend(userId: string, friendData: any) {
+    try {
+      const friendId = friendData.id || friendData.userId;
+      if (!userId || !friendId) {
+        console.error('Invalid user ID or friend ID');
+        throw new Error('Invalid user or friend ID');
+      }
+      
+      // Create a clean copy of friend data to store
+      const friendToSave = {
+        userId: friendId,
+        photo: friendData.photo || null,
+        firstName: friendData.firstName || '',
+        lastName: friendData.lastName || '',
+        discipline: friendData.discipline || '',
+        level: friendData.level || '',
+        city: friendData.city || '',
+        addedAt: new Date()
+      };
+      
+      // Use direct collection/document path methods instead of setDocument
+      const friendsCollectionRef = collection(this.firestore, `users/${userId}/friends`);
+      const friendDocRef = doc(friendsCollectionRef, friendId);
+      await setDoc(friendDocRef, friendToSave);
+      
+      return friendId;
+    } catch (error: any) {
+      console.error('Error adding friend:', error);
+      
+      if (error.code === 'permission-denied') {
+        await this.showErrorToast('Permission refusée: Vous ne pouvez pas ajouter cet ami. Vérifiez vos règles de sécurité Firebase.');
+      } else {
+        await this.showErrorToast('Une erreur est survenue lors de l\'ajout de l\'ami.');
+      }
+      
+      throw error;
+    }
+  }
+
+  // Remove a friend
+  async removeFriend(userId: string, friendId: string) {
+    try {
+      if (!userId || !friendId) {
+        console.error('Invalid user ID or friend ID');
+        throw new Error('Invalid user or friend ID');
+      }
+      
+      // Get direct reference to the friend document
+      const friendDocRef = doc(this.firestore, `users/${userId}/friends/${friendId}`);
+      await deleteDoc(friendDocRef);
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error removing friend:', error);
+      
+      if (error.code === 'permission-denied') {
+        await this.showErrorToast('Permission refusée: Vous ne pouvez pas supprimer cet ami. Vérifiez vos règles de sécurité Firebase.');
+      } else {
+        await this.showErrorToast('Une erreur est survenue lors de la suppression de l\'ami.');
+      }
+      
+      throw error;
+    }
+  }
+
+  // Get all friends of a user
+  async getFriends(userId: string) {
+    try {
+      if (!userId) {
+        console.error('Invalid user ID');
+        return [];
+      }
+      
+      // Get all documents in the friends subcollection
+      const friendsCollectionRef = collection(this.firestore, `users/${userId}/friends`);
+      const querySnapshot = await getDocs(friendsCollectionRef);
+      
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error(`Error getting friends for ${userId}:`, error);
+      return [];
+    }
+  }
+  
+  // Add the missing getCollection method
+  async getCollection(collectionPath: string) {
+    try {
+      const querySnapshot = await getDocs(collection(this.firestore, collectionPath));
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error(`Error getting documents from ${collectionPath}:`, error);
+      return [];
+    }
+  }
 }
