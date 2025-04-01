@@ -69,3 +69,116 @@ ion-badge {
   padding: 4px 8px;
   border-radius: 10px;
 }
+
+/* Instagram-style active conversations row */
+.active-conversations {
+  padding: 12px 4px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: white;
+}
+
+.active-conversations-scroller {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+}
+
+.active-conversation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 8px;
+  min-width: 70px;
+  cursor: pointer;
+  
+  .avatar-container {
+    position: relative;
+    width: 68px;
+    height: 68px;
+    margin-bottom: 8px;
+    
+    img {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid white;
+    }
+    
+    &.has-unread {
+      &::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        padding: 2px;
+        z-index: -1;
+      }
+      
+      img {
+        border: 2px solid white;
+      }
+    }
+    
+    .unread-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background-color: var(--ion-color-danger);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
+    }
+    
+    .active-indicator {
+      position: absolute;
+      bottom: 3px;
+      right: 3px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #4CAF50;
+      border: 2px solid white;
+    }
+  }
+  
+  .name {
+    font-size: 12px;
+    color: var(--ion-color-dark);
+    text-align: center;
+    max-width: 68px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  &.new-chat {
+    .avatar-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--ion-color-light);
+      border-radius: 50%;
+      
+      ion-icon {
+        font-size: 30px;
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+}

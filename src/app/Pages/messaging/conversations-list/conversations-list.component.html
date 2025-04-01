@@ -21,6 +21,35 @@
     <p>Chargement des conversations...</p>
   </div>
 
+  <!-- Instagram-style active conversations row -->
+  <div class="active-conversations" *ngIf="!loading && conversations.length > 0">
+    <div class="active-conversations-scroller">
+      <!-- New chat button -->
+      <div class="active-conversation new-chat" routerLink="/messaging/new">
+        <div class="avatar-container">
+          <ion-icon name="add-circle"></ion-icon>
+        </div>
+        <div class="name">Nouveau</div>
+      </div>
+      
+      <!-- Active conversations -->
+      <div class="active-conversation" *ngFor="let conversation of sortedConversations()" 
+           (click)="openChat(conversation)">
+        <div class="avatar-container" [class.has-unread]="getUnreadCount(conversation) > 0">
+          <img [src]="getOtherParticipantInfo(conversation).photo" 
+               alt="Avatar"
+               onError="this.src='assets/default-avatar.png'">
+          <span class="unread-badge" *ngIf="getUnreadCount(conversation) > 0">
+            {{ getUnreadCount(conversation) }}
+          </span>
+          <div class="active-indicator" *ngIf="isRecentConversation(conversation)"></div>
+        </div>
+        <div class="name">{{ getTruncatedName(getOtherParticipantInfo(conversation).name) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Regular conversations list -->
   <ion-list *ngIf="!loading">
     <ion-item *ngIf="conversations.length === 0" lines="none" class="ion-text-center ion-padding">
       <ion-label color="medium">

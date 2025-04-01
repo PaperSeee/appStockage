@@ -109,6 +109,37 @@ export class ConversationsListComponent implements OnInit, OnDestroy {
     return this.currentUserId !== null && conversation.lastMessageSenderId === this.currentUserId;
   }
 
+  // Return conversations sorted by most recent first for the active conversations row
+  sortedConversations(): Conversation[] {
+    return [...this.conversations].sort((a, b) => {
+      const timeA = a.lastMessageTime?.toDate ? a.lastMessageTime.toDate() : new Date(a.lastMessageTime || 0);
+      const timeB = b.lastMessageTime?.toDate ? b.lastMessageTime.toDate() : new Date(b.lastMessageTime || 0);
+      return timeB.getTime() - timeA.getTime();
+    });
+  }
+
+  // Check if conversation is recent (within the last 24 hours)
+  isRecentConversation(conversation: Conversation): boolean {
+    if (!conversation.lastMessageTime) return false;
+    
+    const timestamp = conversation.lastMessageTime.toDate 
+      ? conversation.lastMessageTime.toDate() 
+      : new Date(conversation.lastMessageTime);
+      
+    const now = new Date();
+    const timeDiff = now.getTime() - timestamp.getTime();
+    
+    // Return true if conversation had activity in the last 24 hours
+    return timeDiff < 24 * 60 * 60 * 1000;
+  }
+  
+  // Get a truncated name for the active conversations row
+  getTruncatedName(name: string): string {
+    if (!name) return 'User';
+    const parts = name.split(' ');
+    return parts[0].length > 8 ? parts[0].substring(0, 8) + '...' : parts[0];
+  }
+
   ngOnDestroy() {
     if (this.conversationsSub) {
       this.conversationsSub.unsubscribe();
