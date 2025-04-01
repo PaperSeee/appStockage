@@ -182,6 +182,33 @@ ion-header {
         }
       }
     }
+    
+    .empty-state {
+      width: 100%;
+      text-align: center;
+      padding: 20px;
+      color: var(--ion-color-medium);
+      font-size: 0.9rem;
+    }
+    
+    .loading-state {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      
+      ion-spinner {
+        margin-bottom: 10px;
+      }
+      
+      p {
+        color: var(--ion-color-medium);
+        font-size: 0.9rem;
+        margin: 0;
+      }
+    }
   }
 }
 

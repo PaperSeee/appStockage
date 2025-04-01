@@ -85,6 +85,9 @@ export class Tab1Page implements OnInit, OnDestroy {
   };
   
   private trainingSubscription: Subscription | null = null;
+  friends: any[] = [];
+  filteredFriends: any[] = [];
+  loadingFriends = true;
   
   constructor(
     private firebaseService: FirebaseService,
@@ -103,6 +106,9 @@ export class Tab1Page implements OnInit, OnDestroy {
     this.filteredEvents = [...this.upcomingEvents];
     this.filteredPartners = [...this.nearbyPartners];
     this.filteredTrainings = [...this.trainings];
+    
+    // Load friends
+    this.loadFriends();
     
     // Subscribe to conversations to get unread count
     this.conversationsSub = this.messagingService.conversations$.subscribe(conversations => {
@@ -370,6 +376,7 @@ export class Tab1Page implements OnInit, OnDestroy {
         this.filteredEvents = [...this.upcomingEvents];
         this.filteredPartners = [...this.nearbyPartners];
         this.filteredTrainings = [...this.trainings];
+        this.filteredFriends = [...this.friends];
       }
       return;
     }
@@ -389,6 +396,11 @@ export class Tab1Page implements OnInit, OnDestroy {
     this.filteredTrainings = this.trainings.filter(training => {
       return training.type.toLowerCase() === discipline.toLowerCase() || 
              training.user.discipline.toLowerCase() === discipline.toLowerCase();
+    });
+    
+    // Filter friends by discipline
+    this.filteredFriends = this.friends.filter(friend => {
+      return friend.discipline && friend.discipline.toLowerCase().includes(discipline.toLowerCase());
     });
     
     // If search term is also present, further filter the results
@@ -423,6 +435,12 @@ export class Tab1Page implements OnInit, OnDestroy {
       training.user.name.toLowerCase().includes(term) ||
       training.location.toLowerCase().includes(term)
     );
+    
+    // Further filter friends
+    this.filteredFriends = this.filteredFriends.filter(friend => 
+      this.getUserFullName(friend).toLowerCase().includes(term) ||
+      (friend.discipline && friend.discipline.toLowerCase().includes(term))
+    );
   }
 
   searchItems() {
@@ -434,6 +452,7 @@ export class Tab1Page implements OnInit, OnDestroy {
         this.filteredEvents = [...this.upcomingEvents];
         this.filteredPartners = [...this.nearbyPartners];
         this.filteredTrainings = [...this.trainings];
+        this.filteredFriends = [...this.friends];
       } else {
         // If discipline filter is active, re-apply it
         this.filterByDiscipline(this.disciplineFilter);
@@ -449,6 +468,7 @@ export class Tab1Page implements OnInit, OnDestroy {
       this.filteredEvents = [...this.upcomingEvents];
       this.filteredPartners = [...this.nearbyPartners];
       this.filteredTrainings = [...this.trainings];
+      this.filteredFriends = [...this.friends];
     }
     
     // Then apply search filter
@@ -468,6 +488,11 @@ export class Tab1Page implements OnInit, OnDestroy {
     return item.id;
   }
 
+  // Tracking function for friends
+  trackFriendById(index: number, item: any): string {
+    return item.id || item.userId || index.toString();
+  }
+
   ngOnDestroy() {
     if (this.conversationsSub) {
       this.conversationsSub.unsubscribe();
@@ -476,5 +501,49 @@ export class Tab1Page implements OnInit, OnDestroy {
     if (this.trainingSubscription) {
       this.trainingSubscription.unsubscribe();
     }
+  }
+
+  // Load friends from Firebase
+  async loadFriends() {
+    this.loadingFriends = true;
+    try {
+      const user = await this.firebaseService.getCurrentUser() as any;
+      if (user && user.uid) {
+        const friendsData = await this.firebaseService.getFriends(user.uid);
+        if (friendsData) {
+          this.friends = friendsData;
+          this.filteredFriends = [...this.friends];
+        }
+      }
+    } catch (error) {
+      console.error('Error loading friends:', error);
+    } finally {
+      this.loadingFriends = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  // Handle image loading errors
+  handleImageError(event: any) {
+    event.target.src = 'assets/par défaut.jpg';
+  }
+
+  // Get user's full name
+  getUserFullName(user: any): string {
+    if (!user) return 'Utilisateur';
+    
+    if (user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    
+    if (user.name) {
+      return user.name;
+    }
+    
+    if (user.displayName) {
+      return user.displayName;
+    }
+    
+    return 'Utilisateur';
   }
 }

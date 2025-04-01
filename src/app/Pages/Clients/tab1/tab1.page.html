@@ -126,20 +126,27 @@
   
   <h3 class="section-title">
     <ion-icon name="people-outline"></ion-icon>
-    Partenaires à proximité
+    Mes amis
   </h3>
-  
+
   <div class="partners-container">
     <div class="partners-list">
-      <div class="partner-item" *ngFor="let partner of filteredPartners; trackBy: trackPartnerById">
+      <div class="partner-item" *ngFor="let friend of filteredFriends; trackBy: trackFriendById">
         <div class="avatar-container">
-          <img [src]="partner.avatar" [alt]="partner.name" class="avatar">
+          <img [src]="friend.photo || 'assets/par défaut.jpg'" [alt]="getUserFullName(friend)" class="avatar" (error)="handleImageError($event)">
           <div class="status-indicator"></div>
         </div>
         <div class="partner-info">
-          <p class="name">{{partner.name}}</p>
-          <p class="details">{{partner.discipline}}</p>
+          <p class="name">{{getUserFullName(friend)}}</p>
+          <p class="details">{{friend.discipline || 'Non spécifié'}}</p>
         </div>
+      </div>
+      <div class="empty-state" *ngIf="filteredFriends.length === 0 && !loadingFriends">
+        <p>Aucun ami trouvé. Ajoutez des amis dans l'onglet Partenaires.</p>
+      </div>
+      <div class="loading-state" *ngIf="loadingFriends">
+        <ion-spinner></ion-spinner>
+        <p>Chargement...</p>
       </div>
     </div>
   </div>
