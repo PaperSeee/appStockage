@@ -7,7 +7,7 @@
     <ion-title>
       <div class="chat-title" [class.group-chat]="conversation?.isGroup" (click)="showGroupInfo()">
         <ion-avatar>
-          <img [src]="getConversationPhoto()" alt="Avatar" onError="this.src='assets/default-avatar.png'">
+          <img [src]="getConversationPhoto()" alt="Avatar" onError="this.src='assets/par défaut.jpg'">
         </ion-avatar>
         <div class="title-info">
           <span class="chat-name">{{ getConversationName() }}</span>

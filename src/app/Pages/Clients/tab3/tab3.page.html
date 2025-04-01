@@ -27,7 +27,7 @@
   <div class="create-post-card">
     <div class="post-header">
       <ion-avatar>
-        <img [src]="currentUser.avatar || 'assets/default-avatar.png'" alt="Avatar">
+        <img [src]="currentUser.avatar || 'assets/par défaut.jpg'" alt="Avatar">
       </ion-avatar>
       <ion-input placeholder="Partagez votre expérience d'entraînement..." (click)="openPostCreator()"></ion-input>
     </div>
@@ -117,7 +117,7 @@
     <div class="post-card" *ngFor="let post of filteredPosts">
       <div class="post-header">
         <ion-avatar (click)="viewProfile(post.user.id)">
-          <img [src]="post.user.avatar" [alt]="post.user.name">
+          <img [src]="post.user.avatar || 'assets/par défaut.jpg'" [alt]="post.user.name">
         </ion-avatar>
         <div class="post-info">
           <div class="user-info">
@@ -211,7 +211,7 @@
         <div class="comment-list">
           <div class="comment-item" *ngFor="let comment of post.comments">
             <ion-avatar>
-              <img [src]="comment.user.avatar" [alt]="comment.user.name">
+              <img [src]="comment.user.avatar || 'assets/par défaut.jpg'" [alt]="comment.user.name">
             </ion-avatar>
             <div class="comment-content">
               <div class="comment-bubble">
@@ -229,7 +229,7 @@
         
         <div class="add-comment">
           <ion-avatar>
-            <img [src]="currentUser.avatar || 'assets/default-avatar.png'" alt="Avatar">
+            <img [src]="currentUser.avatar || 'assets/par défaut.jpg'" alt="Avatar">
           </ion-avatar>
           <ion-input 
             placeholder="Écrivez un commentaire..." 

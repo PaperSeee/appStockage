@@ -19,7 +19,7 @@
   <div class="profile-container" *ngIf="!isLoading">
     <div class="profile-header">
       <div class="photo-container">
-        <img [src]="selectedImage || profileForm.get('photo')?.value || 'assets/default-avatar.png'" alt="Photo de profil" class="profile-photo">
+        <img [src]="selectedImage || profileForm.get('photo')?.value || 'assets/par défaut.jpg'" alt="Photo de profil" class="profile-photo">
         <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" hidden>
         <ion-fab-button class="edit-photo-btn" (click)="fileInput.click()">
           <ion-icon name="camera"></ion-icon>

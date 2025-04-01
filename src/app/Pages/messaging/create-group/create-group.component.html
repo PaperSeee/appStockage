@@ -36,7 +36,7 @@
     <div class="selected-users" *ngIf="selectedUsers.length > 0">
       <div class="selected-user" *ngFor="let user of selectedUsers; let i = index">
         <ion-avatar>
-          <img [src]="user.photo || 'assets/default-avatar.png'" alt="Avatar" onError="this.src='assets/default-avatar.png'">
+          <img [src]="user.photo || 'assets/par défaut.jpg'" alt="Avatar" onError="this.src='assets/par défaut.jpg'">
         </ion-avatar>
         <span class="user-name">{{ getUserFullName(user) }}</span>
         <ion-button fill="clear" (click)="removeSelectedUser(i)" class="remove-button">

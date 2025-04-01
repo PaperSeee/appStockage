@@ -160,7 +160,7 @@ export class Tab3Page implements OnInit {
             this.currentUser = {
               id: parseInt(this.userId || '0'),
               name: `${userData?.firstName || ''} ${userData?.lastName || ''}`,
-              avatar: userData?.photo || 'assets/default-avatar.png',
+              avatar: userData?.photo || 'assets/par défaut.jpg',
               discipline: userData?.discipline
             };
           }

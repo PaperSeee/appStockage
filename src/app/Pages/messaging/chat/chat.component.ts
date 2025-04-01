@@ -202,7 +202,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     
     return {
       name: `${participantInfo.firstName} ${participantInfo.lastName}`.trim() || 'Chat',
-      photo: participantInfo.photo || 'assets/default-avatar.png'
+      photo: participantInfo.photo || 'assets/par défaut.jpg'
     };
   }
 

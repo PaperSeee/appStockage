@@ -31,7 +31,7 @@
 
     <ion-item *ngFor="let user of filteredUsers" button detail (click)="startConversation(user)">
       <ion-avatar slot="start">
-        <img [src]="user.photo || 'assets/default-avatar.png'" alt="Avatar" onError="this.src='assets/default-avatar.png'">
+        <img [src]="user.photo || 'assets/par défaut.jpg'" alt="Avatar" onError="this.src='assets/par défaut.jpg'">
       </ion-avatar>
       
       <ion-label>

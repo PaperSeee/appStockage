@@ -111,7 +111,7 @@ export class ProfilePage implements OnInit {
                 lastName: lastName,
                 email: user.email || '',
                 username: username,
-                photo: user.photoURL || '',
+                photo: user.photoURL || 'assets/par défaut.jpg',
                 createdAt: new Date()
               };
               
