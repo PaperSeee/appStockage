@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { ToastController } from '@ionic/angular';
+import { ToastController, AlertController } from '@ionic/angular';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { FirebaseService } from '../../../services/firebase.service';
+import { MessagingService } from '../../../services/messaging.service';
+import { Router } from '@angular/router';
 
 interface Partner {
   id: number;
@@ -31,7 +33,6 @@ interface Filters {
   standalone: false,
 })
 export class Tab2Page implements OnInit {
-  // We'll keep the interface definition but not use this hardcoded data
   partners: Partner[] = [];
 
   filteredPartners: Partner[] = [];
@@ -39,6 +40,7 @@ export class Tab2Page implements OnInit {
   currentPartnerIndex = 0;
   isFilterModalOpen = false;
   loading = true; // Add loading property
+  creatingConversation = false; // Flag to prevent multiple clicks
 
   filters: Filters = {
     discipline: [],
@@ -50,7 +52,9 @@ export class Tab2Page implements OnInit {
   constructor(
     private toastController: ToastController,
     private sanitizer: DomSanitizer,
-    private firebaseService: FirebaseService
+    private firebaseService: FirebaseService,
+    private messagingService: MessagingService, // Add messaging service
+    private router: Router // Add router for navigation
   ) {}
 
   ngOnInit() {
@@ -145,14 +149,60 @@ export class Tab2Page implements OnInit {
     this.closeFilters();
   }
 
+  // Updated method to actually create a conversation and navigate to chat
   async sendMessage(user: any) {
-    const toast = await this.toastController.create({
-      message: `Message envoyé à ${this.getUserFullName(user)}`,
-      duration: 2000,
-      position: 'bottom',
-      color: 'success'
+    if (this.creatingConversation) return; // Prevent multiple clicks
+    this.creatingConversation = true;
+
+    try {
+      // Show loading toast
+      const loadingToast = await this.toastController.create({
+        message: `Création de la conversation avec ${this.getUserFullName(user)}...`,
+        duration: 2000,
+        position: 'bottom'
+      });
+      await loadingToast.present();
+
+      // Create or get an existing conversation
+      const conversationId = await this.messagingService.createConversation(user.id || user.userId);
+      
+      // Navigate to the chat view with this conversation
+      this.router.navigate(['/messaging/chat', conversationId]);
+      
+    } catch (error: any) {
+      console.error('Error creating conversation:', error);
+      
+      // Check if this is a permissions error
+      if (error.code === 'permission-denied' || 
+          error.message?.includes('Missing or insufficient permissions')) {
+        await this.showFirebasePermissionsAlert();
+      } else {
+        // Show general error toast
+        const errorToast = await this.toastController.create({
+          message: `Erreur lors de la création de la conversation. Veuillez réessayer.`,
+          duration: 3000,
+          position: 'bottom',
+          color: 'danger'
+        });
+        await errorToast.present();
+      }
+    } finally {
+      this.creatingConversation = false;
+    }
+  }
+
+  // New method to show a detailed permissions error alert
+  private async showFirebasePermissionsAlert() {
+    const alert = await this.toastController.create({
+      header: 'Erreur de permissions Firebase',
+      message: `Votre application ne possède pas les permissions nécessaires pour créer des conversations. 
+                Vous devez configurer les règles de sécurité Firebase pour la collection "conversations".`,
+      duration: 5000,
+      position: 'middle',
+      color: 'warning',
+      buttons: ['OK']
     });
-    await toast.present();
+    await alert.present();
   }
 
   // Handle image loading errors
