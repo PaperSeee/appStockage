@@ -8,7 +8,7 @@
         "files": [
           "/favicon.ico",
           "/index.html",
-          "/manifest.webmanifest",
+          "/manifest.json",
           "/*.css",
           "/*.js"
         ]
@@ -24,5 +24,6 @@
         ]
       }
     }
-  ]
+  ],
+  "dataGroups": []
 }

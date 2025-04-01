@@ -27,9 +27,6 @@ import { GrService } from './services/gr.service'; // Assurez-vous que ce chemin
 // Import LinkHandlerService
 import { LinkHandlerService } from './services/link-handler.service';
 
-// Import Capacitor initialization
-import { initCapacitor } from '../utils/capacitor-init';
-
 // Initialize Firebase
 const app = initializeApp(environment.firebaseConfig);
 // Get Firebase service instances
@@ -73,11 +70,6 @@ export function initLinkHandlerFactory(linkHandler: LinkHandlerService) {
       provide: APP_INITIALIZER,
       useFactory: initLinkHandlerFactory,
       deps: [LinkHandlerService],
-      multi: true
-    },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: () => initCapacitor,
       multi: true
     }
   ],
