@@ -34,7 +34,12 @@ export class ConversationsListComponent implements OnInit, OnDestroy {
       
       // Écouter les conversations
       this.conversationsSub = this.messagingService.conversations$.subscribe(conversations => {
-        this.conversations = conversations;
+        // Inclure toutes les conversations, même sans messages
+        this.conversations = conversations.sort((a, b) => {
+          const timeA = a.lastMessageTime || a.groupCreatedAt || 0;
+          const timeB = b.lastMessageTime || b.groupCreatedAt || 0;
+          return new Date(timeB).getTime() - new Date(timeA).getTime();
+        });
         this.loading = false;
       });
 

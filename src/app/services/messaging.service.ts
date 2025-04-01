@@ -82,26 +82,30 @@ export class MessagingService {
   // Listen to user's conversations in real-time
   private listenToConversations() {
     if (!this.currentUserId) return;
-    
-    // Clean up previous listener if exists
+
     if (this.conversationsUnsubscribe) {
       this.conversationsUnsubscribe();
     }
-    
+
     const conversationsRef = collection(this.firestore, 'conversations');
     const q = query(
       conversationsRef,
-      where('participants', 'array-contains', this.currentUserId),
-      orderBy('lastMessageTime', 'desc')
+      where('participants', 'array-contains', this.currentUserId)
     );
-    
+
     this.conversationsUnsubscribe = onSnapshot(q, async (querySnapshot) => {
       const conversations: Conversation[] = [];
-      
+
       for (const doc of querySnapshot.docs) {
         const conversation = { id: doc.id, ...doc.data() } as Conversation;
-        
-        // Fetch participant details if they don't exist
+
+        // Ajouter des informations par défaut si aucun message n'existe
+        if (!conversation.lastMessageTime) {
+          conversation.lastMessage = 'Aucun message';
+          conversation.lastMessageTime = conversation.groupCreatedAt || new Date();
+        }
+
+        // Charger les informations des participants si elles n'existent pas
         if (!conversation.participantsInfo || Object.keys(conversation.participantsInfo).length === 0) {
           conversation.participantsInfo = {};
           for (const participantId of conversation.participants) {
@@ -116,13 +120,12 @@ export class MessagingService {
               }
             }
           }
-          // Update the conversation with participant info
           await updateDoc(doc.ref, { participantsInfo: conversation.participantsInfo });
         }
-        
+
         conversations.push(conversation);
       }
-      
+
       this.conversationsSubject.next(conversations);
     });
   }
