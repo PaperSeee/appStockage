@@ -315,4 +315,9 @@ export class ProfilePage implements OnInit {
   goToTab1() {
     this.router.navigate(['/tabs/tab1']);
   }
+  
+  handleImageError(event: any) {
+    // Set default image if the image fails to load
+    event.target.src = 'assets/par défaut.jpg';
+  }
 }
