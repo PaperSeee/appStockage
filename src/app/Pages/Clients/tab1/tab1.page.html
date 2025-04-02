@@ -155,65 +155,60 @@
     <ion-icon name="pulse-outline"></ion-icon>
     Feed d'activités
   </h3>
-  
+
   <div class="activity-feed">
-    <div class="feed-item" *ngFor="let training of filteredTrainings; trackBy: trackTrainingById">
+    <!-- Affichage des meilleurs posts sociaux -->
+    <div class="feed-item" *ngFor="let post of topPosts; trackBy: trackPostById">
       <div class="feed-header">
-        <img [src]="training.user.avatar" [alt]="training.user.name" class="user-avatar">
+        <img [src]="post.user.avatar || 'assets/par défaut.jpg'" [alt]="post.user.name" class="user-avatar">
         <div class="user-info">
-          <p class="username">{{training.user.name}}</p>
+          <p class="username">{{post.user.name}}</p>
           <p class="activity-meta">
-            <ion-icon name="location-outline"></ion-icon>
-            <span>{{training.location}}</span>
+            <ion-icon name="pricetag-outline" *ngIf="post.type"></ion-icon>
+            <span *ngIf="post.type">{{post.type}}</span>
             <ion-icon name="time-outline"></ion-icon>
-            <span>{{formatDate(training.date)}}</span>
+            <span>{{post.timestamp | date:'dd MMM à HH:mm'}}</span>
           </p>
         </div>
-        <span class="activity-type">{{training.type}}</span>
+        <span class="post-score" *ngIf="post.score">Score: {{post.score.toFixed(1)}}</span>
       </div>
       
-      <img [appOptimizedImage]="training.image" 
-           [width]="400" 
-           [height]="300" 
-           [alt]="training.title" 
+      <img *ngIf="post.media && post.media.length > 0" 
+           [src]="getPostMainImage(post)" 
+           [alt]="post.content" 
            class="activity-image">
       
       <div class="activity-content">
-        <h3 class="activity-title">{{training.title}}</h3>
-        <p class="activity-description">{{training.description}}</p>
+        <p class="activity-description">{{formatPostContent(post.content)}}</p>
         
         <div class="activity-stats">
           <div class="stat">
-            <span class="value">{{training.duration}}</span>
-            <span class="label">Minutes</span>
-          </div>
-          <div class="stat">
-            <span class="value">{{training.likes}}</span>
+            <span class="value">{{post.likes.length}}</span>
             <span class="label">J'aime</span>
           </div>
           <div class="stat">
-            <span class="value">{{training.comments}}</span>
-            <span class="label">Comments</span>
+            <span class="value">{{post.comments.length}}</span>
+            <span class="label">Commentaires</span>
+          </div>
+          <div class="stat">
+            <span class="value">{{post.shares}}</span>
+            <span class="label">Partages</span>
           </div>
         </div>
         
         <div class="activity-actions">
-          <ion-button fill="clear" color="medium" (click)="likeTraining(training)">
-            <ion-icon name="heart-outline"></ion-icon>
-            J'aime
-          </ion-button>
-          
-          <ion-button fill="clear" color="medium">
-            <ion-icon name="chatbubble-outline"></ion-icon>
-            Commenter
-          </ion-button>
-          
-          <ion-button fill="clear" color="medium">
-            <ion-icon name="share-social-outline"></ion-icon>
-            Partager
+          <ion-button fill="clear" color="medium" (click)="viewFullPost(post.id)">
+            <ion-icon name="eye-outline"></ion-icon>
+            Voir plus
           </ion-button>
         </div>
       </div>
+    </div>
+    
+    <!-- Message si pas de posts -->
+    <div class="empty-feed" *ngIf="topPosts.length === 0">
+      <ion-icon name="newspaper-outline" size="large"></ion-icon>
+      <p>Aucune activité sociale récente</p>
     </div>
   </div>
   

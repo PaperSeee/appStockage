@@ -4,7 +4,7 @@ import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { SharingService } from '../../../services/sharing.service';
 import { MessagingService } from '../../../services/messaging.service';
-import { Subscription } from 'rxjs';
+import { Subscription, interval } from 'rxjs';
 import { TrainingDataService } from '../../../services/training-data.service';
 import { FriendsService } from '../../../services/friends.service';
 
@@ -49,6 +49,43 @@ interface Event {
   distance: number; // Distance en km
 }
 
+interface Comment {
+  id: number;
+  userId: number;
+  userName: string;
+  userAvatar: string;
+  text: string;
+  timestamp: Date;
+  likes: number;
+}
+
+interface Media {
+  id: number;
+  type: string;
+  url: string;
+}
+
+// Ajout de l'interface Post pour le feed social
+interface Post {
+  id: number;
+  user: User;
+  content: string;
+  timestamp: Date;
+  type?: 'Sparring' | 'Compétition' | 'Entraînement' | 'Question' | 'Conseils';
+  tags?: string[];
+  media?: Media[];
+  event?: Event;
+  likes: { userId: number }[];
+  comments: Comment[];
+  shares: number;
+  userLiked?: boolean;
+  showComments?: boolean;
+  newComment?: string;
+  userId?: string;
+  // Propriété ajoutée pour le classement
+  score?: number;
+}
+
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
@@ -91,6 +128,11 @@ export class Tab1Page implements OnInit, OnDestroy {
   filteredFriends: any[] = [];
   loadingFriends = true;
   
+  // Ajouter les propriétés pour les posts
+  socialPosts: Post[] = [];
+  topPosts: Post[] = [];
+  private intervalSubscription: Subscription | null = null;
+  
   constructor(
     private firebaseService: FirebaseService,
     private alertController: AlertController,
@@ -131,6 +173,15 @@ export class Tab1Page implements OnInit, OnDestroy {
     this.friendsSubscription = this.friendsService.friendsUpdated$.subscribe(() => {
       console.log('Friends updated, refreshing friends list in tab1');
       this.loadFriends();
+    });
+
+    // Charger les meilleurs posts sociaux
+    this.loadTopSocialPosts();
+    
+    // Rafraîchir les posts toutes les 5 minutes
+    this.intervalSubscription = interval(5 * 60 * 1000).subscribe(() => {
+      this.loadTopSocialPosts();
+      this.cdr.markForCheck();
     });
   }
 
@@ -480,7 +531,7 @@ export class Tab1Page implements OnInit, OnDestroy {
       this.filteredFriends = [...this.friends];
     }
     
-    // Then apply search filter
+    // Then apply search filter 
     this.applySearchFilter();
   }
 
@@ -501,6 +552,11 @@ export class Tab1Page implements OnInit, OnDestroy {
   trackFriendById(index: number, item: any): string {
     return item.id || item.userId || index.toString();
   }
+  
+  // Fonction de tracking pour les posts
+  trackPostById(index: number, item: Post): number {
+    return item.id;
+  }
 
   ngOnDestroy() {
     if (this.conversationsSub) {
@@ -514,6 +570,11 @@ export class Tab1Page implements OnInit, OnDestroy {
     // Désabonner de la souscription aux amis
     if (this.friendsSubscription) {
       this.friendsSubscription.unsubscribe();
+    }
+    
+    // S'assurer que l'intervalle est nettoyé
+    if (this.intervalSubscription) {
+      this.intervalSubscription.unsubscribe();
     }
   }
 
@@ -572,5 +633,103 @@ export class Tab1Page implements OnInit, OnDestroy {
     }
     
     return 'Utilisateur';
+  }
+  
+  // Méthode pour charger les meilleurs posts sociaux
+  async loadTopSocialPosts() {
+    try {
+      // Récupérer tous les posts sociaux
+      const allPosts = await this.firebaseService.getAllPosts(50) as any[];
+      
+      if (allPosts && allPosts.length > 0) {
+        // Transformer les données des posts
+        this.socialPosts = allPosts.map(post => {
+          return {
+            id: parseInt(post.id || '0'),
+            user: post.user || {
+              id: 0,
+              name: 'Utilisateur inconnu',
+              avatar: 'assets/par défaut.jpg',
+              discipline: ''
+            },
+            content: post.content || '',
+            media: post.media || [],
+            tags: post.tags || [],
+            type: post.type || '',
+            likes: post.likes || [],
+            comments: post.comments || [],
+            shares: post.shares || 0,
+            timestamp: post.timestamp?.toDate ? post.timestamp.toDate() : new Date(),
+            userLiked: false
+          };
+        });
+        
+        // Appliquer l'algorithme de classement
+        this.topPosts = this.findTopPosts(this.socialPosts, 3);
+        this.cdr.markForCheck();
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des posts sociaux:', error);
+    }
+  }
+  
+  // Algorithme pour trouver les meilleurs posts
+  findTopPosts(posts: Post[], count: number): Post[] {
+    // Calculer un score pour chaque post
+    const scoredPosts = posts.map(post => {
+      // Les facteurs de classement
+      const likesWeight = 1;
+      const commentsWeight = 1.5;
+      const recencyWeight = 2;
+      const sharesWeight = 1.2;
+      
+      // Calcul de la fraîcheur (plus récent = meilleur score)
+      const now = new Date();
+      const postAge = now.getTime() - post.timestamp.getTime();
+      const ageInHours = postAge / (1000 * 60 * 60);
+      const recencyScore = Math.max(0, 24 - ageInHours) / 24; // Score plus élevé pour les posts des dernières 24h
+      
+      // Facteur de pertinence par discipline
+      const disciplineMatch = this.disciplineFilter !== 'all' && 
+                            post.tags?.includes(this.disciplineFilter) ? 1.5 : 1;
+      
+      // Calcul du score total
+      const score = (
+        (post.likes.length * likesWeight) +
+        (post.comments.length * commentsWeight) +
+        (post.shares * sharesWeight) +
+        (recencyScore * recencyWeight)
+      ) * disciplineMatch;
+      
+      return { ...post, score };
+    });
+    
+    // Trier les posts par score (du plus élevé au plus bas)
+    scoredPosts.sort((a, b) => (b.score || 0) - (a.score || 0));
+    
+    // Retourner les N meilleurs posts
+    return scoredPosts.slice(0, count);
+  }
+  
+  // Fonction pour obtenir l'image principale d'un post
+  getPostMainImage(post: Post): string {
+    if (post.media && post.media.length > 0) {
+      return post.media[0].url;
+    }
+    return 'assets/default-post-image.jpg';
+  }
+  
+  // Fonction pour formater le contenu du post (tronquer si trop long)
+  formatPostContent(content: string): string {
+    if (content.length > 120) {
+      return content.substring(0, 120) + '...';
+    }
+    return content;
+  }
+  
+  // Fonction pour ouvrir un post social dans la page sociale
+  viewFullPost(postId: number) {
+    // Naviguer vers la page sociale et y afficher le post spécifique
+    this.router.navigate(['/tabs/tab3'], { queryParams: { postId: postId } });
   }
 }
