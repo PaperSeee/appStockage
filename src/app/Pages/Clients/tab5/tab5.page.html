@@ -29,7 +29,7 @@
         <div class="start-buttons">
           <ion-button expand="block" class="start-button" 
                       *ngIf="!isSessionActive" 
-                      (click)="startSession()">
+                      (click)="checkAuthAndStartSession()">
             <ion-icon name="play" slot="start"></ion-icon>
             Démarrer une séance
           </ion-button>
@@ -48,7 +48,7 @@
           
           <ion-button expand="block" fill="outline" class="manual-button" 
                       *ngIf="!isSessionActive"
-                      (click)="showManualEntry()">
+                      (click)="checkAuthAndShowManualEntry()">
             <ion-icon name="create-outline" slot="start"></ion-icon>
             Saisie manuelle
           </ion-button>

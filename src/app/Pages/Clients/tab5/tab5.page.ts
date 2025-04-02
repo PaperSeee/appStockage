@@ -93,8 +93,14 @@ export class Tab5Page implements OnInit, OnDestroy {
   }
 
   // Navigation methods
-  goToProfile() {
-    this.router.navigate(['/profile']);
+  async goToProfile() {
+    const isLoggedIn = await this.firebaseService.isUserLoggedIn();
+    
+    if (isLoggedIn) {
+      this.router.navigate(['/profile']);
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 
   openSettings() {
@@ -398,14 +404,14 @@ export class Tab5Page implements OnInit, OnDestroy {
           text: 'Démarrer une séance',
           icon: 'play',
           handler: () => {
-            this.startSession();
+            this.checkAuthAndStartSession();
           }
         },
         {
           text: 'Saisie manuelle',
           icon: 'create-outline',
           handler: () => {
-            this.showManualEntry();
+            this.checkAuthAndShowManualEntry();
           }
         },
         {
@@ -424,6 +430,62 @@ export class Tab5Page implements OnInit, OnDestroy {
     });
     
     await actionSheet.present();
+  }
+
+  // Check authentication before starting session
+  async checkAuthAndStartSession() {
+    const isLoggedIn = await this.firebaseService.isUserLoggedIn();
+    if (!isLoggedIn) {
+      const alert = await this.alertController.create({
+        header: 'Pas encore inscrit',
+        message: 'Vous devez être connecté pour démarrer une séance.',
+        buttons: [
+          {
+            text: 'Annuler',
+            role: 'cancel'
+          },
+          {
+            text: 'S\'inscrire',
+            handler: () => {
+              this.router.navigate(['/register']);
+            }
+          }
+        ]
+      });
+      await alert.present();
+      return;
+    }
+    
+    // If authenticated, start the session
+    this.startSession();
+  }
+
+  // Check authentication before manual entry
+  async checkAuthAndShowManualEntry() {
+    const isLoggedIn = await this.firebaseService.isUserLoggedIn();
+    if (!isLoggedIn) {
+      const alert = await this.alertController.create({
+        header: 'Pas encore inscrit',
+        message: 'Vous devez être connecté pour enregistrer une séance.',
+        buttons: [
+          {
+            text: 'Annuler',
+            role: 'cancel'
+          },
+          {
+            text: 'S\'inscrire',
+            handler: () => {
+              this.router.navigate(['/register']);
+            }
+          }
+        ]
+      });
+      await alert.present();
+      return;
+    }
+    
+    // If authenticated, show manual entry
+    this.showManualEntry();
   }
 
   // Data loading methods
