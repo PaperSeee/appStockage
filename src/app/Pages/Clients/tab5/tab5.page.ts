@@ -69,6 +69,11 @@ export class Tab5Page implements OnInit, OnDestroy {
   // Challenges
   currentChallenges: Challenge[] = [];
 
+  // Settings modal
+  showSettingsModal: boolean = false;
+  emailNotifications: boolean = true;
+  currentPlan: string = 'gratuit'; // Default to free plan
+
   constructor(
     private formBuilder: FormBuilder,
     private actionSheetController: ActionSheetController,
@@ -104,8 +109,214 @@ export class Tab5Page implements OnInit, OnDestroy {
   }
 
   openSettings() {
-    // Implementation for settings would go here
-    this.showToast('Paramètres bientôt disponibles');
+    this.showSettingsModal = true;
+  }
+
+  closeSettings() {
+    this.showSettingsModal = false;
+  }
+
+  // Settings navigation methods
+  goToHelp() {
+    this.closeSettings();
+    this.router.navigate(['/help']);
+  }
+
+  goToPrivacyPolicy() {
+    this.closeSettings();
+    this.router.navigate(['/privacy-policy']);
+  }
+
+  goToContact() {
+    this.closeSettings();
+    this.router.navigate(['/contact']);
+  }
+
+  toggleEmailNotifications() {
+    this.emailNotifications = !this.emailNotifications;
+    this.showToast(`Notifications ${this.emailNotifications ? 'activées' : 'désactivées'}`);
+  }
+
+  async changeEmail() {
+    const alert = await this.alertController.create({
+      header: 'Changer d\'email',
+      inputs: [
+        {
+          name: 'email',
+          type: 'email',
+          placeholder: 'Nouvel email'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'Confirmer',
+          handler: (data) => {
+            if (data.email) {
+              // Here you would update the email in your authentication service
+              this.showToast('Email mis à jour avec succès');
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async logout() {
+    const alert = await this.alertController.create({
+      header: 'Déconnexion',
+      message: 'Êtes-vous sûr de vouloir vous déconnecter ?',
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'Déconnexion',
+          handler: async () => {
+            try {
+              await this.firebaseService.logout();
+              this.closeSettings();
+              this.router.navigate(['/login']);
+            } catch (error) {
+              this.showToast('Erreur lors de la déconnexion', 'danger');
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async changePlan() {
+    const alert = await this.alertController.create({
+      header: 'Changer de plan',
+      message: this.currentPlan === 'gratuit' 
+        ? 'Passer au plan premium pour débloquer toutes les fonctionnalités !' 
+        : 'Vous êtes actuellement sur le plan premium.',
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: this.currentPlan === 'gratuit' ? 'Voir les offres' : 'Gérer mon abonnement',
+          handler: () => {
+            // Navigate to subscription page
+            this.closeSettings();
+            this.router.navigate(['/subscription']);
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async changePassword() {
+    const alert = await this.alertController.create({
+      header: 'Changer le mot de passe',
+      inputs: [
+        {
+          name: 'currentPassword',
+          type: 'password',
+          placeholder: 'Mot de passe actuel',
+          attributes: {
+            autocomplete: 'current-password'
+          }
+        },
+        {
+          name: 'newPassword',
+          type: 'password',
+          placeholder: 'Nouveau mot de passe',
+          attributes: {
+            autocomplete: 'new-password'
+          }
+        },
+        {
+          name: 'confirmPassword',
+          type: 'password',
+          placeholder: 'Confirmer le nouveau mot de passe',
+          attributes: {
+            autocomplete: 'new-password'
+          }
+        }
+      ],
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'Confirmer',
+          handler: (data) => {
+            if (!data.currentPassword || !data.newPassword || !data.confirmPassword) {
+              this.showToast('Veuillez remplir tous les champs', 'warning');
+              return false;
+            }
+            
+            if (data.newPassword !== data.confirmPassword) {
+              this.showToast('Les mots de passe ne correspondent pas', 'warning');
+              return false;
+            }
+            
+            // Ici vous appelleriez votre service Firebase pour changer le mot de passe
+            // this.firebaseService.updatePassword(data.currentPassword, data.newPassword)
+            
+            this.showToast('Mot de passe mis à jour avec succès');
+            return true;
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async deactivateAccount() {
+    const alert = await this.alertController.create({
+      header: 'Désactiver votre compte',
+      message: 'Cette action masquera votre profil et suspendra votre abonnement. Vous pourrez réactiver votre compte en vous reconnectant. Êtes-vous sûr de vouloir continuer?',
+      cssClass: 'danger-alert',
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'Désactiver',
+          cssClass: 'danger-button',
+          handler: async () => {
+            // Second confirmation for extra security
+            const confirmAlert = await this.alertController.create({
+              header: 'Confirmation requise',
+              message: 'Êtes-vous vraiment sûr de vouloir désactiver votre compte?',
+              buttons: [
+                {
+                  text: 'Non',
+                  role: 'cancel'
+                },
+                {
+                  text: 'Oui, désactiver',
+                  handler: () => {
+                    // Ici vous appelleriez votre service Firebase pour désactiver le compte
+                    // this.firebaseService.deactivateAccount()
+                    
+                    this.showToast('Votre compte a été désactivé');
+                    this.closeSettings();
+                    this.router.navigate(['/login']);
+                  }
+                }
+              ]
+            });
+            await confirmAlert.present();
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   // Initialize the session form

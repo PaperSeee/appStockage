@@ -513,3 +513,139 @@ ion-fab-button {
   --background-activated: var(--ion-color-primary-shade);
   --background-hover: var(--ion-color-primary-tint);
 }
+
+// Settings Modal
+.settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.settings-modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 90%;
+  max-width: 360px;
+  height: 100%;
+  background: white;
+  z-index: 1000;
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.settings-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: $light-bg;
+  
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: $dark-color;
+  }
+  
+  ion-button {
+    margin: 0;
+    --padding-start: 8px;
+    --padding-end: 8px;
+    height: 36px;
+  }
+}
+
+.settings-content {
+  overflow-y: auto;
+  flex: 1;
+  
+  ion-list {
+    padding: 0;
+  }
+  
+  ion-item-divider {
+    --background: #{$light-bg};
+    --color: #{$medium-color};
+    --padding-start: 16px;
+    min-height: 32px;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  
+  ion-item {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --inner-padding-end: 8px;
+    
+    ion-icon[slot="start"] {
+      margin-right: 16px;
+      font-size: 20px;
+    }
+    
+    h3 {
+      font-size: 16px;
+      font-weight: 500;
+      margin: 0;
+      color: $dark-color;
+    }
+    
+    p {
+      font-size: 13px;
+      color: $medium-color;
+      margin: 4px 0 0;
+    }
+  }
+  
+  .danger-item {
+    --background: rgba(var(--ion-color-danger-rgb), 0.05);
+    
+    h3 {
+      color: var(--ion-color-danger);
+    }
+  }
+  
+  .logout-button {
+    margin-top: 16px;
+    --background: rgba(var(--ion-color-danger-rgb), 0.05);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .version-info {
+    --background: transparent;
+    --min-height: 40px;
+    font-size: 12px;
+    opacity: 0.7;
+  }
+}
+
+// For the alerts
+:host ::ng-deep .danger-alert {
+  .alert-message {
+    color: var(--ion-color-danger);
+  }
+  
+  .danger-button {
+    color: var(--ion-color-danger);
+    font-weight: bold;
+  }
+}
