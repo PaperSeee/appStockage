@@ -152,23 +152,40 @@ export class ProfilePage implements OnInit {
 
               // Check username change ability
               if (userData?.lastUsernameChange) {
-                const lastChange = userData.lastUsernameChange.toDate ? 
-                  userData.lastUsernameChange.toDate() : new Date(userData.lastUsernameChange);
-                const oneWeekLater = new Date(lastChange);
-                oneWeekLater.setDate(oneWeekLater.getDate() + 7);
-                
-                this.nextUsernameChangeDate = oneWeekLater;
-                this.canChangeUsername = new Date() >= oneWeekLater;
-                
-                if (!this.canChangeUsername) {
-                  this.profileForm.get('username')?.disable();
+                try {
+                  // Conversion plus robuste de la date
+                  let lastChange;
+                  if (userData.lastUsernameChange.toDate) {
+                    lastChange = userData.lastUsernameChange.toDate();
+                  } else if (userData.lastUsernameChange.seconds) {
+                    // Pour gérer les timestamps Firestore
+                    lastChange = new Date(userData.lastUsernameChange.seconds * 1000);
+                  } else {
+                    lastChange = new Date(userData.lastUsernameChange);
+                  }
+                  
+                  if (isNaN(lastChange.getTime())) {
+                    console.error("Invalid date from database:", userData.lastUsernameChange);
+                    lastChange = new Date(); // Fallback à aujourd'hui
+                  }
+                  
+                  const oneWeekLater = new Date(lastChange);
+                  oneWeekLater.setDate(oneWeekLater.getDate() + 7);
+                  
+                  this.nextUsernameChangeDate = oneWeekLater;
+                  console.log("Next username change date:", this.nextUsernameChangeDate);
+                  this.canChangeUsername = new Date() >= oneWeekLater;
+                  
+                  if (!this.canChangeUsername) {
+                    this.profileForm.get('username')?.disable();
+                  }
+                } catch (error) {
+                  console.error("Error processing username change date:", error);
+                  this.canChangeUsername = true; // En cas d'erreur, on permet le changement
                 }
               } else {
                 this.canChangeUsername = true;
               }
-
-              // Reset form dirty state
-              this.profileForm.markAsPristine();
             } else {
               console.error("Failed to create or retrieve user document");
               this.showToast('Erreur lors de la création du profil', 'danger');
@@ -268,8 +285,8 @@ export class ProfilePage implements OnInit {
   }
 
   // Méthode pour formater la date au format local
-  formatDate(date: Date): string {
-    if (!date) return '';
+  formatDate(date: Date | null): string {
+    if (!date || isNaN(date.getTime())) return 'une date inconnue';
     return date.toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: 'long',
