@@ -293,77 +293,127 @@ ion-button[shape="circle"] {
   }
 }
 
-// New modern floating tabs
+// Modern floating tabs with updated design
 .floating-tabs-container {
-  padding: 0 16px 16px;
+  padding: 0 16px 12px;
   position: relative;
   z-index: 10;
 }
 
 .floating-tabs {
   display: flex;
-  background: white;
-  border-radius: 16px;
-  padding: 4px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
   position: relative;
   overflow: hidden;
   
   .tab-button {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 14px;
-    color: #666;
     position: relative;
-    transition: all 0.3s ease;
-    z-index: 1;
+    height: 50px;
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    margin: 0 4px;
+    overflow: hidden;
+    
+    &:first-child {
+      margin-left: 0;
+    }
+    
+    &:last-child {
+      margin-right: 0;
+    }
+    
+    .tab-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 0 16px;
+      position: relative;
+      z-index: 2;
+    }
     
     ion-icon {
       margin-right: 8px;
-      font-size: 18px;
+      font-size: 20px;
+      transition: all 0.3s ease;
+    }
+    
+    span {
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: transparent;
+      z-index: 1;
+      opacity: 0;
+      transition: all 0.3s ease;
+      border-radius: 16px;
+    }
+    
+    &:not(.active):hover {
+      background-color: rgba(0, 0, 0, 0.03);
+      
+      ion-icon, span {
+        transform: translateY(-1px);
+      }
     }
     
     &.active {
-      color: #111;
-      
-      &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: #ffb800;
-        opacity: 0.15;
-        border-radius: 12px;
-        z-index: -1;
+      span {
+        color: #000;
+        font-weight: 700;
       }
       
       ion-icon {
         color: #ffb800;
+        transform: scale(1.1);
+      }
+      
+      &::before {
+        background: linear-gradient(135deg, rgba(255, 184, 0, 0.15), rgba(255, 204, 51, 0.20));
+        box-shadow: 0 2px 8px rgba(255, 184, 0, 0.15);
+        opacity: 1;
       }
     }
     
     .badge {
       position: absolute;
-      top: 6px;
-      right: 8px;
-      background: #f44336;
+      top: 10px;
+      right: 10px;
+      background: linear-gradient(135deg, #ff4757, #ff6b81);
       color: white;
       font-size: 10px;
-      width: 18px;
-      height: 18px;
+      min-width: 20px;
+      height: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 50%;
+      border-radius: 10px;
+      padding: 0 6px;
       font-weight: bold;
+      box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
+      transform: scale(1);
+      transition: transform 0.2s ease;
+      z-index: 3;
+      
+      &:hover {
+        transform: scale(1.1);
+      }
     }
   }
 }

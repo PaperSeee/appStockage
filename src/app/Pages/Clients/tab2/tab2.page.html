@@ -10,17 +10,21 @@
     </ion-buttons>
   </ion-toolbar>
   
-  <!-- Modern floating tabs replacing the old segment control -->
+  <!-- Modern floating tabs with updated design -->
   <div class="floating-tabs-container">
     <div class="floating-tabs">
       <div class="tab-button" [class.active]="!showingFriends" (click)="switchToAllView()">
-        <ion-icon name="people-outline"></ion-icon>
-        <span>Tous</span>
+        <div class="tab-content">
+          <ion-icon name="people-outline"></ion-icon>
+          <span>Tous</span>
+        </div>
       </div>
       <div class="tab-button" [class.active]="showingFriends" (click)="switchToFriendsView()">
-        <ion-icon name="heart"></ion-icon>
-        <span>Mes Amis</span>
-        <div class="badge" *ngIf="friends.length > 0">{{friends.length}}</div>
+        <div class="tab-content">
+          <ion-icon name="heart"></ion-icon>
+          <span>Mes partenaires</span>
+          <div class="badge" *ngIf="friends.length > 0">{{friends.length}}</div>
+        </div>
       </div>
     </div>
   </div>
@@ -148,7 +152,7 @@
     <div class="empty-illustration">
       <ion-icon name="people-outline"></ion-icon>
     </div>
-    <h3>Aucun ami</h3>
+    <h3>Aucun partenaire</h3>
     <p>Vous n'avez pas encore connecté avec d'autres utilisateurs</p>
     <button class="action-btn primary-btn" (click)="switchToAllView()">
       <ion-icon name="search-outline"></ion-icon>
