@@ -52,7 +52,7 @@
   </div>
   
   <div class="search-container">
-    <ion-searchbar [(ngModel)]="searchTerm" (ionChange)="searchItems()" (ionBlur)="clearSearchResults()" placeholder="Rechercher des utilisateurs, des activités..." animated></ion-searchbar>
+    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="searchItems()" (ionBlur)="clearSearchResults()" placeholder="Rechercher des utilisateurs, des activités..." animated></ion-searchbar>
     
     <!-- Search Results dropdown -->
     <div class="search-results" *ngIf="showSearchResults && searchResults.length > 0">
