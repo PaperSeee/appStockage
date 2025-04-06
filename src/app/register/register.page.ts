@@ -184,33 +184,23 @@ export class RegisterPage {
       });
       await loading.present();
       
-      const result = await this.firebaseService.signInWithApple();
-      if (result) {
-        // Check if user already exists in Firestore
-        const userDoc = await this.firebaseService.getDocument('users', result.uid);
-        
-        if (!userDoc) {
-          // Generate a unique username
-          const baseUsername = (result.displayName || 'apple_user').toLowerCase().replace(/[^a-z0-9]/g, '');
-          const username = `${baseUsername}${Math.floor(Math.random() * 1000)}`;
-          
-          // If user doesn't exist, create a new document
-          await this.firebaseService.setDocument('users', result.uid, {
-            userId: result.uid,
-            firstName: result.displayName?.split(' ')[0] || '',
-            lastName: result.displayName?.split(' ').slice(1).join(' ') || '',
-            email: result.email,
-            photo: result.photoURL,
-            username: username,
-            createdAt: new Date()
-          });
-        }
-        
-        this.router.navigate(['/tabs/tab1']);
-      }
-    } catch (error) {
-      console.error('Error signing in with Apple:', error);
-      this.showToast('La connexion avec Apple a échoué. Veuillez réessayer.');
+      // Mark that authentication is in progress
+      localStorage.setItem('pendingAppleAuth', 'true');
+      localStorage.setItem('authStartTime', Date.now().toString());
+      
+      // Trigger the redirect - won't return an immediate result
+      await this.firebaseService.signInWithApple();
+      
+      // Note: After the redirect, the browser will leave this page
+      // and return later to the same URL, where ionViewWillEnter will be called
+    } catch (error: unknown) {
+      // Clean up pending state in case of error
+      localStorage.removeItem('pendingAppleAuth');
+      localStorage.removeItem('authStartTime');
+      
+      console.error('Apple auth error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      this.showToast('La connexion avec Apple a échoué: ' + errorMessage);
     }
   }
   

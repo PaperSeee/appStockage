@@ -163,9 +163,9 @@ export class FirebaseService {
 
   async signInWithApple() {
     try {
-      // Sur mobile, utilisez signInWithRedirect au lieu de signInWithPopup
-      const result = await signInWithPopup(this.auth, this.appleProvider);
-      return result.user;
+      // Utiliser signInWithRedirect au lieu de signInWithPopup pour compatibilité PWA
+      await signInWithRedirect(this.auth, this.appleProvider);
+      return null; // La méthode ne retourne rien immédiatement, le résultat sera traité via getRedirectResult
     } catch (error: any) {
       if (error.code === 'auth/operation-not-allowed') {
         alert('Apple authentication is not enabled. Please contact support.');
@@ -175,74 +175,33 @@ export class FirebaseService {
     }
   }
 
-  // Ajoutez cette méthode si vous utilisez signInWithRedirect
   async getRedirectResult() {
     try {
-      console.log('Checking for redirect result...');
-      
-      // Vérifier s'il y avait une authentification Google en attente
-      const pendingAuth = localStorage.getItem('pendingGoogleAuth');
-      const authStartTime = localStorage.getItem('authStartTime');
-      
-      // Si nous sommes sur iOS PWA et qu'une auth était en cours
-      if (this.isIOS && this.isPWA && pendingAuth === 'true') {
-        console.log('Pending Google auth detected on iOS PWA');
-        
-        // Vérifier si l'authentification a pris trop de temps (timeout de 5 minutes)
-        const startTime = parseInt(authStartTime || '0');
-        const timePassed = Date.now() - startTime;
-        if (timePassed > 300000) { // 5 minutes
-          console.log('Auth timeout exceeded, clearing pending state');
-          localStorage.removeItem('pendingGoogleAuth');
-          localStorage.removeItem('authStartTime');
-          return null;
-        }
-        
-        // Vérifier directement si l'utilisateur est connecté plutôt que d'utiliser getRedirectResult
-        const currentUser = this.auth.currentUser;
-        if (currentUser) {
-          console.log('Current user found after redirect:', currentUser.uid);
-          
-          // Nettoyer les marqueurs d'authentification en attente
-          localStorage.removeItem('pendingGoogleAuth');
-          localStorage.removeItem('authStartTime');
-          
-          return currentUser;
-        }
-      }
-      
-      // Approche standard pour les autres environnements
       const result = await getRedirectResult(this.auth);
       
+      // Vérifier si un résultat est disponible
       if (result && result.user) {
-        console.log('Redirect result found:', result.user.uid);
-        
-        // Nettoyer les états en attente
-        localStorage.removeItem('pendingGoogleAuth');
-        localStorage.removeItem('authStartTime');
-        
+        console.log('Redirect authentication successful:', result.user.uid);
         return result.user;
-      } else {
-        console.log('No redirect result');
+      }
+      
+      // Cas spécifique pour iOS en mode PWA qui peut perdre le contexte de redirection
+      if (this.isIOS && this.isPWA) {
+        console.log('iOS PWA specific auth error, checking current user');
         
-        // Vérifier l'utilisateur actuel comme fallback
+        // Récupérer l'utilisateur actuel comme fallback
         const currentUser = this.auth.currentUser;
         if (currentUser) {
-          console.log('No redirect result, but current user found:', currentUser.uid);
           return currentUser;
         }
-        
-        return null;
       }
-    } catch (error: any) {
-      console.error('Error getting redirect result:', error);
-      console.error('Error code:', error.code);
-      console.error('Error message:', error.message);
       
-      // Gérer spécifiquement les erreurs de session Firebase sur iOS
-      if (this.isIOS && this.isPWA && 
-          (error.code === 'auth/network-request-failed' || 
-           error.code === 'auth/invalid-credential')) {
+      return null;
+    } catch (error: any) {
+      console.error('Error with redirect result:', error);
+      
+      // Gestion spécifique pour iOS PWA
+      if (this.isIOS && this.isPWA) {
         console.log('iOS PWA specific auth error, checking current user');
         
         // Récupérer l'utilisateur actuel comme fallback
@@ -257,6 +216,7 @@ export class FirebaseService {
       // Nettoyage dans tous les cas pour éviter les erreurs persistantes
       if (this.isIOS && this.isPWA) {
         localStorage.removeItem('pendingGoogleAuth');
+        localStorage.removeItem('pendingAppleAuth');
         localStorage.removeItem('authStartTime');
       }
     }
