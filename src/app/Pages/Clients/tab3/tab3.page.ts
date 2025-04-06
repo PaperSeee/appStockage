@@ -646,19 +646,10 @@ export class Tab3Page implements OnInit {
     await toast.present();
   }
 
-  viewProfile(userId: number) {
-    // Si c'est l'utilisateur actuel, on pourrait naviguer vers son profil complet
-    if (userId === this.currentUser.id) {
-      console.log('Viewing my own profile', userId);
-      // this.router.navigate(['/tabs/tab5']); // Probablement l'onglet de profil
-    } else {
-      // Pour les autres utilisateurs, on charge simplement leurs posts
-      console.log('Viewing user profile and posts', userId);
-      this.loadUserPosts(userId.toString());
-      
-      // Changer le filtre actif pour indiquer qu'on regarde un profil spécifique
-      this.selectedFilter = 'user';
-    }
+  viewProfile(userId: number | string) {
+    // Convert number IDs to string if needed
+    const id = userId.toString();
+    this.router.navigate(['/tabs/user-profile', id]);
   }
 
   // Ajouter un bouton pour revenir à tous les posts

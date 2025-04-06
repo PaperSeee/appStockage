@@ -1,0 +1,251 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Profil</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="share-social-outline"></ion-icon>
+      </ion-button>
+      <ion-button *ngIf="!isCurrentUser">
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Cover and Profile Image -->
+  <div class="cover-container">
+    <img [src]="user.coverPhoto" class="cover-image">
+    <div class="avatar-container">
+      <img [src]="user.avatar" class="profile-avatar">
+    </div>
+  </div>
+
+  <!-- User Info -->
+  <div class="profile-info">
+    <h1 class="username">{{ user.name }}</h1>
+    <p class="username">{{'@' + user.username }}</p>
+    <p class="bio">{{ user.bio }}</p>
+    
+    <div class="user-details">
+      <div class="detail-item" *ngIf="user.location">
+        <ion-icon name="location-outline"></ion-icon>
+        <span>{{ user.location }}</span>
+      </div>
+      <div class="detail-item" *ngIf="user.discipline">
+        <ion-icon name="fitness-outline"></ion-icon>
+        <span>{{ user.discipline }}</span>
+      </div>
+      <div class="detail-item">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <span>Membre depuis {{ user.joinDate | date:'MMMM yyyy' }}</span>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="profile-actions">
+      <ion-button 
+        *ngIf="!isCurrentUser" 
+        expand="block" 
+        [color]="isFollowing ? 'medium' : 'primary'" 
+        (click)="toggleFollow()"
+      >
+        {{ isFollowing ? 'Abonné' : 'Suivre' }}
+      </ion-button>
+      
+      <ion-button 
+        *ngIf="!isCurrentUser" 
+        expand="block" 
+        fill="outline" 
+        (click)="messageUser()"
+      >
+        Message
+      </ion-button>
+      
+      <ion-button 
+        *ngIf="isCurrentUser" 
+        expand="block" 
+        (click)="editProfile()"
+      >
+        Modifier le profil
+      </ion-button>
+    </div>
+    
+    <!-- User Stats -->
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-value">{{ user.stats.trainingSessions }}</div>
+        <div class="stat-label">Séances</div>
+      </div>
+      <div class="stat-item" (click)="viewAllFollowers()">
+        <div class="stat-value">{{ user.stats.followers }}</div>
+        <div class="stat-label">Abonnés</div>
+      </div>
+      <div class="stat-item" (click)="viewAllFollowing()">
+        <div class="stat-value">{{ user.stats.following }}</div>
+        <div class="stat-label">Abonnements</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">{{ user.stats.totalHours }}</div>
+        <div class="stat-label">Heures</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Segment Selector -->
+  <ion-segment [(ngModel)]="selectedSegment" (ionChange)="segmentChanged($event)">
+    <ion-segment-button value="activity">
+      <ion-label>Activités</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="social">
+      <ion-label>Social</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="clubs">
+      <ion-label>Clubs</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="badges">
+      <ion-label>Badges</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+  
+  <!-- Activities -->
+  <div *ngIf="selectedSegment === 'activity'">
+    <div class="section-header">
+      <h2>Activités récentes</h2>
+    </div>
+    
+    <div class="activity-list">
+      <ion-card *ngFor="let activity of activities" (click)="viewActivityDetails(activity)">
+        <div class="activity-header">
+          <div class="activity-type-badge">{{ activity.type }}</div>
+          <div class="activity-date">{{ activity.date | date:'d MMM yyyy' }}</div>
+        </div>
+        
+        <img [src]="activity.image" class="activity-image" *ngIf="activity.image">
+        
+        <ion-card-header>
+          <ion-card-title>{{ activity.title }}</ion-card-title>
+          <ion-card-subtitle>
+            <ion-icon name="time-outline"></ion-icon>
+            {{ formatDuration(activity.duration) }}
+          </ion-card-subtitle>
+        </ion-card-header>
+        
+        <ion-card-content>
+          <div class="activity-stats">
+            <div class="stat">
+              <ion-icon name="heart"></ion-icon>
+              <span>{{ activity.likes }}</span>
+            </div>
+            <div class="stat">
+              <ion-icon name="chatbubble"></ion-icon>
+              <span>{{ activity.comments }}</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+      
+      <div class="empty-state" *ngIf="activities.length === 0">
+        <ion-icon name="fitness-outline" size="large"></ion-icon>
+        <p>Aucune activité récente</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Social (Followers & Following) -->
+  <div *ngIf="selectedSegment === 'social'">
+    <div class="section-header">
+      <h2>Abonnés</h2>
+      <a (click)="viewAllFollowers()">Voir tout</a>
+    </div>
+    
+    <div class="followers-grid">
+      <div class="follower-item" *ngFor="let follower of followers">
+        <img [src]="follower.avatar" alt="{{ follower.name }}">
+        <div class="follower-info">
+          <h4>{{ follower.name }}</h4>
+          <p>{{ follower.discipline }}</p>
+        </div>
+      </div>
+      
+      <div class="empty-state" *ngIf="followers.length === 0">
+        <p>Aucun abonné</p>
+      </div>
+    </div>
+    
+    <div class="section-header">
+      <h2>Abonnements</h2>
+      <a (click)="viewAllFollowing()">Voir tout</a>
+    </div>
+    
+    <div class="followers-grid">
+      <div class="follower-item" *ngFor="let follow of following">
+        <img [src]="follow.avatar" alt="{{ follow.name }}">
+        <div class="follower-info">
+          <h4>{{ follow.name }}</h4>
+          <p>{{ follow.discipline }}</p>
+        </div>
+      </div>
+      
+      <div class="empty-state" *ngIf="following.length === 0">
+        <p>Aucun abonnement</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Clubs -->
+  <div *ngIf="selectedSegment === 'clubs'">
+    <div class="section-header">
+      <h2>Clubs</h2>
+    </div>
+    
+    <div class="clubs-list">
+      <ion-card *ngFor="let club of clubs">
+        <ion-item>
+          <ion-avatar slot="start">
+            <img [src]="club.logo" alt="{{ club.name }}">
+          </ion-avatar>
+          <ion-label>
+            <h2>{{ club.name }}</h2>
+            <p>{{ club.members }} membres</p>
+          </ion-label>
+        </ion-item>
+      </ion-card>
+      
+      <div class="empty-state" *ngIf="clubs.length === 0">
+        <ion-icon name="people-outline" size="large"></ion-icon>
+        <p>Aucun club</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Badges -->
+  <div *ngIf="selectedSegment === 'badges'">
+    <div class="section-header">
+      <h2>Badges & Accomplissements</h2>
+    </div>
+    
+    <div class="badges-grid">
+      <div class="badge-item" *ngFor="let badge of badges">
+        <div class="badge-icon">
+          <ion-icon [name]="badge.icon"></ion-icon>
+        </div>
+        <div class="badge-info">
+          <h4>{{ badge.name }}</h4>
+          <p>{{ badge.description }}</p>
+          <small>{{ badge.date | date:'dd MMM yyyy' }}</small>
+        </div>
+      </div>
+      
+      <div class="empty-state" *ngIf="badges.length === 0">
+        <ion-icon name="trophy" size="large"></ion-icon>
+        <p>Aucun badge</p>
+      </div>
+    </div>
+  </div>
+</ion-content>

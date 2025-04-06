@@ -13,6 +13,18 @@ import { getAnalytics } from 'firebase/analytics';
 import { environment } from '../../environments/environment';
 import { ToastController } from '@ionic/angular';
 
+// Add this interface OUTSIDE the class, at the top of the file after your imports
+interface UserSearchResult {
+  id: string;
+  userId?: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  photo?: string;
+  discipline?: string;
+  // Add any other potential properties
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -720,6 +732,40 @@ export class FirebaseService {
       }));
     } catch (error) {
       console.error(`Error getting documents from ${collectionPath}:`, error);
+      return [];
+    }
+  }
+
+  // Add the searchUsers method inside the class
+  async searchUsers(searchTerm: string): Promise<UserSearchResult[]> {
+    try {
+      // Get all users first (this could be optimized with a proper index/query)
+      const usersCollection = collection(this.firestore, 'users');
+      const querySnapshot = await getDocs(usersCollection);
+      
+      if (querySnapshot.empty) {
+        return [];
+      }
+      
+      // Map documents to include all data with proper typing
+      const users = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as UserSearchResult[];
+      
+      // Filter users that match the search term
+      return users.filter(user => {
+        const fullName = `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase();
+        const username = (user.username || '').toLowerCase();
+        const discipline = (user.discipline || '').toLowerCase();
+        const term = searchTerm.toLowerCase();
+        
+        return fullName.includes(term) || 
+               username.includes(term) ||
+               discipline.includes(term);
+      });
+    } catch (error) {
+      console.error('Error searching users:', error);
       return [];
     }
   }

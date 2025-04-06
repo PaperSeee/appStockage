@@ -86,6 +86,27 @@ interface Post {
   score?: number;
 }
 
+// Add a proper interface for search results
+interface FirebaseUserResult {
+  id: string;
+  userId?: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  photo?: string;
+  discipline?: string;
+  // Any other properties from Firebase
+}
+
+// Keep your existing UserSearchResult interface for display in the component
+interface UserSearchResult {
+  id: string;
+  name: string;
+  photo: string;
+  username: string;
+  discipline: string;
+}
+
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
@@ -132,6 +153,11 @@ export class Tab1Page implements OnInit, OnDestroy {
   socialPosts: Post[] = [];
   topPosts: Post[] = [];
   private intervalSubscription: Subscription | null = null;
+
+  // Add these properties to your class
+  searchResults: any[] = [];
+  showSearchResults: boolean = false;
+  isSearching: boolean = false;
   
   constructor(
     private firebaseService: FirebaseService,
@@ -429,110 +455,73 @@ export class Tab1Page implements OnInit, OnDestroy {
     this.disciplineFilter = discipline;
     
     if (discipline === 'all') {
-      // If 'all' is selected, show all items (but respect search term if present)
-      if (this.searchTerm) {
-        this.searchItems(); // Re-apply search with current term
-      } else {
-        this.filteredEvents = [...this.upcomingEvents];
-        this.filteredPartners = [...this.nearbyPartners];
-        this.filteredTrainings = [...this.trainings];
-        this.filteredFriends = [...this.friends];
-      }
-      return;
-    }
-    
-    // Filter events by discipline/type
-    this.filteredEvents = this.upcomingEvents.filter(event => {
-      // Events might have 'type' instead of 'discipline'
-      return event.type.toLowerCase() === discipline.toLowerCase();
-    });
-    
-    // Filter partners by discipline
-    this.filteredPartners = this.nearbyPartners.filter(partner => {
-      return partner.discipline.toLowerCase().includes(discipline.toLowerCase());
-    });
-    
-    // Filter trainings by discipline
-    this.filteredTrainings = this.trainings.filter(training => {
-      return training.type.toLowerCase() === discipline.toLowerCase() || 
-             training.user.discipline.toLowerCase() === discipline.toLowerCase();
-    });
-    
-    // Filter friends by discipline
-    this.filteredFriends = this.friends.filter(friend => {
-      return friend.discipline && friend.discipline.toLowerCase().includes(discipline.toLowerCase());
-    });
-    
-    // If search term is also present, further filter the results
-    if (this.searchTerm) {
-      this.applySearchFilter();
-    }
-    this.cdr.markForCheck();
-  }
-  
-  // Helper method to apply search filtering to already filtered results
-  private applySearchFilter() {
-    const term = this.searchTerm.toLowerCase().trim();
-    
-    // Further filter events
-    this.filteredEvents = this.filteredEvents.filter(event => 
-      event.title.toLowerCase().includes(term) ||
-      event.type.toLowerCase().includes(term) ||
-      event.location.toLowerCase().includes(term)
-    );
-    
-    // Further filter partners
-    this.filteredPartners = this.filteredPartners.filter(partner => 
-      partner.name.toLowerCase().includes(term) ||
-      partner.discipline.toLowerCase().includes(term)
-    );
-    
-    // Further filter trainings
-    this.filteredTrainings = this.filteredTrainings.filter(training => 
-      training.title.toLowerCase().includes(term) ||
-      training.description.toLowerCase().includes(term) ||
-      training.type.toLowerCase().includes(term) ||
-      training.user.name.toLowerCase().includes(term) ||
-      training.location.toLowerCase().includes(term)
-    );
-    
-    // Further filter friends
-    this.filteredFriends = this.filteredFriends.filter(friend => 
-      this.getUserFullName(friend).toLowerCase().includes(term) ||
-      (friend.discipline && friend.discipline.toLowerCase().includes(term))
-    );
-  }
-
-  searchItems() {
-    const term = this.searchTerm.toLowerCase().trim();
-    
-    if (!term) {
-      // If search is empty, reset to original data
-      if (this.disciplineFilter === 'all') {
-        this.filteredEvents = [...this.upcomingEvents];
-        this.filteredPartners = [...this.nearbyPartners];
-        this.filteredTrainings = [...this.trainings];
-        this.filteredFriends = [...this.friends];
-      } else {
-        // If discipline filter is active, re-apply it
-        this.filterByDiscipline(this.disciplineFilter);
-      }
-      return;
-    }
-    
-    // First apply discipline filter if active
-    if (this.disciplineFilter !== 'all') {
-      this.filterByDiscipline(this.disciplineFilter);
-    } else {
-      // Start with all data
+      // If 'all' is selected, show all items
       this.filteredEvents = [...this.upcomingEvents];
       this.filteredPartners = [...this.nearbyPartners];
       this.filteredTrainings = [...this.trainings];
       this.filteredFriends = [...this.friends];
+      return;
     }
     
-    // Then apply search filter 
-    this.applySearchFilter();
+    // Filter events by discipline/type
+    this.filteredEvents = this.upcomingEvents.filter(event =>
+      event.type.toLowerCase() === discipline.toLowerCase());
+    
+    // Filter partners by discipline
+    this.filteredPartners = this.nearbyPartners.filter(partner =>
+      partner.discipline.toLowerCase().includes(discipline.toLowerCase()));
+    
+    // Filter trainings by discipline
+    this.filteredTrainings = this.trainings.filter(training =>
+      training.type.toLowerCase() === discipline.toLowerCase() || 
+      training.user.discipline.toLowerCase() === discipline.toLowerCase());
+    
+    // Filter friends by discipline
+    this.filteredFriends = this.friends.filter(friend =>
+      friend.discipline && friend.discipline.toLowerCase().includes(discipline.toLowerCase()));
+    
+    this.cdr.markForCheck();
+  }
+  
+  // Replace or update the searchItems function
+  async searchItems() {
+    // Clear previous results
+    this.searchResults = [];
+    this.showSearchResults = false;
+    
+    const term = this.searchTerm.trim();
+    
+    // If empty search or too short, don't do anything
+    if (!term || term.length < 2) {
+      this.isSearching = false;
+      return;
+    }
+    
+    // Search for user profiles
+    this.isSearching = true;
+    
+    try {
+      // Use firebaseService to search for users
+      const users = await this.firebaseService.searchUsers(term);
+      
+      if (users && users.length > 0) {
+        // Map from Firebase user format to display format
+        this.searchResults = users.map(user => ({
+          id: user.id,
+          name: this.getUserFullName(user),
+          photo: user.photo || 'assets/par défaut.jpg',
+          username: user.username || '',
+          discipline: user.discipline || 'Utilisateur'
+        }));
+        
+        this.showSearchResults = true;
+      }
+    } catch (error) {
+      console.error('Error searching for users:', error);
+    } finally {
+      this.isSearching = false;
+      this.cdr.markForCheck();
+    }
   }
 
   // Ajout des fonctions trackBy pour optimiser le rendu des listes
@@ -595,11 +584,6 @@ export class Tab1Page implements OnInit, OnDestroy {
             );
           } else {
             this.filteredFriends = [...this.friends];
-          }
-          
-          // Si un terme de recherche est actif, l'appliquer
-          if (this.searchTerm) {
-            this.applySearchFilter();
           }
         }
       }
@@ -731,5 +715,19 @@ export class Tab1Page implements OnInit, OnDestroy {
   viewFullPost(postId: number) {
     // Naviguer vers la page sociale et y afficher le post spécifique
     this.router.navigate(['/tabs/tab3'], { queryParams: { postId: postId } });
+  }
+
+  viewUserProfile(userId: number | string) {
+    // Convert number IDs to string if needed
+    const id = userId.toString();
+    this.router.navigate(['/tabs/user-profile', id]);
+  }
+
+  // Clear search results when clicking elsewhere
+  clearSearchResults() {
+    setTimeout(() => {
+      this.showSearchResults = false;
+      this.cdr.markForCheck();
+    }, 200);
   }
 }

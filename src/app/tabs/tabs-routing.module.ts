@@ -28,6 +28,10 @@ const routes: Routes = [
         loadChildren: () => import('../Pages/Clients/tab5/tab5.module').then(m => m.Tab5PageModule)
       },
       {
+        path: 'user-profile/:id',
+        loadChildren: () => import('../Pages/Clients/user-profile/user-profile.module').then(m => m.UserProfilePageModule)
+      },
+      {
         path: '',
         redirectTo: 'tab1',
         pathMatch: 'full'

@@ -52,7 +52,29 @@
   </div>
   
   <div class="search-container">
-    <ion-searchbar [(ngModel)]="searchTerm" (ionChange)="searchItems()" placeholder="Rechercher des partenaires, des activités..." animated></ion-searchbar>
+    <ion-searchbar [(ngModel)]="searchTerm" (ionChange)="searchItems()" (ionBlur)="clearSearchResults()" placeholder="Rechercher des utilisateurs, des activités..." animated></ion-searchbar>
+    
+    <!-- Search Results dropdown -->
+    <div class="search-results" *ngIf="showSearchResults && searchResults.length > 0">
+      <div class="search-result-header">
+        <ion-icon name="people-outline"></ion-icon>
+        <span>Utilisateurs</span>
+      </div>
+      <div class="search-result-item" *ngFor="let user of searchResults" (click)="viewUserProfile(user.id)">
+        <img [src]="user.photo" [alt]="user.name" class="result-avatar">
+        <div class="result-info">
+          <div class="result-name">{{user.name}}</div>
+          <div class="result-details" *ngIf="user.username">{{'@' + user.username}}</div>
+          <div class="result-discipline">{{user.discipline}}</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Search loading indicator -->
+    <div class="search-loading" *ngIf="isSearching">
+      <ion-spinner name="crescent" size="small"></ion-spinner>
+      <span>Recherche en cours...</span>
+    </div>
   </div>
   
   <div class="discipline-filter">
@@ -131,7 +153,7 @@
 
   <div class="partners-container">
     <div class="partners-list">
-      <div class="partner-item" *ngFor="let friend of filteredFriends; trackBy: trackFriendById">
+      <div class="partner-item" *ngFor="let friend of filteredFriends; trackBy: trackFriendById" (click)="viewUserProfile(friend.id)">
         <div class="avatar-container">
           <img [src]="friend.photo || 'assets/par défaut.jpg'" [alt]="getUserFullName(friend)" class="avatar" (error)="handleImageError($event)">
           <div class="status-indicator"></div>
@@ -160,9 +182,9 @@
     <!-- Affichage des meilleurs posts sociaux -->
     <div class="feed-item" *ngFor="let post of topPosts; trackBy: trackPostById">
       <div class="feed-header">
-        <img [src]="post.user.avatar || 'assets/par défaut.jpg'" [alt]="post.user.name" class="user-avatar">
+        <img [src]="post.user.avatar || 'assets/par défaut.jpg'" [alt]="post.user.name" class="user-avatar" (click)="viewUserProfile(post.user.id)">
         <div class="user-info">
-          <p class="username">{{post.user.name}}</p>
+          <p class="username" (click)="viewUserProfile(post.user.id)">{{post.user.name}}</p>
           <p class="activity-meta">
             <ion-icon name="pricetag-outline" *ngIf="post.type"></ion-icon>
             <span *ngIf="post.type">{{post.type}}</span>
