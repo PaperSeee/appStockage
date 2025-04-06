@@ -3,11 +3,11 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { NavController, IonicModule } from '@ionic/angular';
 import { SharingService } from '../../../services/sharing.service';
 import { ToastController } from '@ionic/angular';
-// Update the Chart.js import to avoid TypeScript errors
 import * as ChartJS from 'chart.js';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
-// Register Chart.js components using the new import
+// Register Chart.js components
 const Chart = ChartJS.Chart;
 const registerables = ChartJS.registerables;
 Chart.register(...registerables);
@@ -17,15 +17,20 @@ Chart.register(...registerables);
   templateUrl: './session-detail.page.html',
   styleUrls: ['./session-detail.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, FormsModule]
 })
 export class SessionDetailPage implements OnInit {
-  @ViewChild('intensityCanvas') private intensityCanvas!: ElementRef; // Add ! to fix initialization error
-  @ViewChild('progressCanvas') private progressCanvas!: ElementRef; // Add ! to fix initialization error
+  @ViewChild('intensityCanvas') private intensityCanvas!: ElementRef;
+  @ViewChild('progressCanvas') private progressCanvas!: ElementRef;
   
   session: any;
   intensityChart: any;
   progressChart: any;
+  chartType: string = 'rounds';
+  xpGained: number = 120;
+  averageDuration: number = 25 * 60; // 25 minutes in seconds
+  averageStrikes: number = 80;
+  sessionTags: string[] = ['Technique', 'Sparring léger', 'Travail spécifique'];
   
   // Sample data for the user's progress over time
   progressData = {
@@ -52,6 +57,10 @@ export class SessionDetailPage implements OnInit {
   }
 
   ngOnInit() {
+    // Initialize mock session data if needed
+    if (!this.session) {
+      this.session = this.getMockSessionData();
+    }
   }
 
   ionViewDidEnter() {
@@ -85,19 +94,21 @@ export class SessionDetailPage implements OnInit {
       this.intensityChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: ['Intensité', 'Reste'],
           datasets: [{
             data: [intensityValue, 100 - intensityValue],
             backgroundColor: [
-              'rgba(54, 162, 235, 0.8)',
+              this.getIntensityColor(this.session.intensity),
               'rgba(200, 200, 200, 0.2)'
             ],
-            borderWidth: 0
+            borderWidth: 0,
+            cutout: '85%',
+            circumference: 240,
+            rotation: 270
           }]
         },
         options: {
-          cutout: '75%',
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: {
               display: false
@@ -121,57 +132,86 @@ export class SessionDetailPage implements OnInit {
       const today = new Date();
       this.progressData.dates.push(today.getDate() + '/' + (today.getMonth() + 1));
       
+      let datasets = [];
+      let gradientFill;
+      
+      if (this.chartType === 'rounds') {
+        gradientFill = ctx.createLinearGradient(0, 0, 0, 200);
+        gradientFill.addColorStop(0, 'rgba(75, 192, 192, 0.2)');
+        gradientFill.addColorStop(1, 'rgba(75, 192, 192, 0)');
+        
+        datasets.push({
+          label: 'Rounds',
+          data: this.progressData.rounds,
+          borderColor: 'rgb(75, 192, 192)',
+          backgroundColor: gradientFill,
+          tension: 0.4,
+          fill: true
+        });
+      } else {
+        gradientFill = ctx.createLinearGradient(0, 0, 0, 200);
+        gradientFill.addColorStop(0, 'rgba(255, 99, 132, 0.2)');
+        gradientFill.addColorStop(1, 'rgba(255, 99, 132, 0)');
+        
+        datasets.push({
+          label: 'Coups',
+          data: this.progressData.strikes,
+          borderColor: 'rgb(255, 99, 132)',
+          backgroundColor: gradientFill,
+          tension: 0.4,
+          fill: true
+        });
+      }
+      
+      if (this.progressChart) {
+        this.progressChart.destroy();
+      }
+      
       this.progressChart = new Chart(ctx, {
         type: 'line',
         data: {
           labels: this.progressData.dates,
-          datasets: [
-            {
-              label: 'Rounds',
-              data: this.progressData.rounds,
-              borderColor: 'rgb(54, 162, 235)',
-              backgroundColor: 'rgba(54, 162, 235, 0.2)',
-              tension: 0.4,
-              yAxisID: 'y'
-            },
-            {
-              label: 'Coups',
-              data: this.progressData.strikes,
-              borderColor: 'rgb(255, 99, 132)',
-              backgroundColor: 'rgba(255, 99, 132, 0.2)',
-              tension: 0.4,
-              yAxisID: 'y1'
-            }
-          ]
+          datasets: datasets
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
           scales: {
             y: {
-              type: 'linear',
-              display: true,
-              position: 'left',
-              title: {
-                display: true,
-                text: 'Rounds'
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)',
+                drawBorder: false
+              },
+              ticks: {
+                font: {
+                  size: 10
+                }
               }
             },
-            y1: {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              title: {
-                display: true,
-                text: 'Coups'
-              },
+            x: {
               grid: {
-                drawOnChartArea: false
+                display: false
+              },
+              ticks: {
+                font: {
+                  size: 10
+                }
               }
             }
           }
         }
       });
     }
+  }
+
+  updateProgressChart() {
+    this.createProgressChart();
   }
 
   goBack() {
@@ -200,7 +240,6 @@ export class SessionDetailPage implements OnInit {
 
   private showSharingOptions(sessionType: string, sessionStats: string) {
     // Implementation for alternative sharing methods when Web Share API is not available
-    // This could be similar to the existing showSharingOptions in tab5.page.ts
   }
 
   private async showToast(message: string, color: string = 'primary') {
@@ -249,5 +288,32 @@ export class SessionDetailPage implements OnInit {
       case 'high': return 'Élevée';
       default: return 'Moyenne';
     }
+  }
+  
+  getIntensityColor(intensity: string): string {
+    switch (intensity) {
+      case 'low': return 'rgba(76, 175, 80, 0.8)'; // Green
+      case 'medium': return 'rgba(255, 193, 7, 0.8)'; // Yellow/Amber
+      case 'high': return 'rgba(244, 67, 54, 0.8)'; // Red
+      default: return 'rgba(255, 193, 7, 0.8)';
+    }
+  }
+  
+  // For demo purposes
+  getMockSessionData() {
+    return {
+      id: 'mock123',
+      date: new Date(),
+      duration: 35 * 60, // 35 minutes in seconds
+      activityType: 'sparring',
+      rounds: 8,
+      strikes: 145,
+      submissions: 3,
+      intensity: 'medium',
+      location: 'Fight Club Paris',
+      notes: 'Bonne séance avec travail spécifique sur les techniques de garde et contre-attaques. À revoir: blocages des low-kicks et timing des jabs.',
+      sparringPartner: 'partner123',
+      sparringPartnerName: 'Thomas D.'
+    };
   }
 }

@@ -1,13 +1,13 @@
-<ion-header class="ion-no-border">
+<ion-header class="ion-no-border modern-header">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="goBack()">
+      <ion-button (click)="goBack()" class="back-button">
         <ion-icon name="arrow-back-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Détails de la séance</ion-title>
+    <ion-title>Session de {{ getActivityLabel(session?.activityType) }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="shareSession()">
+      <ion-button (click)="shareSession()" class="share-button">
         <ion-icon name="share-social-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -15,105 +15,257 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div class="session-header">
-    <div class="session-type">
-      <ion-icon [name]="session?.activityType === 'sparring' ? 'people-outline' : 
-                        session?.activityType === 'bag' ? 'fitness-outline' : 
-                        session?.activityType === 'shadow' ? 'person-outline' : 'hand-right-outline'"></ion-icon>
-      <h1>{{ getActivityLabel(session?.activityType) }}</h1>
-    </div>
-    <div class="session-date">
-      {{ formatDate(session?.date) }}
+  <!-- Header Hero Section -->
+  <div class="session-hero">
+    <div class="session-hero-bg" [ngClass]="'bg-' + session?.activityType">
+      <div class="session-hero-content">
+        <div class="session-type-badge" [ngClass]="session?.activityType">
+          <ion-icon [name]="session?.activityType === 'sparring' ? 'people-outline' : 
+                          session?.activityType === 'bag' ? 'fitness-outline' : 
+                          session?.activityType === 'shadow' ? 'person-outline' : 'hand-right-outline'"></ion-icon>
+        </div>
+        <h1>{{ getActivityLabel(session?.activityType) }}</h1>
+        <p class="session-date"><ion-icon name="calendar-outline"></ion-icon> {{ formatDate(session?.date) }}</p>
+        
+        <div class="xp-badge">
+          <ion-icon name="trophy-outline"></ion-icon> +{{ xpGained || 120 }} XP
+        </div>
+      </div>
     </div>
   </div>
 
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Résumé</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <div class="summary-grid">
-        <div class="summary-item">
-          <ion-icon name="time-outline"></ion-icon>
-          <div class="summary-value">{{ formatTime(session?.duration) }}</div>
-          <div class="summary-label">Durée</div>
+  <!-- Quick Stats Cards -->
+  <div class="quick-stats-grid">
+    <div class="stat-card" [ngClass]="{'highlight': session?.duration > 30}">
+      <div class="stat-icon time">
+        <ion-icon name="time-outline"></ion-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ formatTime(session?.duration) }}</div>
+        <div class="stat-label">Durée</div>
+      </div>
+      <ion-badge class="stat-trend good" *ngIf="session?.duration > averageDuration">+{{ (session?.duration - averageDuration) | number:'1.0-0' }}%</ion-badge>
+    </div>
+    
+    <div class="stat-card" [ngClass]="{'highlight': session?.rounds > 8}">
+      <div class="stat-icon rounds">
+        <ion-icon name="sync-outline"></ion-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ session?.rounds }}</div>
+        <div class="stat-label">Rounds</div>
+      </div>
+      <ion-badge class="stat-trend good" *ngIf="session?.rounds > 5">+{{ session?.rounds - 5 }}</ion-badge>
+    </div>
+    
+    <div class="stat-card" [ngClass]="{'highlight': session?.strikes > 100}">
+      <div class="stat-icon strikes">
+        <ion-icon name="fist-outline"></ion-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ session?.strikes }}</div>
+        <div class="stat-label">Coups</div>
+      </div>
+      <ion-badge class="stat-trend good" *ngIf="session?.strikes > averageStrikes">+{{ (session?.strikes - averageStrikes) | number:'1.0-0' }}</ion-badge>
+    </div>
+    
+    <div class="stat-card" [ngClass]="{'highlight': session?.submissions > 3}">
+      <div class="stat-icon submissions">
+        <ion-icon name="hand-right-outline"></ion-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ session?.submissions }}</div>
+        <div class="stat-label">Soumissions</div>
+      </div>
+      <ion-badge class="stat-trend good" *ngIf="session?.submissions > 0">+{{ session?.submissions }}</ion-badge>
+    </div>
+  </div>
+
+  <!-- Intensity Card with Modern Gauge -->
+  <div class="modern-card intensity-card">
+    <div class="card-header">
+      <h2><ion-icon name="speedometer-outline"></ion-icon> Intensité</h2>
+      <ion-badge [color]="session?.intensity === 'high' ? 'danger' : 
+                         session?.intensity === 'medium' ? 'warning' : 'success'">
+        {{ getIntensityLabel(session?.intensity) }}
+      </ion-badge>
+    </div>
+    
+    <div class="card-content">
+      <div class="intensity-gauge-container">
+        <div class="intensity-gauge">
+          <canvas #intensityCanvas></canvas>
+          <div class="gauge-value">
+            <span [ngClass]="'intensity-' + session?.intensity">{{ 
+              session?.intensity === 'high' ? '90%' : 
+              session?.intensity === 'medium' ? '65%' : '30%' 
+            }}</span>
+          </div>
         </div>
-        <div class="summary-item">
-          <ion-icon name="sync-outline"></ion-icon>
-          <div class="summary-value">{{ session?.rounds }}</div>
-          <div class="summary-label">Rounds</div>
-        </div>
-        <div class="summary-item">
-          <ion-icon name="fist-outline"></ion-icon>
-          <div class="summary-value">{{ session?.strikes }}</div>
-          <div class="summary-label">Coups</div>
-        </div>
-        <div class="summary-item">
-          <ion-icon name="hand-right-outline"></ion-icon>
-          <div class="summary-value">{{ session?.submissions }}</div>
-          <div class="summary-label">Soumissions</div>
+        
+        <div class="intensity-scale">
+          <div class="scale-item">
+            <div class="scale-point low" [ngClass]="{'active': session?.intensity === 'low'}"></div>
+            <span>Faible</span>
+          </div>
+          <div class="scale-item">
+            <div class="scale-point medium" [ngClass]="{'active': session?.intensity === 'medium'}"></div>
+            <span>Moyenne</span>
+          </div>
+          <div class="scale-item">
+            <div class="scale-point high" [ngClass]="{'active': session?.intensity === 'high'}"></div>
+            <span>Élevée</span>
+          </div>
         </div>
       </div>
-    </ion-card-content>
-  </ion-card>
-
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Intensité</ion-card-title>
-      <ion-card-subtitle>{{ getIntensityLabel(session?.intensity) }}</ion-card-subtitle>
-    </ion-card-header>
-    <ion-card-content>
-      <div class="chart-container">
-        <canvas #intensityCanvas></canvas>
-        <div class="intensity-value">
-          {{ getIntensityLabel(session?.intensity) }}
+      
+      <div class="intensity-benefits">
+        <div class="benefit-item">
+          <ion-icon name="flame-outline"></ion-icon>
+          <span>{{ 
+            session?.intensity === 'high' ? 'Améliore l\'endurance' : 
+            session?.intensity === 'medium' ? 'Équilibre parfait' : 'Idéal pour technique' 
+          }}</span>
+        </div>
+        <div class="benefit-item">
+          <ion-icon name="pulse-outline"></ion-icon>
+          <span>{{ 
+            session?.intensity === 'high' ? 'Brûle ~450 kcal' : 
+            session?.intensity === 'medium' ? 'Brûle ~300 kcal' : 'Brûle ~200 kcal' 
+          }}</span>
         </div>
       </div>
-    </ion-card-content>
-  </ion-card>
+    </div>
+  </div>
 
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Progression</ion-card-title>
-      <ion-card-subtitle>Comparaison avec les séances précédentes</ion-card-subtitle>
-    </ion-card-header>
-    <ion-card-content>
+  <!-- Progression Chart Card -->
+  <div class="modern-card progression-card">
+    <div class="card-header">
+      <h2><ion-icon name="trending-up-outline"></ion-icon> Progression</h2>
+      <div class="chart-toggle">
+        <ion-segment [(ngModel)]="chartType" (ionChange)="updateProgressChart()">
+          <ion-segment-button value="rounds">
+            <ion-label>Rounds</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="strikes">
+            <ion-label>Coups</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+    </div>
+    
+    <div class="card-content">
       <div class="chart-container">
         <canvas #progressCanvas></canvas>
       </div>
-    </ion-card-content>
-  </ion-card>
+      
+      <div class="progress-insights">
+        <div class="insight-item positive">
+          <ion-icon name="arrow-up-outline"></ion-icon>
+          <span>{{ chartType === 'rounds' ? 'Progression de 20% sur les rounds' : 'Amélioration constante des frappes' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <ion-card *ngIf="session?.location">
-    <ion-card-header>
-      <ion-card-title>Lieu</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <div class="location-info">
+  <!-- Additional Details Cards -->
+  <div class="modern-details-grid">
+    <!-- Location Card -->
+    <div class="detail-card" *ngIf="session?.location">
+      <div class="detail-icon">
         <ion-icon name="location-outline"></ion-icon>
-        <span>{{ session?.location }}</span>
       </div>
-    </ion-card-content>
-  </ion-card>
-
-  <ion-card *ngIf="session?.notes">
-    <ion-card-header>
-      <ion-card-title>Notes</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>{{ session?.notes }}</p>
-    </ion-card-content>
-  </ion-card>
-
-  <ion-card *ngIf="session?.sparringPartner">
-    <ion-card-header>
-      <ion-card-title>Partenaire</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <div class="partner-info">
+      <div class="detail-content">
+        <h3>Lieu d'entraînement</h3>
+        <p>{{ session?.location }}</p>
+      </div>
+    </div>
+    
+    <!-- Partner Card -->
+    <div class="detail-card" *ngIf="session?.sparringPartner">
+      <div class="detail-icon">
         <ion-icon name="people-outline"></ion-icon>
-        <span>{{ session?.sparringPartnerName || 'Partenaire #' + session?.sparringPartner }}</span>
       </div>
-    </ion-card-content>
-  </ion-card>
+      <div class="detail-content">
+        <h3>Partenaire</h3>
+        <p>{{ session?.sparringPartnerName || 'Partenaire #' + session?.sparringPartner }}</p>
+        <div class="partner-action" *ngIf="session?.sparringPartner">
+          <ion-button fill="clear" size="small">
+            <ion-icon name="mail-outline" slot="start"></ion-icon>
+            Remercier
+          </ion-button>
+          <ion-button fill="clear" size="small">
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            Reprogrammer
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes Card -->
+  <div class="modern-card notes-card" *ngIf="session?.notes">
+    <div class="card-header">
+      <h2><ion-icon name="document-text-outline"></ion-icon> Notes</h2>
+    </div>
+    <div class="card-content">
+      <p class="session-notes">{{ session?.notes }}</p>
+      
+      <div class="tags-container" *ngIf="sessionTags?.length">
+        <div class="tag" *ngFor="let tag of sessionTags">{{ tag }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Achievements Card -->
+  <div class="modern-card achievements-card">
+    <div class="card-header">
+      <h2><ion-icon name="trophy-outline"></ion-icon> Accomplissements</h2>
+    </div>
+    <div class="card-content">
+      <div class="achievements-list">
+        <div class="achievement-item">
+          <div class="achievement-icon">
+            <ion-icon name="timer-outline"></ion-icon>
+          </div>
+          <div class="achievement-info">
+            <h3>Endurant</h3>
+            <p>Séance de plus de {{ session?.duration/60 | number:'1.0-0' }} minutes</p>
+            <ion-progress-bar value="1"></ion-progress-bar>
+          </div>
+          <div class="achievement-xp">+50 XP</div>
+        </div>
+        
+        <div class="achievement-item" *ngIf="session?.strikes > 100">
+          <div class="achievement-icon">
+            <ion-icon name="flash-outline"></ion-icon>
+          </div>
+          <div class="achievement-info">
+            <h3>Machine à coups</h3>
+            <p>Plus de 100 frappes en une séance</p>
+            <ion-progress-bar value="1"></ion-progress-bar>
+          </div>
+          <div class="achievement-xp">+70 XP</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </ion-content>
+
+<!-- Floating Action Button for more options -->
+<ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab-button>
+    <ion-icon name="ellipsis-horizontal"></ion-icon>
+  </ion-fab-button>
+  <ion-fab-list side="top">
+    <ion-fab-button (click)="shareSession()">
+      <ion-icon name="share-social-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button>
+      <ion-icon name="create-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button>
+      <ion-icon name="heart-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab-list>
+</ion-fab>
