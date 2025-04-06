@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActionSheetController, ToastController, ModalController, AlertController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { Router, NavigationExtras } from '@angular/router';
 import { FirebaseService } from '../../../services/firebase.service';
 import { Subscription, interval } from 'rxjs';
 import { SharingService } from '../../../services/sharing.service';
@@ -852,5 +852,18 @@ export class Tab5Page implements OnInit, OnDestroy {
     });
     
     await toast.present();
+  }
+
+  /**
+   * Navigate to session detail page
+   * @param session The session to view in detail
+   */
+  viewSessionDetail(session: any) {
+    const navigationExtras: NavigationExtras = {
+      state: {
+        session: session
+      }
+    };
+    this.router.navigate(['/session-detail'], navigationExtras);
   }
 }

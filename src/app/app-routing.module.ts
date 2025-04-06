@@ -41,6 +41,10 @@ const routes: Routes = [
           import('./Pages/messaging/chat/chat.component').then(m => m.ChatComponent)
       }
     ]
+  },
+  {
+    path: 'session-detail',
+    loadChildren: () => import('./Pages/Clients/session-detail/session-detail.module').then(m => m.SessionDetailPageModule)
   }
 ];
 

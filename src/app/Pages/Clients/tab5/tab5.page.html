@@ -257,7 +257,7 @@
     </div>
     
     <ion-list>
-      <ion-item *ngFor="let session of recentSessions" detail="false">
+      <ion-item *ngFor="let session of recentSessions" detail="true" (click)="viewSessionDetail(session)" button>
         <div class="session-entry">
           <div class="session-date">
             <div class="day">{{ formatDay(session.date) }}</div>

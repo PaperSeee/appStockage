@@ -1,0 +1,119 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Détails de la séance</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="shareSession()">
+        <ion-icon name="share-social-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="session-header">
+    <div class="session-type">
+      <ion-icon [name]="session?.activityType === 'sparring' ? 'people-outline' : 
+                        session?.activityType === 'bag' ? 'fitness-outline' : 
+                        session?.activityType === 'shadow' ? 'person-outline' : 'hand-right-outline'"></ion-icon>
+      <h1>{{ getActivityLabel(session?.activityType) }}</h1>
+    </div>
+    <div class="session-date">
+      {{ formatDate(session?.date) }}
+    </div>
+  </div>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Résumé</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <ion-icon name="time-outline"></ion-icon>
+          <div class="summary-value">{{ formatTime(session?.duration) }}</div>
+          <div class="summary-label">Durée</div>
+        </div>
+        <div class="summary-item">
+          <ion-icon name="sync-outline"></ion-icon>
+          <div class="summary-value">{{ session?.rounds }}</div>
+          <div class="summary-label">Rounds</div>
+        </div>
+        <div class="summary-item">
+          <ion-icon name="fist-outline"></ion-icon>
+          <div class="summary-value">{{ session?.strikes }}</div>
+          <div class="summary-label">Coups</div>
+        </div>
+        <div class="summary-item">
+          <ion-icon name="hand-right-outline"></ion-icon>
+          <div class="summary-value">{{ session?.submissions }}</div>
+          <div class="summary-label">Soumissions</div>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Intensité</ion-card-title>
+      <ion-card-subtitle>{{ getIntensityLabel(session?.intensity) }}</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="chart-container">
+        <canvas #intensityCanvas></canvas>
+        <div class="intensity-value">
+          {{ getIntensityLabel(session?.intensity) }}
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Progression</ion-card-title>
+      <ion-card-subtitle>Comparaison avec les séances précédentes</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="chart-container">
+        <canvas #progressCanvas></canvas>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="session?.location">
+    <ion-card-header>
+      <ion-card-title>Lieu</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="location-info">
+        <ion-icon name="location-outline"></ion-icon>
+        <span>{{ session?.location }}</span>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="session?.notes">
+    <ion-card-header>
+      <ion-card-title>Notes</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>{{ session?.notes }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card *ngIf="session?.sparringPartner">
+    <ion-card-header>
+      <ion-card-title>Partenaire</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="partner-info">
+        <ion-icon name="people-outline"></ion-icon>
+        <span>{{ session?.sparringPartnerName || 'Partenaire #' + session?.sparringPartner }}</span>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
