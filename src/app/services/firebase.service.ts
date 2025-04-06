@@ -177,6 +177,7 @@ export class FirebaseService {
 
   async getRedirectResult() {
     try {
+      console.log('Processing redirect result...');
       const result = await getRedirectResult(this.auth);
       
       // Vérifier si un résultat est disponible
@@ -185,9 +186,15 @@ export class FirebaseService {
         return result.user;
       }
       
+      // Si pas de résultat mais un utilisateur est déjà connecté, le retourner
+      if (this.auth.currentUser) {
+        console.log('No redirect result but user is already signed in:', this.auth.currentUser.uid);
+        return this.auth.currentUser;
+      }
+      
       // Cas spécifique pour iOS en mode PWA qui peut perdre le contexte de redirection
       if (this.isIOS && this.isPWA) {
-        console.log('iOS PWA specific auth error, checking current user');
+        console.log('iOS PWA specific auth check, checking current user');
         
         // Récupérer l'utilisateur actuel comme fallback
         const currentUser = this.auth.currentUser;
@@ -196,9 +203,16 @@ export class FirebaseService {
         }
       }
       
+      console.log('No authentication result found');
       return null;
     } catch (error: any) {
       console.error('Error with redirect result:', error);
+      
+      // Gestion spécifique pour iOS PWA et autres cas d'erreur possibles
+      if ((error.code === 'auth/no-auth-event' || error.code === 'auth/null-user') && this.auth.currentUser) {
+        console.log('Auth error but current user exists, returning current user');
+        return this.auth.currentUser;
+      }
       
       // Gestion spécifique pour iOS PWA
       if (this.isIOS && this.isPWA) {
@@ -212,13 +226,6 @@ export class FirebaseService {
       }
       
       throw error;
-    } finally {
-      // Nettoyage dans tous les cas pour éviter les erreurs persistantes
-      if (this.isIOS && this.isPWA) {
-        localStorage.removeItem('pendingGoogleAuth');
-        localStorage.removeItem('pendingAppleAuth');
-        localStorage.removeItem('authStartTime');
-      }
     }
   }
 
