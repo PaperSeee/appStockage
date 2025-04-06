@@ -66,24 +66,33 @@ export class LoginPage {
           this.router.navigate(['/tabs/tab1']);
         }
       } else {
-        // Vérifier si l'authentification iOS PWA est en attente
+        // Vérifier si l'authentification est en attente
         const pendingAuth = localStorage.getItem('pendingGoogleAuth');
         if (pendingAuth === 'true') {
           console.log('Pending Google auth detected, checking auth state...');
           
+          // Attendre un peu plus longtemps pour s'assurer que l'authentification est traitée
           setTimeout(async () => {
             const delayed = await this.firebaseService.isUserLoggedIn();
             if (delayed) {
               console.log('Delayed auth check successful');
               this.router.navigate(['/tabs/tab1']);
+            } else {
+              // Nettoyer l'état en attente si l'authentification a échoué
+              localStorage.removeItem('pendingGoogleAuth');
+              localStorage.removeItem('authStartTime');
             }
-          }, 1000);
+          }, 2000); // Augmenter le délai pour donner plus de temps
         }
       }
     } catch (error: unknown) {
       console.error('Error with redirect authentication:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
       this.showToast('Erreur lors de l\'authentification: ' + errorMessage);
+      
+      // Nettoyer l'état en attente en cas d'erreur
+      localStorage.removeItem('pendingGoogleAuth');
+      localStorage.removeItem('authStartTime');
     }
   }
 
@@ -101,64 +110,29 @@ export class LoginPage {
     try {
       // Ajouter un indicateur visuel de chargement
       const loading = await this.toastController.create({
-        message: 'Connexion à Google en cours...',
+        message: 'Redirection vers Google...',
         duration: 3000,
         position: 'bottom'
       });
       await loading.present();
       
-      // Tentative de connexion
-      const result = await this.firebaseService.signInWithGoogle();
+      // Marquer qu'une authentification est en cours
+      localStorage.setItem('pendingGoogleAuth', 'true');
+      localStorage.setItem('authStartTime', Date.now().toString());
       
-      // Si nous obtenons directement un résultat (popup ou non PWA)
-      if (result) {
-        loading.dismiss();
-        
-        // Le reste du code pour gérer le résultat immédiat
-        const userDoc = await this.firebaseService.getDocument('users', result.uid);
-        
-        if (!userDoc) {
-          // Si l'utilisateur n'existe pas, créer un nouveau document
-          await this.firebaseService.addDocument('users', {
-            userId: result.uid,
-            firstName: result.displayName?.split(' ')[0] || '',
-            lastName: result.displayName?.split(' ').slice(1).join(' ') || '',
-            email: result.email,
-            photo: result.photoURL,
-            createdAt: new Date()
-          });
-        }
-        
-        this.router.navigate(['/tabs/tab1']);
-      }
+      // Déclencher la redirection - ne retourne pas de résultat immédiat
+      await this.firebaseService.signInWithGoogle();
+      
+      // Note: Après la redirection, le navigateur quittera cette page
+      // et reviendra plus tard sur la même URL, où ionViewWillEnter sera appelé
     } catch (error: unknown) {
+      // Nettoyer l'état en attente en cas d'erreur
+      localStorage.removeItem('pendingGoogleAuth');
+      localStorage.removeItem('authStartTime');
+      
       console.error('Google auth error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
       this.showToast('La connexion avec Google a échoué: ' + errorMessage);
-    }
-  }
-
-  async loginWithGoogle() {
-    try {
-      const user = await this.firebaseService.signInWithGoogle();
-      
-      // Only navigate if we got a user (not redirected)
-      if (user) {
-        this.router.navigate(['/tabs/tab1']);
-      }
-      // If redirected, the ionViewWillEnter will handle the result
-    } catch (error: any) {
-      console.error('Erreur lors de la connexion avec Google:', error);
-      
-      // Show user-friendly error message
-      const errorMessage = error.message || 'La connexion a échoué. Veuillez réessayer plus tard.';
-      const toast = await this.toastController.create({
-        message: errorMessage,
-        duration: 3000,
-        position: 'bottom',
-        color: 'danger'
-      });
-      toast.present();
     }
   }
 

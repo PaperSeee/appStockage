@@ -135,43 +135,22 @@ export class FirebaseService {
       // Nettoyer le localStorage pour éviter les états incohérents
       localStorage.removeItem('pendingGoogleAuth');
       
-      // Approche spécifique pour iOS en mode PWA
-      if (this.isIOS && this.isPWA) {
-        console.log('Using iOS PWA specific Google auth approach');
-        
-        // Marquer qu'une authentification Google est en cours
-        localStorage.setItem('pendingGoogleAuth', 'true');
-        localStorage.setItem('authStartTime', Date.now().toString());
-        
-        // Utiliser la méthode de redirection
-        await signInWithRedirect(this.auth, this.googleProvider);
-        return null;
-      }
+      console.log('Using redirect for Google authentication');
       
-      // Pour les autres environnements, utiliser l'approche actuelle
-      if (this.isPWA || document.referrer.includes('android-app://')) {
-        console.log('Using redirect for Google auth (PWA/mobile context)');
-        await signInWithRedirect(this.auth, this.googleProvider);
-        return null;
-      } else {
-        // Browser environment - try popup first
-        console.log('Using popup for Google auth (browser context)');
-        try {
-          const result = await signInWithPopup(this.auth, this.googleProvider);
-          return result.user;
-        } catch (popupError: any) {
-          // If popup fails due to unauthorized domain, try redirect
-          if (popupError.code === 'auth/unauthorized-domain') {
-            console.log('Popup failed due to unauthorized domain, trying redirect');
-            await signInWithRedirect(this.auth, this.googleProvider);
-            return null;
-          }
-          throw popupError;
-        }
-      }
+      // Marquer qu'une authentification Google est en cours
+      localStorage.setItem('pendingGoogleAuth', 'true');
+      localStorage.setItem('authStartTime', Date.now().toString());
+      
+      // Utiliser uniquement la méthode de redirection, quel que soit l'environnement
+      await signInWithRedirect(this.auth, this.googleProvider);
+      return null;
     } catch (error: any) {
       console.error('Error signing in with Google:', error);
       console.error('Error details:', JSON.stringify(error));
+      
+      // Nettoyer l'état en attente en cas d'erreur
+      localStorage.removeItem('pendingGoogleAuth');
+      localStorage.removeItem('authStartTime');
       
       // Provide more user-friendly error messages
       if (error.code === 'auth/unauthorized-domain') {

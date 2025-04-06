@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FirebaseService } from '../services/firebase.service';
 import { Router, RouterLink } from '@angular/router';
@@ -28,8 +28,64 @@ export class RegisterPage {
 
   constructor(
     private firebaseService: FirebaseService,
-    private router: Router
+    private router: Router,
+    private toastController: ToastController
   ) {}
+  
+  async ionViewWillEnter() {
+    console.log('RegisterPage - ionViewWillEnter');
+    
+    // Check if user is already logged in
+    const isLoggedIn = await this.firebaseService.isUserLoggedIn();
+    if (isLoggedIn) {
+      console.log('User already logged in, redirecting to main page');
+      this.router.navigate(['/tabs/tab1']);
+      return;
+    }
+    
+    // Check for redirect result
+    try {
+      const user = await this.firebaseService.getRedirectResult();
+      if (user) {
+        console.log('Successfully signed in via redirect, user:', user.uid);
+        
+        // Check if user already exists in Firestore
+        try {
+          const userDoc = await this.firebaseService.getDocument('users', user.uid);
+          
+          if (!userDoc) {
+            console.log('Creating new user document for:', user.uid);
+            
+            // Generate a unique username
+            const baseUsername = (user.displayName || 'user').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const username = `${baseUsername}${Math.floor(Math.random() * 1000)}`;
+            
+            // Create new user document
+            await this.firebaseService.setDocument('users', user.uid, {
+              userId: user.uid,
+              firstName: user.displayName?.split(' ')[0] || '',
+              lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+              email: user.email,
+              photo: user.photoURL,
+              username: username,
+              createdAt: new Date()
+            });
+          }
+          
+          console.log('Navigating to main page after auth');
+          this.router.navigate(['/tabs/tab1']);
+        } catch (dbError) {
+          console.error('Error with Firestore:', dbError);
+          this.showToast('Inscription réussie mais erreur de base de données');
+          this.router.navigate(['/tabs/tab1']);
+        }
+      }
+    } catch (error: unknown) {
+      console.error('Error with redirect authentication:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      this.showToast('Erreur lors de l\'authentification: ' + errorMessage);
+    }
+  }
 
   async register() {
     try {
@@ -90,64 +146,55 @@ export class RegisterPage {
 
   async signInWithGoogle() {
     try {
-      const result = await this.firebaseService.signInWithGoogle();
-      if (result) {
-        try {
-          // Vérifier si l'utilisateur existe déjà dans Firestore
-          const userDoc = await this.firebaseService.getDocument('users', result.uid);
-          
-          if (!userDoc) {
-            try {
-              console.log('Création d\'un nouveau profil utilisateur pour:', result.uid);
-              
-              // Générer un nom d'utilisateur unique
-              const baseUsername = (result.displayName || 'user').toLowerCase().replace(/[^a-z0-9]/g, '');
-              const username = `${baseUsername}${Math.floor(Math.random() * 1000)}`;
-              
-              // Always use setDocument with the UID as document ID
-              await this.firebaseService.setDocument('users', result.uid, {
-                userId: result.uid,
-                firstName: result.displayName?.split(' ')[0] || '',
-                lastName: result.displayName?.split(' ').slice(1).join(' ') || '',
-                email: result.email,
-                photo: result.photoURL,
-                username: username,
-                createdAt: new Date()
-              });
-              console.log('Profil utilisateur créé avec succès');
-            } catch (docError) {
-              console.error('Erreur lors de la création du profil:', docError);
-              // Continuer malgré l'erreur
-            }
-          }
-          
-          // Navigation simplifiée
-          this.router.navigate(['/tabs/tab1']);
-        } catch (firestoreError) {
-          console.error('Erreur Firestore:', firestoreError);
-          this.router.navigate(['/tabs/tab1']);
-        }
-      }
-    } catch (error) {
-      console.error('Erreur d\'authentification Google:', error);
-      alert('La connexion a échoué. Veuillez réessayer plus tard.');
+      // Add visual loading indicator
+      const loading = await this.toastController.create({
+        message: 'Redirection vers Google...',
+        duration: 3000,
+        position: 'bottom'
+      });
+      await loading.present();
+      
+      // Mark that authentication is in progress
+      localStorage.setItem('pendingGoogleAuth', 'true');
+      localStorage.setItem('authStartTime', Date.now().toString());
+      
+      // Trigger the redirect - won't return an immediate result
+      await this.firebaseService.signInWithGoogle();
+      
+      // Note: After the redirect, the browser will leave this page
+      // and return later to the same URL, where ionViewWillEnter will be called
+    } catch (error: unknown) {
+      // Clean up pending state in case of error
+      localStorage.removeItem('pendingGoogleAuth');
+      localStorage.removeItem('authStartTime');
+      
+      console.error('Google auth error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      this.showToast('La connexion avec Google a échoué: ' + errorMessage);
     }
   }
 
   async signInWithApple() {
     try {
+      // Add visual loading indicator
+      const loading = await this.toastController.create({
+        message: 'Redirection vers Apple...',
+        duration: 3000,
+        position: 'bottom'
+      });
+      await loading.present();
+      
       const result = await this.firebaseService.signInWithApple();
       if (result) {
-        // Vérifier si l'utilisateur existe déjà dans Firestore
+        // Check if user already exists in Firestore
         const userDoc = await this.firebaseService.getDocument('users', result.uid);
         
         if (!userDoc) {
-          // Générer un nom d'utilisateur unique
+          // Generate a unique username
           const baseUsername = (result.displayName || 'apple_user').toLowerCase().replace(/[^a-z0-9]/g, '');
           const username = `${baseUsername}${Math.floor(Math.random() * 1000)}`;
           
-          // Si l'utilisateur n'existe pas, créer un nouveau document
-          // Use setDocument here too
+          // If user doesn't exist, create a new document
           await this.firebaseService.setDocument('users', result.uid, {
             userId: result.uid,
             firstName: result.displayName?.split(' ')[0] || '',
@@ -162,8 +209,18 @@ export class RegisterPage {
         this.router.navigate(['/tabs/tab1']);
       }
     } catch (error) {
-      console.error('Erreur lors de la connexion avec Apple:', error);
-      alert('La connexion avec Apple a échoué. Veuillez réessayer.');
+      console.error('Error signing in with Apple:', error);
+      this.showToast('La connexion avec Apple a échoué. Veuillez réessayer.');
     }
+  }
+  
+  async showToast(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: 'bottom',
+      color: 'danger'
+    });
+    toast.present();
   }
 }
