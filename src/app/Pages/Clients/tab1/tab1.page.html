@@ -1,238 +1,237 @@
-<ion-header class="ion-no-border">
+<ion-header class="fighter-header">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="goToProfile()">
-        <ion-icon name="person-outline"></ion-icon>
+      <ion-button routerLink="/profile">
+        <ion-avatar>
+          <img [src]="user.photoURL || 'assets/default-avatar.jpg'" alt="Avatar">
+        </ion-avatar>
       </ion-button>
     </ion-buttons>
     
-    <ion-title>Home</ion-title>
+    <ion-title>
+      <div class="user-status">
+        <div class="user-name">{{ user.displayName || 'Combattant' }}</div>
+        <div class="user-level">{{ user.rank || 'Guerrier niveau ' + user.level }}</div>
+      </div>
+    </ion-title>
     
     <ion-buttons slot="end">
       <ion-button routerLink="/messaging">
         <ion-icon name="chatbubble-outline"></ion-icon>
         <ion-badge *ngIf="unreadMessageCount > 0" class="message-badge">{{ unreadMessageCount }}</ion-badge>
       </ion-button>
-      <ion-button>
+      <ion-button routerLink="/notifications">
         <ion-icon name="notifications-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
+  
+  <div class="xp-progress">
+    <ion-progress-bar [value]="user.xpProgress"></ion-progress-bar>
+    <div class="xp-label">{{ user.currentXP }} / {{ user.nextLevelXP }} XP</div>
+  </div>
+  
+  <div class="streak-container" *ngIf="user.streak > 0">
+    <ion-chip color="danger">
+      <ion-icon name="flame"></ion-icon>
+      <ion-label>{{ user.streak }} jours consécutifs 🔥</ion-label>
+    </ion-chip>
+  </div>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <div class="weekly-summary">
-    <div class="summary-header">
-      <h2>Cette semaine</h2>
-      <ion-button fill="clear" size="small" class="share-button" (click)="shareWeeklySummary()">
-        <ion-icon name="share-social-outline"></ion-icon>
-        Partager
-      </ion-button>
-    </div>
-    
-    <div class="stats-container">
-      <div class="stat-item">
-        <div class="stat-value">{{ trainingStats.count }}</div>
-        <div class="stat-label">Entraînements</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">{{ trainingStats.totalMinutes }}</div>
-        <div class="stat-label">Minutes</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">{{ trainingStats.intensity.toFixed(1) }}</div>
-        <div class="stat-label">Intensité</div>
-      </div>
-    </div>
-    
-    <div class="progress-bar">
-      <div class="progress" style="width: 65%;"></div>
-    </div>
-    <div class="progress-label">65% de votre objectif hebdomadaire</div>
-  </div>
-  
-  <div class="search-container">
-    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="searchItems()" (ionBlur)="clearSearchResults()" placeholder="Rechercher des utilisateurs, des activités..." animated></ion-searchbar>
-    
-    <!-- Search Results dropdown -->
-    <div class="search-results" *ngIf="showSearchResults && searchResults.length > 0">
-      <div class="search-result-header">
-        <ion-icon name="people-outline"></ion-icon>
-        <span>Utilisateurs</span>
-      </div>
-      <div class="search-result-item" *ngFor="let user of searchResults" (click)="viewUserProfile(user.id)">
-        <img [src]="user.photo" [alt]="user.name" class="result-avatar">
-        <div class="result-info">
-          <div class="result-name">{{user.name}}</div>
-          <div class="result-details" *ngIf="user.username">{{'@' + user.username}}</div>
-          <div class="result-discipline">{{user.discipline}}</div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Search loading indicator -->
-    <div class="search-loading" *ngIf="isSearching">
-      <ion-spinner name="crescent" size="small"></ion-spinner>
-      <span>Recherche en cours...</span>
-    </div>
-  </div>
-  
-  <div class="discipline-filter">
-    <div 
-      class="filter-item" 
-      [class.active]="disciplineFilter === 'all'" 
-      (click)="filterByDiscipline('all')"
-    >Tous</div>
-    <div 
-      class="filter-item" 
-      [class.active]="disciplineFilter === 'mma'" 
-      (click)="filterByDiscipline('mma')"
-    >MMA</div>
-    <div 
-      class="filter-item" 
-      [class.active]="disciplineFilter === 'boxe'" 
-      (click)="filterByDiscipline('boxe')"
-    >Boxe</div>
-    <div 
-      class="filter-item" 
-      [class.active]="disciplineFilter === 'jiu-jitsu'" 
-      (click)="filterByDiscipline('jiu-jitsu')"  
-    >Jiu-Jitsu</div>
-    <div 
-      class="filter-item" 
-      [class.active]="disciplineFilter === 'muay-thai'" 
-      (click)="filterByDiscipline('muay-thai')"
-    >Muay Thai</div>
-    <div 
-      class="filter-item" 
-      [class.active]="disciplineFilter === 'lutte'" 
-      (click)="filterByDiscipline('lutte')"
-    >Lutte</div>
-  </div>
-  
-  <h3 class="section-title">
-    <ion-icon name="calendar-outline"></ion-icon>
-    Événements à proximité
-  </h3>
-  
-  <div class="events-container">
-    <div class="events-list">
-      <div class="event-card" *ngFor="let event of filteredEvents; trackBy: trackEventById">
-        <div class="event-image-container">
-          <img [src]="event.image" [alt]="event.title" class="event-image">
-          <div class="event-type-badge">{{event.type}}</div>
-        </div>
-        <div class="event-content">
-          <h4 class="event-title">{{event.title}}</h4>
-          <div class="event-details">
-            <div class="event-detail-item">
-              <ion-icon name="time-outline"></ion-icon>
-              <span>{{formatEventDate(event.date)}}</span>
-            </div>
-            <div class="event-detail-item">
-              <ion-icon name="location-outline"></ion-icon>
-              <span>{{event.location}} • {{event.distance}} km</span>
-            </div>
-            <div class="event-detail-item">
-              <ion-icon name="people-outline"></ion-icon>
-              <span>{{event.participantsCount}} participants</span>
-            </div>
-          </div>
-          <ion-button expand="block" fill="clear" class="event-cta-button" (click)="onEventRegister(event)">
-            S'inscrire
-          </ion-button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <h3 class="section-title">
-    <ion-icon name="people-outline"></ion-icon>
-    Mes partenaires
-  </h3>
-
-  <div class="partners-container">
-    <div class="partners-list">
-      <div class="partner-item" *ngFor="let friend of filteredFriends; trackBy: trackFriendById" (click)="viewUserProfile(friend.id)">
-        <div class="avatar-container">
-          <img [src]="friend.photo || 'assets/par défaut.jpg'" [alt]="getUserFullName(friend)" class="avatar" (error)="handleImageError($event)">
-          <div class="status-indicator"></div>
-        </div>
-        <div class="partner-info">
-          <p class="name">{{getUserFullName(friend)}}</p>
-          <p class="details">{{friend.discipline || 'Non spécifié'}}</p>
-        </div>
-      </div>
-      <div class="empty-state" *ngIf="filteredFriends.length === 0 && !loadingFriends">
-        <p>Aucun partenaire trouvé. Ajoutez des contacts dans l'onglet Partenaires.</p>
-      </div>
-      <div class="loading-state" *ngIf="loadingFriends">
-        <ion-spinner></ion-spinner>
-        <p>Chargement...</p>
-      </div>
-    </div>
-  </div>
-  
-  <h3 class="section-title">
-    <ion-icon name="pulse-outline"></ion-icon>
-    Feed d'activités
-  </h3>
-
-  <div class="activity-feed">
-    <!-- Affichage des meilleurs posts sociaux -->
-    <div class="feed-item" *ngFor="let post of topPosts; trackBy: trackPostById">
-      <div class="feed-header">
-        <img [src]="post.user.avatar || 'assets/par défaut.jpg'" [alt]="post.user.name" class="user-avatar" (click)="viewUserProfile(post.user.id)">
+<ion-content [fullscreen]="true" class="modern-content">
+  <!-- Custom Header -->
+  <div class="custom-header">
+    <div class="header-content">
+      <div class="user-profile" (click)="viewProfile()">
+        <ion-avatar>
+          <img [src]="user.photoURL" alt="Profile" />
+        </ion-avatar>
         <div class="user-info">
-          <p class="username" (click)="viewUserProfile(post.user.id)">{{post.user.name}}</p>
-          <p class="activity-meta">
-            <ion-icon name="pricetag-outline" *ngIf="post.type"></ion-icon>
-            <span *ngIf="post.type">{{post.type}}</span>
-            <ion-icon name="time-outline"></ion-icon>
-            <span>{{post.timestamp | date:'dd MMM à HH:mm'}}</span>
-          </p>
+          <h2>{{ user.displayName }}</h2>
+          <div class="level-badge">
+            <ion-icon name="fitness"></ion-icon>
+            {{ user.rank || 'Niveau ' + user.level }}
+          </div>
         </div>
-        <span class="post-score" *ngIf="post.score">Score: {{post.score.toFixed(1)}}</span>
       </div>
       
-      <img *ngIf="post.media && post.media.length > 0" 
-           [src]="getPostMainImage(post)" 
-           [alt]="post.content" 
-           class="activity-image">
-      
-      <div class="activity-content">
-        <p class="activity-description">{{formatPostContent(post.content)}}</p>
-        
-        <div class="activity-stats">
-          <div class="stat">
-            <span class="value">{{post.likes.length}}</span>
-            <span class="label">J'aime</span>
-          </div>
-          <div class="stat">
-            <span class="value">{{post.comments.length}}</span>
-            <span class="label">Commentaires</span>
-          </div>
-          <div class="stat">
-            <span class="value">{{post.shares}}</span>
-            <span class="label">Partages</span>
-          </div>
-        </div>
-        
-        <div class="activity-actions">
-          <ion-button fill="clear" color="medium" (click)="viewFullPost(post.id)">
-            <ion-icon name="eye-outline"></ion-icon>
-            Voir plus
-          </ion-button>
-        </div>
+      <div class="header-actions">
+        <ion-button fill="clear" class="action-button" (click)="goToMessages()">
+          <ion-icon name="chatbubble-outline"></ion-icon>
+          <ion-badge *ngIf="unreadMessageCount > 0">{{ unreadMessageCount }}</ion-badge>
+        </ion-button>
       </div>
     </div>
     
-    <!-- Message si pas de posts -->
-    <div class="empty-feed" *ngIf="topPosts.length === 0">
-      <ion-icon name="newspaper-outline" size="large"></ion-icon>
-      <p>Aucune activité sociale récente</p>
+    <div class="progress-container">
+      <div class="xp-info">
+        <span class="xp-label">XP</span>
+        <span class="xp-value">{{ user.currentXP }}/{{ user.nextLevelXP }}</span>
+      </div>
+      <ion-progress-bar class="xp-progress-bar" [value]="user.xpProgress"></ion-progress-bar>
+    </div>
+    
+    <div class="streak-container" *ngIf="user.streak > 0">
+      <div class="streak-badge">
+        <ion-icon name="flame"></ion-icon>
+        <span>{{ user.streak }}</span>
+      </div>
+      <span class="streak-text">Jours consécutifs d'entraînement</span>
     </div>
   </div>
-  
+
+  <!-- Main Content -->
+  <div class="content-container">
+    <!-- Track Session Button -->
+    <div class="track-button-container" [class.animate]="animateTrackBtn">
+      <ion-button (click)="startTracking()" class="track-button" expand="block" shape="round">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        ENREGISTRER UNE SÉANCE
+      </ion-button>
+      <div class="track-button-subtitle">Capture tes progrès et gagne de l'XP</div>
+    </div>
+
+    <!-- Weekly Statistics -->
+    <div class="stats-container">
+      <div class="section-header">
+        <h3>Cette semaine</h3>
+      </div>
+      
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <ion-icon name="calendar-number-outline"></ion-icon>
+          </div>
+          <div class="stat-number">{{ weeklyStats.sessions }}</div>
+          <div class="stat-label">Séances</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">
+            <ion-icon name="time-outline"></ion-icon>
+          </div>
+          <div class="stat-number">{{ weeklyStats.totalMinutes }}</div>
+          <div class="stat-label">Minutes</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">
+            <ion-icon name="flash-outline"></ion-icon>
+          </div>
+          <div class="stat-number">{{ weeklyStats.techniques }}</div>
+          <div class="stat-label">Techniques</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Challenges -->
+    <div class="challenges-container">
+      <div class="section-header">
+        <h3>Défis en cours</h3>
+        <ion-button fill="clear" size="small" (click)="viewAllChallenges()">
+          Tous les défis <ion-icon name="chevron-forward"></ion-icon>
+        </ion-button>
+      </div>
+      
+      <div class="challenges-list">
+        <div class="challenge-card" *ngFor="let challenge of activeChallenges">
+          <div class="challenge-icon">
+            <ion-icon [name]="challenge.icon"></ion-icon>
+          </div>
+          <div class="challenge-details">
+            <h4>{{ challenge.title }}</h4>
+            <div class="challenge-progress-container">
+              <ion-progress-bar [value]="challenge.progress / challenge.target"></ion-progress-bar>
+              <span class="challenge-progress-text">{{ challenge.progress }}/{{ challenge.target }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Latest Badge -->
+      <div class="badge-container">
+        <div class="badge-icon">
+          <ion-icon [name]="latestBadge.icon" [color]="latestBadge.color"></ion-icon>
+        </div>
+        <div class="badge-details">
+          <h4>{{ latestBadge.title }}</h4>
+          <p>{{ latestBadge.description }}</p>
+          <div class="badge-unlocked">Débloqué récemment</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Social Feed Preview -->
+    <div class="social-container">
+      <div class="section-header">
+        <h3>Feed Combattants</h3>
+        <ion-button fill="clear" size="small" (click)="viewAllPosts()">
+          Voir tout <ion-icon name="chevron-forward"></ion-icon>
+        </ion-button>
+      </div>
+      
+      <div class="social-posts">
+        <div class="social-post" *ngFor="let post of topPosts">
+          <div class="post-header">
+            <ion-avatar (click)="viewProfile(post.user.id)">
+              <img [src]="post.user.photoURL" alt="User" />
+            </ion-avatar>
+            <div class="post-user-info">
+              <h4>{{ post.user.displayName }}</h4>
+              <span class="post-time">{{ timeAgo(post.timestamp) }}</span>
+            </div>
+          </div>
+          
+          <p class="post-content">{{ post.content }}</p>
+          
+          <div class="post-image" *ngIf="post.imageUrl">
+            <img [src]="post.imageUrl" alt="Post image" />
+          </div>
+          
+          <div class="post-stats">
+            <div class="post-stat">
+              <ion-icon name="heart"></ion-icon>
+              <span>{{ post.likes }}</span>
+            </div>
+            <div class="post-stat">
+              <ion-icon name="chatbubble-outline"></ion-icon>
+              <span>{{ post.comments }}</span>
+            </div>
+            <div class="post-stat">
+              <ion-icon name="share-social-outline"></ion-icon>
+              <span>{{ post.shares }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sparring Partners -->
+    <div class="partners-container">
+      <div class="section-header">
+        <h3>Partenaires suggérés</h3>
+        <ion-button fill="clear" size="small" (click)="findMorePartners()">
+          Explorer <ion-icon name="chevron-forward"></ion-icon>
+        </ion-button>
+      </div>
+      
+      <div class="partners-list">
+        <div class="partner-card" *ngFor="let partner of suggestedPartners" (click)="viewProfile(partner.id)">
+          <ion-avatar>
+            <img [src]="partner.photoURL" alt="Partner" />
+          </ion-avatar>
+          <div class="partner-info">
+            <h4>{{ partner.displayName }}</h4>
+            <div class="partner-discipline">{{ partner.discipline }}</div>
+            <div class="match-percentage">
+              <ion-icon name="flash"></ion-icon>
+              <span>{{ partner.matchPercentage }}% compatible</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </ion-content>
 

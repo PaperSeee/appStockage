@@ -13,8 +13,9 @@ import { OptimizedImageDirective } from '../../../directives/optimized-image.dir
     CommonModule,
     FormsModule,
     Tab1PageRoutingModule,
-    OptimizedImageDirective  // Ajout de la directive standalone
+    OptimizedImageDirective,  // Ajout de la directive standalone
+    Tab1Page  // Import the standalone component instead of declaring it
   ],
-  declarations: [Tab1Page]
+  declarations: []  // Remove Tab1Page from declarations
 })
 export class Tab1PageModule {}
