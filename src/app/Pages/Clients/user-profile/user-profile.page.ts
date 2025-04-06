@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, NavigationExtras } from '@angular/router';
 import { NavController, ModalController, AlertController } from '@ionic/angular';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -94,9 +94,11 @@ export class UserProfilePage implements OnInit {
   following: ProfileItem[] = [];
   clubs: Club[] = [];
   badges: Badge[] = [];
+  recentSessions: any[] = [];
   
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private navCtrl: NavController,
     private modalCtrl: ModalController,
     private alertCtrl: AlertController
@@ -138,6 +140,7 @@ export class UserProfilePage implements OnInit {
       this.loadFollowing();
       this.loadClubs();
       this.loadBadges();
+      this.loadRecentSessions();
       
       // Check if this is the current user
       // In a real app, compare with current authenticated user
@@ -197,6 +200,24 @@ export class UserProfilePage implements OnInit {
       description: `Réussite ${i+1}`,
       date: new Date(Date.now() - i * 86400000 * 7)
     }));
+  }
+
+  loadRecentSessions() {
+    // You could load from the same storage location as tab5
+    const sessionsString = localStorage.getItem('training-sessions');
+    if (sessionsString) {
+      const allSessions = JSON.parse(sessionsString);
+      
+      // Convert string dates to Date objects
+      allSessions.forEach((session: any) => {
+        session.date = new Date(session.date);
+      });
+      
+      this.recentSessions = allSessions.slice(0, 5);
+    } else {
+      // Initialize with empty array
+      this.recentSessions = [];
+    }
   }
 
   segmentChanged(event: CustomEvent) {
@@ -267,5 +288,63 @@ export class UserProfilePage implements OnInit {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hours}h ${mins}min`;
+  }
+
+  formatTime(seconds: number): string {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hrs > 0) {
+      return `${hrs}h ${mins.toString().padStart(2, '0')}m`;
+    } else {
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+  }
+
+  formatDay(date: Date): string {
+    // Get day name
+    const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    const dayName = dayNames[date.getDay()];
+    
+    // Get day and month
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    
+    return `${dayName} ${day}/${month}`;
+  }
+
+  getActivityLabel(activityType: string): string {
+    const labels: Record<string, string> = {
+      'sparring': 'Sparring',
+      'bag': 'Travail au sac',
+      'shadow': 'Shadowboxing',
+      'grappling': 'Grappling'
+    };
+    
+    return labels[activityType] || activityType;
+  }
+
+  getIntensityIcon(intensity: string): string {
+    const icons: Record<string, string> = {
+      'low': 'battery-half-outline',
+      'medium': 'battery-charging-outline',
+      'high': 'flash-outline'
+    };
+    
+    return icons[intensity] || 'pulse-outline';
+  }
+
+  viewSessionDetail(session: any) {
+    const navigationExtras: NavigationExtras = {
+      state: {
+        session: session
+      }
+    };
+    this.router.navigate(['/session-detail'], navigationExtras);
+  }
+
+  viewAllSessions() {
+    this.router.navigate(['/sessions-history']);
   }
 }

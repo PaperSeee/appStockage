@@ -1,172 +1,182 @@
-<ion-header class="ion-no-border">
+<ion-header class="ion-no-border profile-header" translucent="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="goBack()">
+      <ion-button (click)="goBack()" class="back-button">
         <ion-icon name="arrow-back-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>Profil</ion-title>
     <ion-buttons slot="end">
-      <ion-button>
+      <ion-button class="action-button">
         <ion-icon name="share-social-outline"></ion-icon>
       </ion-button>
-      <ion-button *ngIf="!isCurrentUser">
+      <ion-button *ngIf="!isCurrentUser" class="action-button">
         <ion-icon name="ellipsis-vertical-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="profile-content">
   <!-- Cover and Profile Image -->
   <div class="cover-container">
-    <img [src]="user.coverPhoto" class="cover-image">
+    <div class="cover-image-wrapper">
+      <img [src]="user.coverPhoto" class="cover-image" alt="Cover photo">
+      <div class="cover-overlay"></div>
+    </div>
     <div class="avatar-container">
-      <img [src]="user.avatar" class="profile-avatar">
+      <div class="avatar-wrapper">
+        <img [src]="user.avatar" class="profile-avatar" alt="Profile picture">
+      </div>
     </div>
   </div>
 
-  <!-- User Info -->
-  <div class="profile-info">
-    <h1 class="username">{{ user.name }}</h1>
-    <p class="username">{{'@' + user.username }}</p>
-    <p class="bio">{{ user.bio }}</p>
-    
-    <div class="user-details">
-      <div class="detail-item" *ngIf="user.location">
-        <ion-icon name="location-outline"></ion-icon>
-        <span>{{ user.location }}</span>
-      </div>
-      <div class="detail-item" *ngIf="user.discipline">
-        <ion-icon name="fitness-outline"></ion-icon>
-        <span>{{ user.discipline }}</span>
-      </div>
-      <div class="detail-item">
-        <ion-icon name="calendar-outline"></ion-icon>
-        <span>Membre depuis {{ user.joinDate | date:'MMMM yyyy' }}</span>
-      </div>
-    </div>
-    
-    <!-- Action Buttons -->
-    <div class="profile-actions">
-      <ion-button 
-        *ngIf="!isCurrentUser" 
-        expand="block" 
-        [color]="isFollowing ? 'medium' : 'primary'" 
-        (click)="toggleFollow()"
-      >
-        {{ isFollowing ? 'Abonné' : 'Suivre' }}
-      </ion-button>
+  <!-- User Info Card -->
+  <div class="profile-card">
+    <div class="profile-info">
+      <h1 class="username">{{ user.name }}</h1>
+      <p class="user-handle">{{'@' + user.username }}</p>
+      <p class="bio">{{ user.bio }}</p>
       
-      <ion-button 
-        *ngIf="!isCurrentUser" 
-        expand="block" 
-        fill="outline" 
-        (click)="messageUser()"
-      >
-        Message
-      </ion-button>
+      <div class="user-details">
+        <div class="detail-item" *ngIf="user.location">
+          <ion-icon name="location-outline"></ion-icon>
+          <span>{{ user.location }}</span>
+        </div>
+        <div class="detail-item" *ngIf="user.discipline">
+          <ion-icon name="fitness-outline"></ion-icon>
+          <span>{{ user.discipline }}</span>
+        </div>
+        <div class="detail-item">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <span>Membre depuis {{ user.joinDate | date:'MMMM yyyy' }}</span>
+        </div>
+      </div>
       
-      <ion-button 
-        *ngIf="isCurrentUser" 
-        expand="block" 
-        (click)="editProfile()"
-      >
-        Modifier le profil
-      </ion-button>
-    </div>
-    
-    <!-- User Stats -->
-    <div class="stats-row">
-      <div class="stat-item">
-        <div class="stat-value">{{ user.stats.trainingSessions }}</div>
-        <div class="stat-label">Séances</div>
+      <!-- User Stats -->
+      <div class="stats-container">
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-value">{{ user.stats.trainingSessions }}</div>
+            <div class="stat-label">Séances</div>
+          </div>
+          <div class="stat-item" (click)="viewAllFollowers()">
+            <div class="stat-value">{{ user.stats.followers }}</div>
+            <div class="stat-label">Abonnés</div>
+          </div>
+          <div class="stat-item" (click)="viewAllFollowing()">
+            <div class="stat-value">{{ user.stats.following }}</div>
+            <div class="stat-label">Abonnements</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ user.stats.totalHours }}</div>
+            <div class="stat-label">Heures</div>
+          </div>
+        </div>
       </div>
-      <div class="stat-item" (click)="viewAllFollowers()">
-        <div class="stat-value">{{ user.stats.followers }}</div>
-        <div class="stat-label">Abonnés</div>
-      </div>
-      <div class="stat-item" (click)="viewAllFollowing()">
-        <div class="stat-value">{{ user.stats.following }}</div>
-        <div class="stat-label">Abonnements</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">{{ user.stats.totalHours }}</div>
-        <div class="stat-label">Heures</div>
+      
+      <!-- Action Buttons -->
+      <div class="profile-actions">
+        <ion-button 
+          *ngIf="!isCurrentUser" 
+          expand="block" 
+          [color]="isFollowing ? 'medium' : 'primary'" 
+          class="follow-button"
+          (click)="toggleFollow()"
+        >
+          <ion-icon [name]="isFollowing ? 'checkmark-circle-outline' : 'person-add-outline'" slot="start"></ion-icon>
+          {{ isFollowing ? 'Abonné' : 'Suivre' }}
+        </ion-button>
+        
+        <ion-button 
+          *ngIf="!isCurrentUser" 
+          expand="block" 
+          fill="outline" 
+          class="message-button"
+          (click)="messageUser()"
+        >
+          <ion-icon name="chatbubble-outline" slot="start"></ion-icon>
+          Message
+        </ion-button>
+        
+        <ion-button 
+          *ngIf="isCurrentUser" 
+          expand="block" 
+          class="edit-button"
+          (click)="editProfile()"
+        >
+          <ion-icon name="create-outline" slot="start"></ion-icon>
+          Modifier le profil
+        </ion-button>
       </div>
     </div>
   </div>
   
   <!-- Segment Selector -->
-  <ion-segment [(ngModel)]="selectedSegment" (ionChange)="segmentChanged($event)">
-    <ion-segment-button value="activity">
-      <ion-label>Activités</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="social">
-      <ion-label>Social</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="clubs">
-      <ion-label>Clubs</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="badges">
-      <ion-label>Badges</ion-label>
-    </ion-segment-button>
-  </ion-segment>
+  <div class="segment-container">
+    <ion-segment [(ngModel)]="selectedSegment" (ionChange)="segmentChanged($event)" mode="md" class="custom-segment">
+      <ion-segment-button value="activity">
+        <ion-label>Activités</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="social">
+        <ion-label>Social</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="clubs">
+        <ion-label>Clubs</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="badges">
+        <ion-label>Badges</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
   
   <!-- Activities -->
-  <div *ngIf="selectedSegment === 'activity'">
+  <div class="segment-content" *ngIf="selectedSegment === 'activity'">
     <div class="section-header">
       <h2>Activités récentes</h2>
+      <a (click)="viewAllSessions()" class="view-all">Voir tout</a>
     </div>
     
-    <div class="activity-list">
-      <ion-card *ngFor="let activity of activities" (click)="viewActivityDetails(activity)">
-        <div class="activity-header">
-          <div class="activity-type-badge">{{ activity.type }}</div>
-          <div class="activity-date">{{ activity.date | date:'d MMM yyyy' }}</div>
-        </div>
-        
-        <img [src]="activity.image" class="activity-image" *ngIf="activity.image">
-        
-        <ion-card-header>
-          <ion-card-title>{{ activity.title }}</ion-card-title>
-          <ion-card-subtitle>
-            <ion-icon name="time-outline"></ion-icon>
-            {{ formatDuration(activity.duration) }}
-          </ion-card-subtitle>
-        </ion-card-header>
-        
-        <ion-card-content>
-          <div class="activity-stats">
-            <div class="stat">
-              <ion-icon name="heart"></ion-icon>
-              <span>{{ activity.likes }}</span>
-            </div>
-            <div class="stat">
-              <ion-icon name="chatbubble"></ion-icon>
-              <span>{{ activity.comments }}</span>
+    <div class="recent-sessions">
+      <ion-card class="session-card" *ngFor="let session of recentSessions" (click)="viewSessionDetail(session)" appPwaInput>
+        <div class="session-entry">
+          <div class="session-date">
+            <div class="day">{{ formatDay(session.date) }}</div>
+            <div class="time">{{ formatTime(session.duration) }}</div>
+          </div>
+          
+          <div class="session-info">
+            <div class="session-title">{{ getActivityLabel(session.activityType) }}</div>
+            <div class="session-stats">
+              <span *ngIf="session.rounds > 0">{{ session.rounds }} rounds</span>
+              <span *ngIf="session.strikes > 0">{{ session.strikes }} coups</span>
+              <span *ngIf="session.submissions > 0">{{ session.submissions }} soumissions</span>
             </div>
           </div>
-        </ion-card-content>
+          
+          <div class="session-intensity" [ngClass]="'intensity-' + session.intensity">
+            <ion-icon [name]="getIntensityIcon(session.intensity)"></ion-icon>
+          </div>
+        </div>
       </ion-card>
       
-      <div class="empty-state" *ngIf="activities.length === 0">
+      <div class="empty-state" *ngIf="recentSessions?.length === 0">
         <ion-icon name="fitness-outline" size="large"></ion-icon>
-        <p>Aucune activité récente</p>
+        <p>Aucune séance enregistrée</p>
       </div>
     </div>
   </div>
   
   <!-- Social (Followers & Following) -->
-  <div *ngIf="selectedSegment === 'social'">
+  <div class="segment-content" *ngIf="selectedSegment === 'social'">
     <div class="section-header">
       <h2>Abonnés</h2>
-      <a (click)="viewAllFollowers()">Voir tout</a>
+      <a (click)="viewAllFollowers()" class="view-all">Voir tout</a>
     </div>
     
     <div class="followers-grid">
-      <div class="follower-item" *ngFor="let follower of followers">
-        <img [src]="follower.avatar" alt="{{ follower.name }}">
+      <div class="follower-card" *ngFor="let follower of followers" appPwaInput>
+        <img [src]="follower.avatar" alt="{{ follower.name }}" class="follower-avatar">
         <div class="follower-info">
           <h4>{{ follower.name }}</h4>
           <p>{{ follower.discipline }}</p>
@@ -180,12 +190,12 @@
     
     <div class="section-header">
       <h2>Abonnements</h2>
-      <a (click)="viewAllFollowing()">Voir tout</a>
+      <a (click)="viewAllFollowing()" class="view-all">Voir tout</a>
     </div>
     
     <div class="followers-grid">
-      <div class="follower-item" *ngFor="let follow of following">
-        <img [src]="follow.avatar" alt="{{ follow.name }}">
+      <div class="follower-card" *ngFor="let follow of following" appPwaInput>
+        <img [src]="follow.avatar" alt="{{ follow.name }}" class="follower-avatar">
         <div class="follower-info">
           <h4>{{ follow.name }}</h4>
           <p>{{ follow.discipline }}</p>
@@ -199,14 +209,14 @@
   </div>
   
   <!-- Clubs -->
-  <div *ngIf="selectedSegment === 'clubs'">
+  <div class="segment-content" *ngIf="selectedSegment === 'clubs'">
     <div class="section-header">
       <h2>Clubs</h2>
     </div>
     
     <div class="clubs-list">
-      <ion-card *ngFor="let club of clubs">
-        <ion-item>
+      <ion-card class="club-card" *ngFor="let club of clubs" appPwaInput>
+        <ion-item lines="none">
           <ion-avatar slot="start">
             <img [src]="club.logo" alt="{{ club.name }}">
           </ion-avatar>
@@ -214,6 +224,9 @@
             <h2>{{ club.name }}</h2>
             <p>{{ club.members }} membres</p>
           </ion-label>
+          <ion-button fill="clear" slot="end">
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+          </ion-button>
         </ion-item>
       </ion-card>
       
@@ -225,13 +238,13 @@
   </div>
   
   <!-- Badges -->
-  <div *ngIf="selectedSegment === 'badges'">
+  <div class="segment-content" *ngIf="selectedSegment === 'badges'">
     <div class="section-header">
       <h2>Badges & Accomplissements</h2>
     </div>
     
     <div class="badges-grid">
-      <div class="badge-item" *ngFor="let badge of badges">
+      <div class="badge-card" *ngFor="let badge of badges" appPwaInput>
         <div class="badge-icon">
           <ion-icon [name]="badge.icon"></ion-icon>
         </div>
