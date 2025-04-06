@@ -42,12 +42,12 @@ export class LoginPage {
     }
     
     // Vérifier si nous revenons d'une redirection d'authentification
-    const pendingGoogleAuth = localStorage.getItem('pendingGoogleAuth');
     const pendingAppleAuth = localStorage.getItem('pendingAppleAuth');
+    const pendingGoogleAuth = localStorage.getItem('pendingGoogleAuth');
     const authStartTime = localStorage.getItem('authStartTime');
     
-    if (pendingGoogleAuth === 'true' || pendingAppleAuth === 'true') {
-      console.log(`Pending ${pendingGoogleAuth === 'true' ? 'Google' : 'Apple'} auth detected, processing redirect result...`);
+    if (pendingAppleAuth === 'true' || pendingGoogleAuth === 'true') {
+      console.log(`Pending auth detected, processing redirect result...`);
       
       try {
         const user = await this.firebaseService.getRedirectResult();
@@ -58,8 +58,8 @@ export class LoginPage {
           await this.ensureUserDocumentExists(user);
           
           // Nettoyer les données de localStorage avant la redirection
-          localStorage.removeItem('pendingGoogleAuth');
           localStorage.removeItem('pendingAppleAuth');
+          localStorage.removeItem('pendingGoogleAuth');
           localStorage.removeItem('authStartTime');
           
           console.log('Navigating to main page after auth');
@@ -80,8 +80,8 @@ export class LoginPage {
               await this.ensureUserDocumentExists(currentUser);
               
               // Nettoyer les données de localStorage
-              localStorage.removeItem('pendingGoogleAuth');
               localStorage.removeItem('pendingAppleAuth');
+              localStorage.removeItem('pendingGoogleAuth');
               localStorage.removeItem('authStartTime');
               
               this.router.navigate(['/tabs/tab1']);
@@ -89,8 +89,8 @@ export class LoginPage {
               console.log('No user found after delay, auth may have failed');
               
               // Nettoyer les données de localStorage après échec
-              localStorage.removeItem('pendingGoogleAuth');
               localStorage.removeItem('pendingAppleAuth');
+              localStorage.removeItem('pendingGoogleAuth');
               localStorage.removeItem('authStartTime');
               
               // Afficher un message d'erreur uniquement si l'auth était récente (moins de 5 minutes)
@@ -106,8 +106,8 @@ export class LoginPage {
         this.showToast('Erreur lors de l\'authentification: ' + errorMessage);
         
         // Nettoyer l'état en attente en cas d'erreur
-        localStorage.removeItem('pendingGoogleAuth');
         localStorage.removeItem('pendingAppleAuth');
+        localStorage.removeItem('pendingGoogleAuth');
         localStorage.removeItem('authStartTime');
       }
     } else {

@@ -33,99 +33,82 @@ export class RegisterPage {
   ) {}
   
   async ionViewWillEnter() {
-    console.log('RegisterPage - ionViewWillEnter');
+    // Check for auth redirect results
+    const pendingAppleAuth = localStorage.getItem('pendingAppleAuth');
+    const pendingGoogleAuth = localStorage.getItem('pendingGoogleAuth');
     
-    // Check if user is already logged in
-    const isLoggedIn = await this.firebaseService.isUserLoggedIn();
-    if (isLoggedIn) {
-      console.log('User already logged in, redirecting to main page');
-      this.router.navigate(['/tabs/tab1']);
-      return;
-    }
-    
-    // Check for redirect result
-    try {
-      const user = await this.firebaseService.getRedirectResult();
-      if (user) {
-        console.log('Successfully signed in via redirect, user:', user.uid);
+    if (pendingAppleAuth === 'true' || pendingGoogleAuth === 'true') {
+      try {
+        const user = await this.firebaseService.getRedirectResult();
         
-        // Check if user already exists in Firestore
-        try {
-          const userDoc = await this.firebaseService.getDocument('users', user.uid);
+        if (user) {
+          // Clean up localStorage
+          localStorage.removeItem('pendingAppleAuth');
+          localStorage.removeItem('pendingGoogleAuth');
+          localStorage.removeItem('authStartTime');
           
-          if (!userDoc) {
-            console.log('Creating new user document for:', user.uid);
-            
-            // Generate a unique username
-            const baseUsername = (user.displayName || 'user').toLowerCase().replace(/[^a-z0-9]/g, '');
-            const username = `${baseUsername}${Math.floor(Math.random() * 1000)}`;
-            
-            // Create new user document
-            await this.firebaseService.setDocument('users', user.uid, {
-              userId: user.uid,
-              firstName: user.displayName?.split(' ')[0] || '',
-              lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
-              email: user.email,
-              photo: user.photoURL,
-              username: username,
-              createdAt: new Date()
-            });
-          }
-          
-          console.log('Navigating to main page after auth');
-          this.router.navigate(['/tabs/tab1']);
-        } catch (dbError) {
-          console.error('Error with Firestore:', dbError);
-          this.showToast('Inscription réussie mais erreur de base de données');
+          // Navigate to main page
           this.router.navigate(['/tabs/tab1']);
         }
+      } catch (error) {
+        console.error('Authentication error:', error);
+        
+        // Clean up localStorage
+        localStorage.removeItem('pendingAppleAuth');
+        localStorage.removeItem('pendingGoogleAuth');
+        localStorage.removeItem('authStartTime');
+        
+        const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+        this.showToast('Erreur d\'authentification: ' + errorMessage);
       }
-    } catch (error: unknown) {
-      console.error('Error with redirect authentication:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-      this.showToast('Erreur lors de l\'authentification: ' + errorMessage);
     }
   }
 
   async register() {
     try {
-      if (!this.user.username.trim()) {
-        alert('Le nom d\'utilisateur est obligatoire.');
+      // Validate basic required fields
+      if (!this.user.firstName || !this.user.lastName || !this.user.email || !this.user.password) {
+        this.showToast('Veuillez remplir tous les champs obligatoires');
         return;
-      }
-
-      let isAvailable = true;
-      try {
-        // Tentative de vérification du nom d'utilisateur
-        isAvailable = await this.firebaseService.isUsernameAvailable(this.user.username);
-      } catch (error) {
-        console.warn('Erreur lors de la vérification du nom d\'utilisateur, on continue:', error);
-        // On continue même si la vérification échoue
       }
       
-      if (!isAvailable) {
-        alert('Ce nom d\'utilisateur est déjà pris. Veuillez en choisir un autre.');
+      // Username must be unique - generate one if needed
+      if (!this.user.username) {
+        // Create a username from email if not provided
+        this.user.username = this.user.email.split('@')[0] + '_' + Math.floor(Math.random() * 1000);
+      }
+      
+      // Check if username is available
+      const isUsernameAvailable = await this.firebaseService.isUsernameAvailable(this.user.username);
+      
+      if (!isUsernameAvailable) {
+        this.showToast('Ce nom d\'utilisateur est déjà pris. Veuillez en choisir un autre.');
         return;
       }
-
+      
       try {
+        // Create the authentication account
         const userCredential = await this.firebaseService.signUp(this.user.email, this.user.password);
-        const userId = userCredential.uid;
-
-        // Try to save additional user data to Firestore
+        const user = userCredential;
+        
+        // Create the user document in Firestore
         try {
-          // Use setDocument instead of addDocument to ensure document ID equals user UID
-          await this.firebaseService.setDocument('users', userId, {
-            userId,
+          await this.firebaseService.setDocument('users', user.uid, {
+            userId: user.uid,
             firstName: this.user.firstName,
             lastName: this.user.lastName,
+            email: this.user.email,
             username: this.user.username,
-            gender: this.user.gender,
-            discipline: this.user.discipline,
-            level: this.user.level,
-            age: this.user.age,
-            photo: this.user.photo,
-            createdAt: new Date()
+            gender: this.user.gender || '',
+            discipline: this.user.discipline || '',
+            level: this.user.level || '',
+            age: this.user.age || null,
+            photo: this.user.photo || null,
+            createdAt: new Date(),
+            settings: {
+              notifications: true,
+              darkMode: false
+            }
           });
         } catch (firestoreError) {
           console.error('Erreur lors de l\'enregistrement du profil:', firestoreError);
@@ -207,10 +190,10 @@ export class RegisterPage {
   async showToast(message: string) {
     const toast = await this.toastController.create({
       message,
-      duration: 2000,
+      duration: 3000,
       position: 'bottom',
       color: 'danger'
     });
-    toast.present();
+    await toast.present();
   }
 }

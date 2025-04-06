@@ -6,8 +6,8 @@ import {
 } from 'firebase/firestore';
 import { 
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-  signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, 
-  signInWithRedirect, getRedirectResult, OAuthProvider 
+  signOut, onAuthStateChanged, OAuthProvider, GoogleAuthProvider,
+  signInWithRedirect, getRedirectResult 
 } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import { environment } from '../../environments/environment';
@@ -21,8 +21,8 @@ export class FirebaseService {
   auth = getAuth(this.app);
   firestore = getFirestore(this.app);
   analytics = getAnalytics(this.app);
-  googleProvider = new GoogleAuthProvider();
   appleProvider = new OAuthProvider('apple.com');
+  googleProvider = new GoogleAuthProvider();
 
   // Ajout d'une variable pour détecter iOS
   private readonly isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
@@ -35,19 +35,14 @@ export class FirebaseService {
     private toastController: ToastController
   ) {
     console.log('Firebase initialized with project:', this.app.options.projectId);
-    this.googleProvider.setCustomParameters({
-      prompt: 'select_account',
-      // Paramètres spécifiques pour iOS
-      ...(this.isIOS && {
-        // Force la réauthentification pour contourner les problèmes de cache sur iOS
-        login_hint: '',
-        auth_type: 'reauthenticate'
-      })
-    });
     
     // Configure Apple provider with necessary scopes
     this.appleProvider.addScope('email');
     this.appleProvider.addScope('name');
+    
+    // Configure Google provider with necessary scopes
+    this.googleProvider.addScope('email');
+    this.googleProvider.addScope('profile');
 
     // Log le mode d'affichage et la plateforme pour le debugging
     console.log(`Running on: ${this.isIOS ? 'iOS' : 'non-iOS'}, Mode: ${this.isPWA ? 'PWA' : 'Browser'}`);
@@ -130,37 +125,6 @@ export class FirebaseService {
     }
   }
 
-  async signInWithGoogle() {
-    try {
-      // Nettoyer le localStorage pour éviter les états incohérents
-      localStorage.removeItem('pendingGoogleAuth');
-      
-      console.log('Using redirect for Google authentication');
-      
-      // Marquer qu'une authentification Google est en cours
-      localStorage.setItem('pendingGoogleAuth', 'true');
-      localStorage.setItem('authStartTime', Date.now().toString());
-      
-      // Utiliser uniquement la méthode de redirection, quel que soit l'environnement
-      await signInWithRedirect(this.auth, this.googleProvider);
-      return null;
-    } catch (error: any) {
-      console.error('Error signing in with Google:', error);
-      console.error('Error details:', JSON.stringify(error));
-      
-      // Nettoyer l'état en attente en cas d'erreur
-      localStorage.removeItem('pendingGoogleAuth');
-      localStorage.removeItem('authStartTime');
-      
-      // Provide more user-friendly error messages
-      if (error.code === 'auth/unauthorized-domain') {
-        throw new Error('Le domaine n\'est pas autorisé pour l\'authentification. Veuillez contacter l\'administrateur ou essayer une autre méthode de connexion.');
-      }
-      
-      throw error;
-    }
-  }
-
   async signInWithApple() {
     try {
       // Utiliser signInWithRedirect au lieu de signInWithPopup pour compatibilité PWA
@@ -171,6 +135,20 @@ export class FirebaseService {
         alert('Apple authentication is not enabled. Please contact support.');
       }
       console.error('Error signing in with Apple:', error);
+      throw error;
+    }
+  }
+
+  async signInWithGoogle() {
+    try {
+      // Utiliser signInWithRedirect pour compatibilité PWA comme avec Apple
+      await signInWithRedirect(this.auth, this.googleProvider);
+      return null; // La méthode ne retourne rien immédiatement, le résultat sera traité via getRedirectResult
+    } catch (error: any) {
+      if (error.code === 'auth/operation-not-allowed') {
+        alert('Google authentication is not enabled. Please contact support.');
+      }
+      console.error('Error signing in with Google:', error);
       throw error;
     }
   }

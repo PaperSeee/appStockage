@@ -108,3 +108,18 @@ body.pwa-mode a {
   filter: blur(0);
   transition: opacity 0.3s ease, filter 0.3s ease;
 }
+
+/* Google Sign-In Button Styles */
+.google-button {
+  --background: #ffffff;
+  --color: #757575;
+  --border-color: #dbdbdb;
+  --border-style: solid;
+  --border-width: 1px;
+  margin-bottom: 10px;
+}
+
+.google-button ion-icon {
+  color: #4285F4;
+  margin-right: 8px;
+}

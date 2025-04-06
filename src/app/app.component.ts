@@ -25,7 +25,7 @@ export class AppComponent implements OnInit {
     }
     
     // Vérifier le résultat de redirection uniquement si nécessaire
-    const pendingAuth = localStorage.getItem('pendingGoogleAuth');
+    const pendingAuth = localStorage.getItem('pendingGoogleAuth') || localStorage.getItem('pendingAppleAuth');
     if (pendingAuth === 'true') {
       try {
         console.log('Checking auth redirection in AppComponent');
@@ -35,7 +35,12 @@ export class AppComponent implements OnInit {
           this.router.navigate(['/tabs/tab1']);
         }
       } catch (error) {
-        console.error('Error with redirect sign-in in AppComponent:', error);
+        console.error('Error with redirect authentication in AppComponent:', error);
+      } finally {
+        // Cleanup
+        localStorage.removeItem('pendingGoogleAuth');
+        localStorage.removeItem('pendingAppleAuth');
+        localStorage.removeItem('authStartTime');
       }
     }
   }
